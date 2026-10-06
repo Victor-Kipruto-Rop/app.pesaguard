@@ -1,8 +1,0 @@
-import { Activity, Bell, CircleGauge, FileSearch, LayoutDashboard, Network, Settings, ShieldAlert, WalletCards } from "lucide-react";
-import Link from "next/link";
-
-const navigation = [{ label: "Overview", href: "/overview", icon: LayoutDashboard }, { label: "Transactions", href: "/transactions", icon: WalletCards }, { label: "Reconciliation", href: "/reconciliation", icon: CircleGauge }, { label: "Anomalies", href: "/anomalies", icon: ShieldAlert }, { label: "Integrations", href: "/integrations", icon: Network }, { label: "Audit", href: "/audit", icon: FileSearch }, { label: "Operations", href: "/operations", icon: Activity }, { label: "Settings", href: "/settings", icon: Settings }];
-
-export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <div className="shell"><aside className="sidebar"><div className="sidebar-brand"><span className="brand-mark">P</span><span>PesaGuard</span></div><nav aria-label="Primary navigation"><p className="nav-label">Control center</p><div className="nav-group">{navigation.map(({ label, href, icon: Icon }) => <Link className={`nav-item${label === "Overview" ? " active" : ""}`} href={href} key={href}><Icon size={16} aria-hidden="true" /><span>{label}</span></Link>)}</div></nav></aside><div className="shell-main"><header className="topbar"><div className="workspace"><small>Workspace</small><strong>Organization context pending</strong></div><div className="top-actions"><span className="live"><span className="live-dot" />Backend connection unknown</span><button className="icon-button" type="button" aria-label="Notifications"><Bell size={18} /></button><span className="avatar" aria-label="Current user">?</span></div></header><main>{children}</main></div></div>;
-}
