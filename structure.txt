@@ -1,0 +1,621 @@
+dashboard.pesaguard.victorkipruto.com/
+│
+├── public/
+│   ├── favicon.ico
+│   ├── logo.svg
+│   ├── logo-mark.svg
+│   ├── manifest.webmanifest
+│   ├── robots.txt
+│   ├── offline.html
+│   │
+│   ├── icons/
+│   │   ├── icon-192.png
+│   │   ├── icon-512.png
+│   │   └── maskable-icon.png
+│   │
+│   └── images/
+│       ├── empty-states/
+│       ├── illustrations/
+│       └── placeholders/
+│
+├── src/
+│   │
+│   ├── app/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   │
+│   │   ├── config/
+│   │   │   ├── app.config.ts
+│   │   │   ├── environment.ts
+│   │   │   ├── feature-flags.ts
+│   │   │   ├── navigation.ts
+│   │   │   └── permissions.ts
+│   │   │
+│   │   ├── providers/
+│   │   │   ├── AppProviders.tsx
+│   │   │   ├── QueryProvider.tsx
+│   │   │   ├── ThemeProvider.tsx
+│   │   │   ├── NotificationProvider.tsx
+│   │   │   ├── RealtimeProvider.tsx
+│   │   │   ├── OrganizationProvider.tsx
+│   │   │   └── ErrorBoundary.tsx
+│   │   │
+│   │   └── router/
+│   │       ├── index.tsx
+│   │       ├── routes.tsx
+│   │       ├── ProtectedRoutes.tsx
+│   │       ├── OrganizationRoutes.tsx
+│   │       └── PermissionRoutes.tsx
+│   │
+│   ├── api/
+│   │   ├── client.ts
+│   │   ├── config.ts
+│   │   ├── interceptors.ts
+│   │   ├── errors.ts
+│   │   ├── request.ts
+│   │   ├── response.ts
+│   │   ├── pagination.ts
+│   │   ├── realtime.ts
+│   │   │
+│   │   └── endpoints/
+│   │       ├── auth.api.ts
+│   │       ├── session.api.ts
+│   │       ├── organization.api.ts
+│   │       ├── tenant.api.ts
+│   │       ├── user.api.ts
+│   │       ├── dashboard.api.ts
+│   │       ├── transactions.api.ts
+│   │       ├── payments.api.ts
+│   │       ├── refunds.api.ts
+│   │       ├── reconciliation.api.ts
+│   │       ├── exceptions.api.ts
+│   │       ├── risk.api.ts
+│   │       ├── settlements.api.ts
+│   │       ├── customers.api.ts
+│   │       ├── accounts.api.ts
+│   │       ├── reports.api.ts
+│   │       ├── integrations.api.ts
+│   │       ├── mpesa.api.ts
+│   │       ├── webhooks.api.ts
+│   │       ├── notifications.api.ts
+│   │       ├── team.api.ts
+│   │       ├── audit.api.ts
+│   │       ├── activity.api.ts
+│   │       ├── settings.api.ts
+│   │       └── health.api.ts
+│   │
+│   ├── auth/
+│   │   ├── auth.service.ts
+│   │   ├── auth.store.ts
+│   │   ├── auth.types.ts
+│   │   ├── session.ts
+│   │   ├── permissions.ts
+│   │   ├── roles.ts
+│   │   ├── authorization.ts
+│   │   │
+│   │   ├── guards/
+│   │   │   ├── AuthGuard.tsx
+│   │   │   ├── OrganizationGuard.tsx
+│   │   │   ├── TenantGuard.tsx
+│   │   │   ├── PermissionGuard.tsx
+│   │   │   └── RoleGuard.tsx
+│   │   │
+│   │   └── security/
+│   │       ├── session-manager.ts
+│   │       ├── logout.ts
+│   │       └── security-events.ts
+│   │
+│   ├── tenant/
+│   │   ├── tenant-context.ts
+│   │   ├── tenant.store.ts
+│   │   ├── tenant.types.ts
+│   │   ├── tenant.service.ts
+│   │   ├── tenant-permissions.ts
+│   │   ├── tenant-status.ts
+│   │   ├── tenant-switcher.ts
+│   │   └── tenant-guards/
+│   │       ├── ActiveTenantGuard.tsx
+│   │       ├── SuspendedTenantGuard.tsx
+│   │       └── TenantAccessGuard.tsx
+│   │
+│   ├── organization/
+│   │   ├── organization.store.ts
+│   │   ├── organization.service.ts
+│   │   ├── organization.types.ts
+│   │   ├── organization-context.ts
+│   │   └── organization-switcher.ts
+│   │
+│   ├── layouts/
+│   │   ├── DashboardLayout.tsx
+│   │   ├── FullscreenLayout.tsx
+│   │   ├── ErrorLayout.tsx
+│   │   │
+│   │   ├── navigation/
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── SidebarHeader.tsx
+│   │   │   ├── SidebarSection.tsx
+│   │   │   ├── SidebarItem.tsx
+│   │   │   ├── SidebarFooter.tsx
+│   │   │   ├── MobileSidebar.tsx
+│   │   │   └── NavigationConfig.ts
+│   │   │
+│   │   ├── header/
+│   │   │   ├── Topbar.tsx
+│   │   │   ├── OrganizationSwitcher.tsx
+│   │   │   ├── EnvironmentSwitcher.tsx
+│   │   │   ├── GlobalSearch.tsx
+│   │   │   ├── NotificationBell.tsx
+│   │   │   ├── HelpMenu.tsx
+│   │   │   └── UserMenu.tsx
+│   │   │
+│   │   └── common/
+│   │       ├── Breadcrumbs.tsx
+│   │       ├── PageHeader.tsx
+│   │       ├── PageContainer.tsx
+│   │       └── CommandPalette.tsx
+│   │
+│   ├── components/
+│   │   │
+│   │   ├── ui/
+│   │   │   ├── Button.tsx
+│   │   │   ├── IconButton.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── SearchInput.tsx
+│   │   │   ├── Textarea.tsx
+│   │   │   ├── Select.tsx
+│   │   │   ├── MultiSelect.tsx
+│   │   │   ├── Checkbox.tsx
+│   │   │   ├── Radio.tsx
+│   │   │   ├── Switch.tsx
+│   │   │   ├── DatePicker.tsx
+│   │   │   ├── DateRangePicker.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Drawer.tsx
+│   │   │   ├── Dialog.tsx
+│   │   │   ├── ConfirmDialog.tsx
+│   │   │   ├── Tooltip.tsx
+│   │   │   ├── Dropdown.tsx
+│   │   │   ├── Tabs.tsx
+│   │   │   ├── Accordion.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── StatusBadge.tsx
+│   │   │   ├── Avatar.tsx
+│   │   │   ├── Progress.tsx
+│   │   │   ├── Spinner.tsx
+│   │   │   ├── Skeleton.tsx
+│   │   │   ├── Alert.tsx
+│   │   │   ├── Toast.tsx
+│   │   │   ├── EmptyState.tsx
+│   │   │   ├── ErrorState.tsx
+│   │   │   ├── LoadingState.tsx
+│   │   │   ├── DataTable.tsx
+│   │   │   └── Pagination.tsx
+│   │   │
+│   │   ├── charts/
+│   │   │   ├── LineChart.tsx
+│   │   │   ├── AreaChart.tsx
+│   │   │   ├── BarChart.tsx
+│   │   │   ├── DonutChart.tsx
+│   │   │   ├── GaugeChart.tsx
+│   │   │   ├── Sparkline.tsx
+│   │   │   └── ChartContainer.tsx
+│   │   │
+│   │   ├── financial/
+│   │   │   ├── MoneyValue.tsx
+│   │   │   ├── CurrencyValue.tsx
+│   │   │   ├── AmountChange.tsx
+│   │   │   ├── TransactionStatus.tsx
+│   │   │   ├── PaymentStatus.tsx
+│   │   │   ├── ReconciliationStatus.tsx
+│   │   │   ├── SettlementStatus.tsx
+│   │   │   └── RiskIndicator.tsx
+│   │   │
+│   │   ├── data/
+│   │   │   ├── DataTable.tsx
+│   │   │   ├── FilterBar.tsx
+│   │   │   ├── AdvancedFilters.tsx
+│   │   │   ├── ColumnSelector.tsx
+│   │   │   ├── SortControl.tsx
+│   │   │   ├── SavedView.tsx
+│   │   │   └── ExportButton.tsx
+│   │   │
+│   │   ├── activity/
+│   │   │   ├── ActivityTimeline.tsx
+│   │   │   ├── ActivityItem.tsx
+│   │   │   └── ActivityFilters.tsx
+│   │   │
+│   │   ├── notifications/
+│   │   │   ├── NotificationBell.tsx
+│   │   │   ├── NotificationPanel.tsx
+│   │   │   ├── NotificationItem.tsx
+│   │   │   └── NotificationCenter.tsx
+│   │   │
+│   │   ├── security/
+│   │   │   ├── SecurityIndicator.tsx
+│   │   │   ├── SessionList.tsx
+│   │   │   └── PermissionBadge.tsx
+│   │   │
+│   │   └── common/
+│   │       ├── Logo.tsx
+│   │       ├── EnvironmentBadge.tsx
+│   │       ├── SystemStatus.tsx
+│   │       ├── ConnectionIndicator.tsx
+│   │       ├── SupportWidget.tsx
+│   │       ├── HelpButton.tsx
+│   │       └── KeyboardShortcuts.tsx
+│   │
+│   ├── pages/
+│   │   │
+│   │   ├── home/
+│   │   │   ├── HomePage.tsx
+│   │   │   └── components/
+│   │   │       ├── WelcomeHeader.tsx
+│   │   │       ├── KPIOverview.tsx
+│   │   │       ├── TransactionVolume.tsx
+│   │   │       ├── ReconciliationOverview.tsx
+│   │   │       ├── ExceptionOverview.tsx
+│   │   │       ├── RiskOverview.tsx
+│   │   │       ├── SettlementOverview.tsx
+│   │   │       ├── RecentTransactions.tsx
+│   │   │       ├── RecentActivity.tsx
+│   │   │       └── SystemHealth.tsx
+│   │   │
+│   │   ├── transactions/
+│   │   │   ├── TransactionsPage.tsx
+│   │   │   ├── TransactionDetailsPage.tsx
+│   │   │   ├── TransactionTimelinePage.tsx
+│   │   │   ├── TransactionSearchPage.tsx
+│   │   │   └── components/
+│   │   │       ├── TransactionTable.tsx
+│   │   │       ├── TransactionFilters.tsx
+│   │   │       ├── TransactionDetails.tsx
+│   │   │       ├── TransactionTimeline.tsx
+│   │   │       ├── TransactionMetadata.tsx
+│   │   │       ├── TransactionRelations.tsx
+│   │   │       └── TransactionAuditTrail.tsx
+│   │   │
+│   │   ├── payments/
+│   │   │   ├── PaymentsPage.tsx
+│   │   │   ├── PaymentDetailsPage.tsx
+│   │   │   ├── PaymentAttemptsPage.tsx
+│   │   │   ├── RefundsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── PaymentTable.tsx
+│   │   │       ├── PaymentDetails.tsx
+│   │   │       ├── PaymentTimeline.tsx
+│   │   │       ├── PaymentAttempts.tsx
+│   │   │       └── RefundDetails.tsx
+│   │   │
+│   │   ├── reconciliation/
+│   │   │   ├── ReconciliationPage.tsx
+│   │   │   ├── JobsPage.tsx
+│   │   │   ├── JobDetailsPage.tsx
+│   │   │   ├── ResultsPage.tsx
+│   │   │   ├── ExceptionsPage.tsx
+│   │   │   ├── ExceptionDetailsPage.tsx
+│   │   │   ├── MatchingRulesPage.tsx
+│   │   │   ├── HistoryPage.tsx
+│   │   │   └── components/
+│   │   │       ├── ReconciliationKPIs.tsx
+│   │   │       ├── JobTable.tsx
+│   │   │       ├── JobProgress.tsx
+│   │   │       ├── MatchBreakdown.tsx
+│   │   │       ├── ExceptionTable.tsx
+│   │   │       ├── ExceptionDetails.tsx
+│   │   │       ├── MatchingRules.tsx
+│   │   │       └── ReconciliationTimeline.tsx
+│   │   │
+│   │   ├── risk/
+│   │   │   ├── RiskPage.tsx
+│   │   │   ├── AlertsPage.tsx
+│   │   │   ├── AnomaliesPage.tsx
+│   │   │   ├── RiskEventsPage.tsx
+│   │   │   ├── RiskDetailsPage.tsx
+│   │   │   ├── RulesPage.tsx
+│   │   │   └── components/
+│   │   │       ├── RiskScore.tsx
+│   │   │       ├── RiskTrend.tsx
+│   │   │       ├── AlertTable.tsx
+│   │   │       ├── AnomalyTable.tsx
+│   │   │       ├── RiskEvidence.tsx
+│   │   │       └── RiskTimeline.tsx
+│   │   │
+│   │   ├── settlements/
+│   │   │   ├── SettlementsPage.tsx
+│   │   │   ├── SettlementDetailsPage.tsx
+│   │   │   ├── SettlementHistoryPage.tsx
+│   │   │   └── components/
+│   │   │       ├── SettlementTable.tsx
+│   │   │       ├── SettlementSummary.tsx
+│   │   │       ├── SettlementBreakdown.tsx
+│   │   │       └── SettlementTimeline.tsx
+│   │   │
+│   │   ├── customers/
+│   │   │   ├── CustomersPage.tsx
+│   │   │   ├── CustomerDetailsPage.tsx
+│   │   │   ├── CustomerAccountsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── CustomerTable.tsx
+│   │   │       ├── CustomerProfile.tsx
+│   │   │       ├── CustomerAccounts.tsx
+│   │   │       └── CustomerActivity.tsx
+│   │   │
+│   │   ├── accounts/
+│   │   │   ├── AccountsPage.tsx
+│   │   │   ├── AccountDetailsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── AccountTable.tsx
+│   │   │       ├── AccountBalance.tsx
+│   │   │       └── AccountActivity.tsx
+│   │   │
+│   │   ├── reports/
+│   │   │   ├── ReportsPage.tsx
+│   │   │   ├── ReportDetailsPage.tsx
+│   │   │   ├── ReportBuilderPage.tsx
+│   │   │   ├── ScheduledReportsPage.tsx
+│   │   │   ├── ReportHistoryPage.tsx
+│   │   │   └── components/
+│   │   │       ├── ReportCard.tsx
+│   │   │       ├── ReportFilters.tsx
+│   │   │       ├── ReportPreview.tsx
+│   │   │       ├── ReportBuilder.tsx
+│   │   │       └── ScheduleReport.tsx
+│   │   │
+│   │   ├── integrations/
+│   │   │   ├── IntegrationsPage.tsx
+│   │   │   ├── MpesaPage.tsx
+│   │   │   ├── IntegrationDetailsPage.tsx
+│   │   │   ├── IntegrationHealthPage.tsx
+│   │   │   └── components/
+│   │   │       ├── IntegrationCard.tsx
+│   │   │       ├── IntegrationStatus.tsx
+│   │   │       ├── ConnectionTest.tsx
+│   │   │       ├── CredentialStatus.tsx
+│   │   │       └── IntegrationEvents.tsx
+│   │   │
+│   │   ├── webhooks/
+│   │   │   ├── WebhooksPage.tsx
+│   │   │   ├── WebhookDetailsPage.tsx
+│   │   │   ├── DeliveriesPage.tsx
+│   │   │   ├── DeliveryDetailsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── WebhookTable.tsx
+│   │   │       ├── WebhookDetails.tsx
+│   │   │       ├── DeliveryTable.tsx
+│   │   │       ├── DeliveryTimeline.tsx
+│   │   │       └── RetryStatus.tsx
+│   │   │
+│   │   ├── notifications/
+│   │   │   ├── NotificationsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── NotificationList.tsx
+│   │   │       ├── NotificationDetails.tsx
+│   │   │       └── NotificationPreferences.tsx
+│   │   │
+│   │   ├── team/
+│   │   │   ├── TeamPage.tsx
+│   │   │   ├── MemberDetailsPage.tsx
+│   │   │   ├── InvitationsPage.tsx
+│   │   │   ├── RolesPage.tsx
+│   │   │   └── components/
+│   │   │       ├── TeamTable.tsx
+│   │   │       ├── MemberCard.tsx
+│   │   │       ├── InviteMember.tsx
+│   │   │       ├── RoleSelector.tsx
+│   │   │       └── PermissionMatrix.tsx
+│   │   │
+│   │   ├── audit/
+│   │   │   ├── AuditPage.tsx
+│   │   │   ├── AuditDetailsPage.tsx
+│   │   │   └── components/
+│   │   │       ├── AuditTable.tsx
+│   │   │       ├── AuditFilters.tsx
+│   │   │       ├── AuditDetails.tsx
+│   │   │       └── AuditTimeline.tsx
+│   │   │
+│   │   ├── activity/
+│   │   │   ├── ActivityPage.tsx
+│   │   │   └── components/
+│   │   │       ├── ActivityTimeline.tsx
+│   │   │       └── ActivityFilters.tsx
+│   │   │
+│   │   ├── settings/
+│   │   │   ├── SettingsPage.tsx
+│   │   │   ├── OrganizationPage.tsx
+│   │   │   ├── ProfilePage.tsx
+│   │   │   ├── SecurityPage.tsx
+│   │   │   ├── NotificationsPage.tsx
+│   │   │   ├── IntegrationsPage.tsx
+│   │   │   ├── DataPage.tsx
+│   │   │   └── PreferencesPage.tsx
+│   │   │
+│   │   └── system/
+│   │       ├── AccessDeniedPage.tsx
+│   │       ├── NotFoundPage.tsx
+│   │       ├── ServerErrorPage.tsx
+│   │       ├── MaintenancePage.tsx
+│   │       ├── OfflinePage.tsx
+│   │       └── ServiceUnavailablePage.tsx
+│   │
+│   ├── features/
+│   │   ├── dashboard/
+│   │   ├── transactions/
+│   │   ├── payments/
+│   │   ├── reconciliation/
+│   │   ├── risk/
+│   │   ├── settlements/
+│   │   ├── customers/
+│   │   ├── accounts/
+│   │   ├── reports/
+│   │   ├── integrations/
+│   │   ├── webhooks/
+│   │   ├── notifications/
+│   │   ├── team/
+│   │   ├── audit/
+│   │   └── activity/
+│   │
+│   ├── state/
+│   │   ├── auth.store.ts
+│   │   ├── organization.store.ts
+│   │   ├── tenant.store.ts
+│   │   ├── dashboard.store.ts
+│   │   ├── filters.store.ts
+│   │   ├── notification.store.ts
+│   │   ├── preferences.store.ts
+│   │   └── ui.store.ts
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useOrganization.ts
+│   │   ├── useTenant.ts
+│   │   ├── usePermissions.ts
+│   │   ├── useDashboard.ts
+│   │   ├── useTransactions.ts
+│   │   ├── usePayments.ts
+│   │   ├── useReconciliation.ts
+│   │   ├── useRisk.ts
+│   │   ├── useSettlements.ts
+│   │   ├── useReports.ts
+│   │   ├── useNotifications.ts
+│   │   ├── useRealtime.ts
+│   │   ├── useWebhooks.ts
+│   │   ├── usePagination.ts
+│   │   ├── useFilters.ts
+│   │   ├── useExport.ts
+│   │   ├── useDebounce.ts
+│   │   ├── usePolling.ts
+│   │   ├── useOnlineStatus.ts
+│   │   └── useKeyboardShortcuts.ts
+│   │
+│   ├── types/
+│   │   ├── api.ts
+│   │   ├── auth.ts
+│   │   ├── organization.ts
+│   │   ├── tenant.ts
+│   │   ├── user.ts
+│   │   ├── dashboard.ts
+│   │   ├── transaction.ts
+│   │   ├── payment.ts
+│   │   ├── refund.ts
+│   │   ├── reconciliation.ts
+│   │   ├── exception.ts
+│   │   ├── risk.ts
+│   │   ├── settlement.ts
+│   │   ├── customer.ts
+│   │   ├── account.ts
+│   │   ├── report.ts
+│   │   ├── integration.ts
+│   │   ├── webhook.ts
+│   │   ├── notification.ts
+│   │   ├── audit.ts
+│   │   └── common.ts
+│   │
+│   ├── schemas/
+│   │   ├── transaction.schema.ts
+│   │   ├── payment.schema.ts
+│   │   ├── reconciliation.schema.ts
+│   │   ├── risk.schema.ts
+│   │   ├── report.schema.ts
+│   │   ├── integration.schema.ts
+│   │   ├── team.schema.ts
+│   │   └── settings.schema.ts
+│   │
+│   ├── utils/
+│   │   ├── currency.ts
+│   │   ├── dates.ts
+│   │   ├── numbers.ts
+│   │   ├── formatting.ts
+│   │   ├── permissions.ts
+│   │   ├── pagination.ts
+│   │   ├── filters.ts
+│   │   ├── exports.ts
+│   │   ├── errors.ts
+│   │   └── routes.ts
+│   │
+│   ├── lib/
+│   │   ├── query/
+│   │   ├── validation/
+│   │   ├── telemetry/
+│   │   ├── accessibility/
+│   │   ├── security/
+│   │   └── performance/
+│   │
+│   ├── styles/
+│   │   ├── globals.css
+│   │   ├── variables.css
+│   │   ├── typography.css
+│   │   ├── layout.css
+│   │   ├── components.css
+│   │   ├── tables.css
+│   │   ├── charts.css
+│   │   ├── animations.css
+│   │   ├── responsive.css
+│   │   └── accessibility.css
+│   │
+│   └── config/
+│       ├── routes.ts
+│       ├── navigation.ts
+│       ├── permissions.ts
+│       └── constants.ts
+│
+├── tests/
+│   ├── unit/
+│   ├── components/
+│   ├── pages/
+│   ├── features/
+│   ├── integration/
+│   ├── accessibility/
+│   ├── performance/
+│   └── e2e/
+│       ├── authentication/
+│       ├── organization/
+│       ├── tenant/
+│       ├── dashboard/
+│       ├── transactions/
+│       ├── payments/
+│       ├── reconciliation/
+│       ├── risk/
+│       ├── settlements/
+│       ├── reports/
+│       ├── integrations/
+│       ├── team/
+│       └── settings/
+│
+├── docs/
+│   ├── architecture.md
+│   ├── customer-experience.md
+│   ├── tenant-context.md
+│   ├── authorization.md
+│   ├── api-integration.md
+│   ├── realtime.md
+│   ├── accessibility.md
+│   ├── performance.md
+│   ├── security.md
+│   └── deployment.md
+│
+├── scripts/
+│   ├── validate-env.ts
+│   ├── validate-api-contract.ts
+│   └── generate-version.ts
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       ├── test.yml
+│       ├── build.yml
+│       ├── security.yml
+│       └── deploy.yml
+│
+├── .env.example
+├── .gitignore
+├── Dockerfile
+├── nginx.conf
+├── docker-compose.yml
+├── eslint.config.js
+├── prettier.config.js
+├── tsconfig.json
+├── tsconfig.app.json
+├── vite.config.ts
+├── package.json
+├── README.md
+└── LICENSE

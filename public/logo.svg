@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="190" viewBox="0 0 760 190">
+  <title>PesaGuard</title>
+  <g transform="translate(18 15) scale(3.1)" fill="none" stroke="#0B5D3B" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+    <path d="M24 4 39 10v3.8M39 20.2V23c0 10-6.1 16.7-15 21C15.1 39.7 9 33 9 23V10l15-6"/>
+    <path d="m17.5 23 4.2 4.1 8.8-9.2"/>
+  </g>
+  <text x="190" y="126" font-family="Arial,Helvetica,sans-serif" font-size="98" font-weight="700"><tspan fill="#111111">Pesa</tspan><tspan fill="#0B5D3B">Guard</tspan></text>
+</svg>
