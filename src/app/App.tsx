@@ -8,6 +8,7 @@ import { OrganizationPage } from "../pages/settings/OrganizationPage";
 import { TransactionsPage } from "../pages/transactions/TransactionsPage";
 import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
+import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import type { Customer } from "../types/dashboard";
 
@@ -17,15 +18,98 @@ const implementedPages: DashboardPage[] = [
 ];
 
 const knownDashboardPaths = new Set([
-  "/", "/executive-overview", "/operational-activity", "/transactions", "/reconciliation",
-  "/exceptions", "/payments", "/settlements", "/reports", "/data-imports", "/integrations",
-  "/webhooks", "/import-sync-activity", "/activity-log", "/security", "/system-health",
-  "/customers", "/team-members", "/roles-permissions", "/tenant-profile", "/settings",
-  "/notifications", "/account-authentication", "/preferences", "/help-support", "/api-developer-resources",
-  "/data-quality", "/data-sources", "/validation-results", "/duplicate-detection", "/schema-mapping", "/data-lineage", "/processing-jobs", "/freshness-monitoring",
-  "/risk-overview", "/fraud-detection", "/risk-events", "/suspicious-transactions", "/alerts", "/investigations", "/risk-rules",
-  "/reconciliation-runs", "/matching-rules", "/matching-history", "/settlement-batches", "/scheduled-reconciliation",
-  "/report-builder", "/scheduled-reports", "/export-center", "/approvals", "/webhook-deliveries", "/support-requests", "/retention-privacy",
+  "/",
+  "/executive-overview",
+  "/operational-activity",
+  "/transactions",
+  "/reconciliation",
+  "/exceptions",
+  "/payments",
+  "/settlements",
+  "/reports",
+  "/data-imports",
+  "/integrations",
+  "/webhooks",
+  "/import-sync-activity",
+  "/activity-log",
+  "/security",
+  "/system-health",
+  "/customers",
+  "/team-members",
+  "/roles-permissions",
+  "/tenant-profile",
+  "/settings",
+  "/notifications",
+  "/account-authentication",
+  "/preferences",
+  "/help-support",
+  "/api-developer-resources",
+  "/data-quality",
+  "/data-sources",
+  "/validation-results",
+  "/duplicate-detection",
+  "/schema-mapping",
+  "/data-lineage",
+  "/processing-jobs",
+  "/freshness-monitoring",
+  "/risk-overview",
+  "/fraud-detection",
+  "/risk-events",
+  "/suspicious-transactions",
+  "/alerts",
+  "/investigations",
+  "/risk-rules",
+  "/reconciliation-runs",
+  "/matching-rules",
+  "/matching-history",
+  "/settlement-batches",
+  "/scheduled-reconciliation",
+  "/report-builder",
+  "/scheduled-reports",
+  "/export-center",
+  "/approvals",
+  "/webhook-deliveries",
+  "/support-requests",
+  "/retention-privacy",
+  "/organization-profile",
+  "/branches",
+  "/user-profile",
+  "/notification-center",
+  "/failed-transactions",
+  "/pending-transactions",
+  "/refunds-reversals",
+  "/transaction-import-results",
+  "/reconciliation-run-detail",
+  "/matched-transactions",
+  "/unmatched-transactions",
+  "/partial-matches",
+  "/manual-matching",
+  "/match-approvals",
+  "/exception-detail",
+  "/matching-rule-detail",
+  "/settlement-detail",
+  "/settlement-discrepancies",
+  "/financial-summaries",
+  "/data-quality-issues",
+  "/data-quality-issue-detail",
+  "/data-source-health",
+  "/data-quality-trends",
+  "/risk-alert-detail",
+  "/flagged-transactions",
+  "/fraud-investigation",
+  "/risk-rule-detail",
+  "/report-detail",
+  "/scheduled-report-detail",
+  "/integration-detail",
+  "/webhook-delivery-detail",
+  "/alert-detail",
+  "/service-status",
+  "/security-settings",
+  "/active-sessions",
+  "/access-history",
+  "/account-closure",
+  "/onboarding-resume",
+  "/first-login-checklist",
 ]);
 
 const authPaths: Record<string, AuthRoute> = {
@@ -179,7 +263,8 @@ export default function App() {
       {page === "customers" && <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />}
       {page === "tenant-profile" && <OrganizationPage workspace={workspace} />}
       {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
-      {!implementedPages.includes(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {!implementedPages.includes(page) && !isExtendedPage(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
     </DashboardLayout>
   );
 }

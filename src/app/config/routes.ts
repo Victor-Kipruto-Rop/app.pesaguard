@@ -28,7 +28,17 @@ export type DashboardPage =
   | "data-quality" | "data-sources" | "validation-results" | "duplicate-detection" | "schema-mapping" | "data-lineage" | "processing-jobs" | "freshness-monitoring"
   | "risk-overview" | "fraud-detection" | "risk-events" | "suspicious-transactions" | "alerts" | "investigations" | "risk-rules"
   | "reconciliation-runs" | "matching-rules" | "matching-history" | "settlement-batches" | "scheduled-reconciliation"
-  | "report-builder" | "scheduled-reports" | "export-center" | "approvals" | "webhook-deliveries" | "support-requests" | "retention-privacy";
+  | "report-builder" | "scheduled-reports" | "export-center" | "approvals" | "webhook-deliveries" | "support-requests" | "retention-privacy"
+  | "organization-profile" | "branches" | "user-profile" | "notification-center"
+  | "failed-transactions" | "pending-transactions" | "refunds-reversals" | "transaction-import-results"
+  | "reconciliation-run-detail" | "matched-transactions" | "unmatched-transactions" | "partial-matches"
+  | "manual-matching" | "match-approvals" | "exception-detail" | "matching-rule-detail"
+  | "settlement-detail" | "settlement-discrepancies" | "financial-summaries"
+  | "data-quality-issues" | "data-quality-issue-detail" | "data-source-health" | "data-quality-trends"
+  | "risk-alert-detail" | "flagged-transactions" | "fraud-investigation" | "risk-rule-detail"
+  | "report-detail" | "scheduled-report-detail" | "integration-detail" | "webhook-delivery-detail"
+  | "alert-detail" | "service-status" | "security-settings" | "active-sessions" | "access-history"
+  | "account-closure" | "onboarding-resume" | "first-login-checklist";
 
 const routeByPath: Record<string, DashboardPage> = {
   "/": "home",
@@ -66,6 +76,45 @@ const routeByPath: Record<string, DashboardPage> = {
   "/settlement-batches": "settlement-batches", "/scheduled-reconciliation": "scheduled-reconciliation",
   "/report-builder": "report-builder", "/scheduled-reports": "scheduled-reports", "/export-center": "export-center",
   "/approvals": "approvals", "/webhook-deliveries": "webhook-deliveries", "/support-requests": "support-requests", "/retention-privacy": "retention-privacy",
+  "/organization-profile": "organization-profile",
+  "/branches": "branches",
+  "/user-profile": "user-profile",
+  "/notification-center": "notification-center",
+  "/failed-transactions": "failed-transactions",
+  "/pending-transactions": "pending-transactions",
+  "/refunds-reversals": "refunds-reversals",
+  "/transaction-import-results": "transaction-import-results",
+  "/reconciliation-run-detail": "reconciliation-run-detail",
+  "/matched-transactions": "matched-transactions",
+  "/unmatched-transactions": "unmatched-transactions",
+  "/partial-matches": "partial-matches",
+  "/manual-matching": "manual-matching",
+  "/match-approvals": "match-approvals",
+  "/exception-detail": "exception-detail",
+  "/matching-rule-detail": "matching-rule-detail",
+  "/settlement-detail": "settlement-detail",
+  "/settlement-discrepancies": "settlement-discrepancies",
+  "/financial-summaries": "financial-summaries",
+  "/data-quality-issues": "data-quality-issues",
+  "/data-quality-issue-detail": "data-quality-issue-detail",
+  "/data-source-health": "data-source-health",
+  "/data-quality-trends": "data-quality-trends",
+  "/risk-alert-detail": "risk-alert-detail",
+  "/flagged-transactions": "flagged-transactions",
+  "/fraud-investigation": "fraud-investigation",
+  "/risk-rule-detail": "risk-rule-detail",
+  "/report-detail": "report-detail",
+  "/scheduled-report-detail": "scheduled-report-detail",
+  "/integration-detail": "integration-detail",
+  "/webhook-delivery-detail": "webhook-delivery-detail",
+  "/alert-detail": "alert-detail",
+  "/service-status": "service-status",
+  "/security-settings": "security-settings",
+  "/active-sessions": "active-sessions",
+  "/access-history": "access-history",
+  "/account-closure": "account-closure",
+  "/onboarding-resume": "onboarding-resume",
+  "/first-login-checklist": "first-login-checklist",
 };
 
 export function pageFromPath(pathname: string): DashboardPage {

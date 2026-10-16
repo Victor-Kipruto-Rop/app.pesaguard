@@ -28,6 +28,20 @@ The frontend includes designed route states for:
 
 Authentication pages use a pale lime/mint radial-gradient background, dotted ambient texture, translucent form card, rounded mint submit controls, visible keyboard focus, responsive layouts, and reduced-motion support. Shared components keep typography, inputs, notices, and recovery states consistent while preserving route-specific copy and interactions.
 
+## Tenant workspace pages
+
+The dashboard now registers dedicated operational routes for organization profile and branches, personal profile, notification centre, failed and pending transactions, refunds and reversals, import results, reconciliation run detail, matched/unmatched/partial records, manual matching, match approvals, exception detail, matching rule detail, settlement batch detail and discrepancies, financial summaries, data-quality issues and trends, source health, risk alert details, flagged transactions, fraud investigations, risk rule detail, report details and schedules, integration configuration, webhook delivery detail, alert detail, service status, security settings, active sessions, access history, account closure, onboarding resume, and the first-login launch checklist.
+
+The additional routes use a shared operational page system: route-specific titles and guidance, clear hierarchy, compact metric summaries, accessible search/filter controls, responsive tables or structured empty states, review/configuration forms, related-workspace navigation, and explicit preview-state messaging. Pages use the existing sample transaction/customer objects only where those record types are appropriate. Unknown backend states remain unknown rather than being filled with invented service metrics.
+
+## UI/UX implementation principles
+
+- Restrained PesaGuard mint and forest-green accents with high-contrast surfaces, thin borders, and deliberate spacing.
+- Clear page purpose and operational context before metrics or actions.
+- Keyboard-visible focus, labelled controls, responsive tables, and reduced-motion support.
+- Safe preview actions: no fake payment/refund/settlement execution, no fabricated integration health, and no false claim that settings are persisted.
+- Related workflows are linked so detail pages remain discoverable without turning the primary navigation into an unstructured list.
+
 ## Preview-only behavior and limitations
 
 This repository is a frontend preview. Authentication and onboarding screens are design and interaction shells: they do not authenticate users, create accounts, send verification or recovery emails, verify MFA codes, accept invitations, validate SSO responses, create sessions, provision tenants, or persist workspace settings. Recovery-code and authenticator screens intentionally do not display fake secrets or QR codes. Form notices explicitly state when a backend action is not connected.
