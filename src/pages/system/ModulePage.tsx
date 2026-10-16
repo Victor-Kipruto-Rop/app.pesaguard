@@ -1,6 +1,6 @@
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, CheckCircle2, CircleHelp,
-  Clock3, Database, Download, FileText, GitCompareArrows, ShieldAlert, Workflow,
+  Activity, ArrowRight, ArrowUpRight, CheckCircle2, CircleHelp,
+  Clock3, Database, FileText, GitCompareArrows, ShieldAlert, Workflow,
   Zap, type LucideIcon,
 } from "lucide-react";
 import { navigationItems } from "../../app/config/navigation";
