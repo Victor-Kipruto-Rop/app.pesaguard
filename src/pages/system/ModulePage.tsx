@@ -186,26 +186,15 @@ export function ModulePage({ page, workspace, transactions, customers, onNavigat
   const item = navigationItems.find((navigationItem) => navigationItem.page === page);
   const title = item?.label ?? "Workspace";
   const description = descriptions[page] ?? "Manage this part of your tenant workspace.";
-  const detail = moduleDetails[page] ?? { icon: Database, eyebrow: item?.group.toUpperCase() ?? "TENANT WORKSPACE", actions: ["Review the current configuration", "Verify access and source readiness", "Connect the appropriate tenant service"], outputs: ["Workspace state", "Activity history", "Role-aware actions"] };
-  const Icon = detail.icon;
   const relatedPages: DashboardPage[] = page === "reports" ? ["transactions", "reconciliation", "exceptions"] : page === "integrations" ? ["data-imports", "webhooks", "system-health"] : page === "security" || page === "roles-permissions" ? ["team-members", "account-authentication", "activity-log"] : ["home", "transactions", "reconciliation"];
 
   return (
     <>
-      <PageHeading eyebrow={detail.eyebrow} title={title} description={description} />
+      <PageHeading eyebrow={item?.group.toUpperCase() ?? "TENANT WORKSPACE"} title={title} description={description} />
       <PreviewNotice />
       <ModuleWorkspace page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={onNavigate} />
-      <section className="module-hero panel">
-        <div className="module-hero__icon"><Icon size={23} strokeWidth={1.8} /></div>
-        <div className="module-hero__content"><span className="sample-tag">INTEGRATION PREVIEW</span><h2>{title} workspace</h2><p>This page defines the operational surface and expected information architecture. Live records and write actions remain disabled until the corresponding API contract, tenant authorization, and audit trail are verified.</p></div>
-        <a className="button button--secondary" href="https://docs.pesaguard.co.ke/" target="_blank" rel="noreferrer"><FileText size={16} /> Product docs <ArrowUpRight size={15} /></a>
-      </section>
-      <div className="executive-grid module-detail-grid">
-        <section className="panel executive-panel"><div className="panel-heading"><div><h2>Workflow coverage</h2><p>Designed for controlled, traceable operations</p></div></div><div className="capability-list">{detail.actions.map((action) => <div key={action}><CheckCircle2 size={17} /><span><strong>{action}</strong><small>Expected workflow capability · integration required</small></span></div>)}</div></section>
-        <section className="panel executive-panel"><div className="panel-heading"><div><h2>Information available here</h2><p>Target information model for this module</p></div></div><div className="capability-list">{detail.outputs.map((output) => <div key={output}><Database size={17} /><span><strong>{output}</strong><small>Shown only after verified source data is available</small></span></div>)}</div></section>
-      </div>
       <section className="panel executive-panel related-modules"><div className="panel-heading"><div><h2>Continue your workflow</h2><p>Move to a related workspace</p></div></div><div className="related-module-grid">{relatedPages.map((relatedPage) => { const related = navigationItems.find((entry) => entry.page === relatedPage); if (!related) return null; const RelatedIcon = related.icon; return <button key={relatedPage} type="button" onClick={() => onNavigate(relatedPage)}><span className="related-module-grid__icon"><RelatedIcon size={18} /></span><span><strong>{related.label}</strong><small>Open workspace</small></span><ArrowRight size={16} /></button>; })}</div></section>
-      <div className="module-footer-note"><CircleHelp size={15} /><span>No live results are shown because this module has not been connected to its verified tenant API. This is intentional: the preview will not invent payment activity, health checks, or delivery statuses.</span></div>
+      <div className="module-footer-note"><CircleHelp size={15} /><span>This workspace uses explicit preview states where live service data is not connected. No payment, account, or security action is represented as complete unless a verified backend confirms it.</span></div>
     </>
   );
 }
