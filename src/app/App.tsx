@@ -22,6 +22,10 @@ const knownDashboardPaths = new Set([
   "/webhooks", "/import-sync-activity", "/activity-log", "/security", "/system-health",
   "/customers", "/team-members", "/roles-permissions", "/tenant-profile", "/settings",
   "/notifications", "/account-authentication", "/preferences", "/help-support", "/api-developer-resources",
+  "/data-quality", "/data-sources", "/validation-results", "/duplicate-detection", "/schema-mapping", "/data-lineage", "/processing-jobs", "/freshness-monitoring",
+  "/risk-overview", "/fraud-detection", "/risk-events", "/suspicious-transactions", "/alerts", "/investigations", "/risk-rules",
+  "/reconciliation-runs", "/matching-rules", "/matching-history", "/settlement-batches", "/scheduled-reconciliation",
+  "/report-builder", "/scheduled-reports", "/export-center", "/approvals", "/webhook-deliveries", "/support-requests", "/retention-privacy",
 ]);
 
 const authPaths: Record<string, AuthRoute> = {
