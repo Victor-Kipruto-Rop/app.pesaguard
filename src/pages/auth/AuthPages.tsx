@@ -1,8 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import {
-  ArrowLeft, ArrowRight, Check, CheckCircle2, ChevronRight, Eye, EyeOff,
-  Fingerprint, LockKeyhole, Mail, ShieldCheck, Sparkles, Building2, UserRound,
-  AlertTriangle, KeyRound, Clock3, LifeBuoy,
+  ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, Eye, EyeOff,
+  Fingerprint, LockKeyhole, Mail, ShieldCheck, Sparkles, Building2,
+  AlertTriangle, Clock3, LifeBuoy,
 } from "lucide-react";
 import "./auth.css";
 
