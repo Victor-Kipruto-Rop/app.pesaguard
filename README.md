@@ -42,6 +42,21 @@ The additional routes use a shared operational page system: route-specific title
 - Safe preview actions: no fake payment/refund/settlement execution, no fabricated integration health, and no false claim that settings are persisted.
 - Related workflows are linked so detail pages remain discoverable without turning the primary navigation into an unstructured list.
 
+## Additional operational workflows
+
+The tenant workspace includes dedicated preview routes for:
+- Transaction detail and lifecycle, provider callback history, reconciliation-run creation and results, rematch review, and exception resolution.
+- Statement import, column mapping and validation review; M-Pesa setup, callback configuration and safe credential-rotation preparation.
+- Settlement statement upload, settlement comparison and variance review.
+- Customer detail, invitations, member detail and role editing.
+- Webhook endpoint setup, signing-secret rotation and delivery retry review.
+- Report creation, scheduling, recipient management and export history.
+- Branch details, validation-rule editing, pipeline-failure details and record lineage.
+- Investigation evidence and notes, risk-rule simulation, audit-event details, personal-data export and deletion-request status.
+- Notification preferences and delivery history, support-case details and diagnostic-attachment preparation.
+
+These screens use clearly labelled synthetic sample rows where appropriate. They do not contact M-Pesa, send invitations, rotate real credentials, trigger retries, process payments, delete data, or persist backend settings. The UI includes subtle entrance/hover/focus feedback and respects reduced-motion preferences.
+
 ## Preview-only behavior and limitations
 
 This repository is a frontend preview. Authentication and onboarding screens are design and interaction shells: they do not authenticate users, create accounts, send verification or recovery emails, verify MFA codes, accept invitations, validate SSO responses, create sessions, provision tenants, or persist workspace settings. Recovery-code and authenticator screens intentionally do not display fake secrets or QR codes. Form notices explicitly state when a backend action is not connected.

@@ -38,7 +38,8 @@ export type DashboardPage =
   | "risk-alert-detail" | "flagged-transactions" | "fraud-investigation" | "risk-rule-detail"
   | "report-detail" | "scheduled-report-detail" | "integration-detail" | "webhook-delivery-detail"
   | "alert-detail" | "service-status" | "security-settings" | "active-sessions" | "access-history"
-  | "account-closure" | "onboarding-resume" | "first-login-checklist";
+  | "account-closure" | "onboarding-resume" | "first-login-checklist"
+  | "transaction-detail" | "transaction-lifecycle" | "provider-callback-history" | "create-reconciliation-run" | "reconciliation-results" | "rematch-confirmation" | "exception-resolution" | "import-wizard" | "column-mapping" | "validation-review" | "mpesa-setup" | "callback-configuration" | "credential-rotation" | "settlement-statement-upload" | "settlement-comparison" | "settlement-variance-review" | "customer-detail" | "team-invitations" | "member-detail" | "role-editor" | "webhook-endpoint-editor" | "webhook-signing-secret" | "webhook-retry" | "report-create" | "report-schedule-config" | "report-recipients" | "export-history" | "branch-detail" | "validation-rule-editor" | "pipeline-failure-detail" | "lineage-record-detail" | "investigation-evidence" | "investigation-notes" | "risk-rule-simulation" | "audit-event-detail" | "data-export-request" | "deletion-request-status" | "notification-preferences" | "notification-delivery-history" | "support-case-detail" | "diagnostic-attachments";
 
 const routeByPath: Record<string, DashboardPage> = {
   "/": "home",
@@ -115,6 +116,47 @@ const routeByPath: Record<string, DashboardPage> = {
   "/account-closure": "account-closure",
   "/onboarding-resume": "onboarding-resume",
   "/first-login-checklist": "first-login-checklist",
+  "/transaction-detail": "transaction-detail",
+  "/transaction-lifecycle": "transaction-lifecycle",
+  "/provider-callback-history": "provider-callback-history",
+  "/create-reconciliation-run": "create-reconciliation-run",
+  "/reconciliation-results": "reconciliation-results",
+  "/rematch-confirmation": "rematch-confirmation",
+  "/exception-resolution": "exception-resolution",
+  "/import-wizard": "import-wizard",
+  "/column-mapping": "column-mapping",
+  "/validation-review": "validation-review",
+  "/mpesa-setup": "mpesa-setup",
+  "/callback-configuration": "callback-configuration",
+  "/credential-rotation": "credential-rotation",
+  "/settlement-statement-upload": "settlement-statement-upload",
+  "/settlement-comparison": "settlement-comparison",
+  "/settlement-variance-review": "settlement-variance-review",
+  "/customer-detail": "customer-detail",
+  "/team-invitations": "team-invitations",
+  "/member-detail": "member-detail",
+  "/role-editor": "role-editor",
+  "/webhook-endpoint-editor": "webhook-endpoint-editor",
+  "/webhook-signing-secret": "webhook-signing-secret",
+  "/webhook-retry": "webhook-retry",
+  "/report-create": "report-create",
+  "/report-schedule-config": "report-schedule-config",
+  "/report-recipients": "report-recipients",
+  "/export-history": "export-history",
+  "/branch-detail": "branch-detail",
+  "/validation-rule-editor": "validation-rule-editor",
+  "/pipeline-failure-detail": "pipeline-failure-detail",
+  "/lineage-record-detail": "lineage-record-detail",
+  "/investigation-evidence": "investigation-evidence",
+  "/investigation-notes": "investigation-notes",
+  "/risk-rule-simulation": "risk-rule-simulation",
+  "/audit-event-detail": "audit-event-detail",
+  "/data-export-request": "data-export-request",
+  "/deletion-request-status": "deletion-request-status",
+  "/notification-preferences": "notification-preferences",
+  "/notification-delivery-history": "notification-delivery-history",
+  "/support-case-detail": "support-case-detail",
+  "/diagnostic-attachments": "diagnostic-attachments",
 };
 
 export function pageFromPath(pathname: string): DashboardPage {
