@@ -8,6 +8,7 @@ import { OrganizationPage } from "../pages/settings/OrganizationPage";
 import { TransactionsPage } from "../pages/transactions/TransactionsPage";
 import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
+import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import type { Customer } from "../types/dashboard";
 
 const implementedPages: DashboardPage[] = [
@@ -15,8 +16,43 @@ const implementedPages: DashboardPage[] = [
   "reconciliation", "customers", "tenant-profile", "settings",
 ];
 
+const knownDashboardPaths = new Set([
+  "/", "/executive-overview", "/operational-activity", "/transactions", "/reconciliation",
+  "/exceptions", "/payments", "/settlements", "/reports", "/data-imports", "/integrations",
+  "/webhooks", "/import-sync-activity", "/activity-log", "/security", "/system-health",
+  "/customers", "/team-members", "/roles-permissions", "/tenant-profile", "/settings",
+  "/notifications", "/account-authentication", "/preferences", "/help-support", "/api-developer-resources",
+]);
+
+const authPaths: Record<string, AuthRoute> = {
+  "/login": "sign-in", "/sign-in": "sign-in",
+  "/signup": "create-account", "/register": "create-account", "/create-account": "create-account",
+  "/verify-email": "verify-email", "/forgot-password": "forgot-password",
+  "/reset-password": "reset-password", "/accept-invite": "accept-invite",
+  "/invite/accept": "accept-invite", "/onboarding": "onboarding",
+  "/session-expired": "session-expired", "/access-denied": "access-denied",
+  "/404": "not-found", "/500": "server-error",
+};
+
+function authRouteFromPath(pathname: string): AuthRoute | null {
+  const path = pathname.replace(/\\/+$/, "") || "/";
+  return authPaths[path] ?? (knownDashboardPaths.has(path) ? null : "not-found");
+}
+
+function authPathForRoute(route: AuthRoute): string {
+  const paths: Record<AuthRoute, string> = {
+    "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
+    "forgot-password": "/forgot-password", "reset-password": "/reset-password",
+    "accept-invite": "/accept-invite", onboarding: "/onboarding",
+    "session-expired": "/session-expired", "access-denied": "/access-denied",
+    "not-found": "/404", "server-error": "/500",
+  };
+  return paths[route];
+}
+
 export default function App() {
   const [page, setPage] = useState<DashboardPage>(() => pageFromPath(window.location.pathname));
+  const [authRoute, setAuthRoute] = useState<AuthRoute | null>(() => authRouteFromPath(window.location.pathname));
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
   const [workspaceId, setWorkspaceId] = useState(workspaces[0].id);
   const [customersByWorkspace, setCustomersByWorkspace] = useState(
@@ -31,7 +67,9 @@ export default function App() {
 
   useEffect(() => {
     function handlePopState() {
-      setPage(pageFromPath(window.location.pathname));
+      const path = window.location.pathname;
+      setAuthRoute(authRouteFromPath(path));
+      setPage(pageFromPath(path));
       setSearchQuery(new URLSearchParams(window.location.search).get("q") ?? "");
     }
     window.addEventListener("popstate", handlePopState);
@@ -39,9 +77,24 @@ export default function App() {
   }, []);
 
   const navigate = useCallback((nextPage: DashboardPage) => {
+    setAuthRoute(null);
     setPage(nextPage);
     setSearchQuery("");
     window.history.pushState({}, "", pathForPage(nextPage));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const navigateAuth = useCallback((nextRoute: AuthRoute | "dashboard") => {
+    if (nextRoute === "dashboard") {
+      setAuthRoute(null);
+      setPage("home");
+      setSearchQuery("");
+      window.history.pushState({}, "", "/");
+    } else {
+      setAuthRoute(nextRoute);
+      window.history.pushState({}, "", authPathForRoute(nextRoute));
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   function search(query: string) {
@@ -51,6 +104,7 @@ export default function App() {
       `${customer.name} ${customer.email} ${customer.phone}`.toLowerCase().includes(normalized),
     );
     const nextPage: DashboardPage = matchedCustomer ? "customers" : "transactions";
+    setAuthRoute(null);
     setSearchQuery(query);
     setPage(nextPage);
     window.history.pushState({}, "", `${pathForPage(nextPage)}?q=${encodeURIComponent(query)}`);
@@ -67,6 +121,8 @@ export default function App() {
     setTransactionsByWorkspace((current) => ({ ...current, [workspace.id]: nextTransactions }));
   }
 
+  if (authRoute) return <AuthPages route={authRoute} onNavigate={navigateAuth} />;
+
   return (
     <DashboardLayout
       activePage={page}
@@ -79,32 +135,14 @@ export default function App() {
       onNavigate={navigate}
       onSearch={search}
     >
-      {page === "home" && (
-        <HomePage
-          key={workspace.id}
-          workspace={workspace}
-          customers={customers}
-          transactions={transactions}
-          onNavigate={navigate}
-        />
-      )}
-      {(page === "executive-overview" || page === "operational-activity") && (
-        <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />
-      )}
-      {page === "transactions" && (
-        <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} />
-      )}
-      {page === "reconciliation" && (
-        <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} />
-      )}
-      {page === "customers" && (
-        <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />
-      )}
+      {page === "home" && <HomePage key={workspace.id} workspace={workspace} customers={customers} transactions={transactions} onNavigate={navigate} />}
+      {(page === "executive-overview" || page === "operational-activity") && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} />}
+      {page === "reconciliation" && <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} />}
+      {page === "customers" && <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />}
       {page === "tenant-profile" && <OrganizationPage workspace={workspace} />}
       {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
-      {!implementedPages.includes(page) && (
-        <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />
-      )}
+      {!implementedPages.includes(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
     </DashboardLayout>
   );
 }
