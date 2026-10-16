@@ -67,7 +67,7 @@ export function ModuleWorkspace({ page, workspace, transactions, customers, onNa
       : filteredTransactions;
 
   function exportRows() {
-    downloadCsv(`pesaguard-preview-${page}-${reportType.toLowerCase().replace(/\\s+/g, "-")}.csv`,
+    downloadCsv(`pesaguard-preview-${page}-${reportType.toLowerCase().replaceAll(" ", "-")}.csv`,
       ["Timestamp", "Reference", "Customer", "Amount KES", "Status", "Source", "Severity"],
       displayedTransactions.map((item) => [item.timestamp, item.reference, item.customer, String(item.amount), item.status, item.source, item.severity]));
     setNotice("A CSV of the visible sample transaction rows was generated in your browser. It contains preview data only.");
