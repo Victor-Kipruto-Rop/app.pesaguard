@@ -9,27 +9,29 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. Validate and build a production bundle with:
+Validate and build a production bundle with:
 
 ```powershell
 npm run typecheck
 npm run build
 ```
 
-## Dashboard areas
+## Authentication and onboarding routes
 
-- **Dashboard overview** — sample transaction summaries, status-based payment value distribution, and recent transaction records.
-- **Executive overview** — management-oriented summary, reconciliation exposure, sample status distribution, and priority review paths.
-- **Operational activity** — sample event timeline and workflow investigation routes.
-- **Transactions and reconciliation** — interactive local preview workflows for filtering, review, and matching.
-- **Customers, organization, and settings** — local preview forms and profile/settings screens.
-- **Operational workspaces** — exceptions, payments, settlements, reports, data imports, integrations, webhooks, pipeline activity, audit history, security, system health, team access, role permissions, notifications, account security, preferences, support, and developer resources.
-- **Organization settings** — tenant profile, locale and reporting preferences, notification controls, and explicit local-preview save feedback.
-- **Authentication and onboarding** — `/login`, `/signup`, `/verify-email`, `/forgot-password`, `/reset-password`, `/mfa-challenge`, `/accept-invite`, `/invite-expired`, `/onboarding`, `/session-expired`, `/account-locked`, `/access-denied`, `/404`, and `/500`.
-- **Accessible interface states** — responsive layouts, keyboard focus indicators, reduced-motion support, explicit empty states, and preview-only status messaging.
+The frontend includes designed route states for:
+- Account access: `/login`, `/signup`, `/verify-email`, `/verify-email/expired`, `/forgot-password`, `/reset-password`, and `/password-updated`.
+- MFA and recovery: `/mfa-challenge`, `/mfa/setup`, `/mfa/verify-setup`, `/mfa/recovery-codes`, `/mfa/recovery`, and `/security/verify`.
+- Invitations and membership: `/accept-invite`, `/invite-expired`, `/invite/accepted`, `/invite/invalid`, and `/account/pending`.
+- Tenant onboarding: `/onboarding/organization`, `/onboarding/setup`, `/onboarding/status`, `/onboarding/complete`, and `/onboarding/problem`.
+- Sessions, access and errors: `/session-expired`, `/account-locked`, `/access-denied`, `/signed-out`, `/404`, and `/500`.
+- Enterprise identity: `/sso`, `/sso/callback`, `/settings/security/sso`, and `/reauthenticate`.
+
+Authentication pages use a pale lime/mint radial-gradient background, dotted ambient texture, translucent form card, rounded mint submit controls, visible keyboard focus, responsive layouts, and reduced-motion support. Shared components keep typography, inputs, notices, and recovery states consistent while preserving route-specific copy and interactions.
 
 ## Preview-only behavior and limitations
 
-This repository is a frontend preview. Authentication and onboarding pages are designed UI flows only: they do not authenticate users, create accounts, send verification or recovery emails, verify MFA codes, accept invitations, or persist workspace settings. The dashboard uses in-memory sample data and does not connect to a backend, enforce tenant permissions, or read or write real customer/payment data. Preview interactions do not initiate, refund, or settle payments. Any numbers or records on the executive and operational screens are calculated from the illustrative dataset, not from production services. Live connection and system-health states are intentionally shown as unavailable when no verified health check is connected.
+This repository is a frontend preview. Authentication and onboarding screens are design and interaction shells: they do not authenticate users, create accounts, send verification or recovery emails, verify MFA codes, accept invitations, validate SSO responses, create sessions, provision tenants, or persist workspace settings. Recovery-code and authenticator screens intentionally do not display fake secrets or QR codes. Form notices explicitly state when a backend action is not connected.
 
-Before production use, connect and verify the identity/session layer, tenant authorization, API contracts, server-side validation and audit enforcement, real service health checks, and end-to-end/accessibility tests. Confirm that every displayed metric maps to a documented API contract and carries an accurate freshness timestamp. Do not use this preview with production records or payment credentials.
+The dashboard uses in-memory sample data and does not connect to a backend, enforce tenant permissions, or read or write real customer/payment data. Preview interactions do not initiate, refund, or settle payments. Live connection and system-health states must not be inferred from sample content.
+
+Before production use, connect and verify the identity/session layer, tenant authorization, API contracts, server-side validation and audit enforcement, email delivery, MFA enrollment and recovery, SSO callback validation, tenant provisioning, and end-to-end/accessibility tests. Confirm every displayed metric maps to a documented API contract and carries an accurate freshness timestamp. Do not use this preview with production records or payment credentials.
