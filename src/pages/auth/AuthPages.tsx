@@ -72,22 +72,6 @@ function Field({ label, id, type = "text", placeholder, value, onChange, require
   return <label className="auth-field" htmlFor={id}><span>{label}</span><input id={id} name={id} type={type} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} required={required} autoComplete={autoComplete} />{hint && <small>{hint}</small>}</label>;
 }
 
-const routePaths: Record<AuthRoute, string> = {
-  "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
-  "verify-email-expired": "/verify-email/expired", "forgot-password": "/forgot-password",
-  "reset-password": "/reset-password", "password-updated": "/password-updated",
-  "mfa-challenge": "/mfa-challenge", "mfa-setup": "/mfa/setup", "mfa-verify-setup": "/mfa/verify-setup",
-  "mfa-recovery-codes": "/mfa/recovery-codes", "mfa-recovery": "/mfa/recovery",
-  "security-verify": "/security/verify", "accept-invite": "/accept-invite", "invite-expired": "/invite-expired",
-  "invite-accepted": "/invite/accepted", "invite-invalid": "/invite/invalid", "account-pending": "/account/pending",
-  "onboarding-organization": "/onboarding/organization", "onboarding-setup": "/onboarding/setup",
-  "onboarding-status": "/onboarding/status", "onboarding-complete": "/onboarding/complete",
-  "onboarding-problem": "/onboarding/problem", "session-expired": "/session-expired",
-  "account-locked": "/account-locked", "access-denied": "/access-denied", "signed-out": "/signed-out",
-  "not-found": "/404", "server-error": "/500", "sso": "/sso", "sso-callback": "/sso/callback",
-  "sso-settings": "/settings/security/sso", "reauthenticate": "/reauthenticate",
-};
-
 export function AuthPages({ route, onNavigate }: AuthPagesProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
