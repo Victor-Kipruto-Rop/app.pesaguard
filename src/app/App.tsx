@@ -11,6 +11,7 @@ import { TransactionLifecyclePage } from "../pages/transactions/TransactionLifec
 import { ProviderCallbackHistoryPage } from "../pages/webhooks/ProviderCallbackHistoryPage";
 import { CallbackConfigurationPage, CredentialRotationPage } from "../pages/webhooks/CallbackSecurityPages";
 import { MpesaIntegrationSetupPage, WebhookEndpointEditorPage } from "../pages/integrations/IntegrationSetupPages";
+import { WebhookRetryDeadLetterPage, WebhookSigningSecretPage } from "../pages/webhooks/WebhookReliabilityPages";
 import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
@@ -315,8 +316,10 @@ export default function App() {
       {page === "credential-rotation" && <CredentialRotationPage workspace={workspace} onNavigate={navigate} />}
       {page === "mpesa-setup" && <MpesaIntegrationSetupPage workspace={workspace} onNavigate={navigate} />}
       {page === "webhook-endpoint-editor" && <WebhookEndpointEditorPage workspace={workspace} onNavigate={navigate} />}
+      {page === "webhook-signing-secret" && <WebhookSigningSecretPage workspace={workspace} onNavigate={navigate} />}
+      {page === "webhook-retry" && <WebhookRetryDeadLetterPage workspace={workspace} onNavigate={navigate} />}
       {page === "transaction-detail" && <TransactionDetailPage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
-      {page !== "transaction-detail" && page !== "transaction-lifecycle" && page !== "provider-callback-history" && page !== "callback-configuration" && page !== "credential-rotation" && page !== "mpesa-setup" && page !== "webhook-endpoint-editor" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {page !== "transaction-detail" && page !== "transaction-lifecycle" && page !== "provider-callback-history" && page !== "callback-configuration" && page !== "credential-rotation" && page !== "mpesa-setup" && page !== "webhook-endpoint-editor" && page !== "webhook-signing-secret" && page !== "webhook-retry" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
       {!implementedPages.includes(page) && !isExtendedPage(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
     </DashboardLayout>
   );
