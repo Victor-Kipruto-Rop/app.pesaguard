@@ -31,11 +31,20 @@ const knownDashboardPaths = new Set([
 const authPaths: Record<string, AuthRoute> = {
   "/login": "sign-in", "/sign-in": "sign-in",
   "/signup": "create-account", "/register": "create-account", "/create-account": "create-account",
-  "/verify-email": "verify-email", "/forgot-password": "forgot-password",
-  "/reset-password": "reset-password", "/accept-invite": "accept-invite",
-  "/invite/accept": "accept-invite", "/invite-expired": "invite-expired", "/onboarding": "onboarding",
-  "/mfa-challenge": "mfa-challenge", "/session-expired": "session-expired", "/account-locked": "account-locked", "/access-denied": "access-denied",
-  "/404": "not-found", "/500": "server-error",
+  "/verify-email": "verify-email", "/verify-email/expired": "verify-email-expired",
+  "/forgot-password": "forgot-password", "/reset-password": "reset-password", "/password-updated": "password-updated",
+  "/accept-invite": "accept-invite", "/invite/accept": "accept-invite", "/invite-expired": "invite-expired",
+  "/invite/expired": "invite-expired", "/invite/accepted": "invite-accepted", "/invite/invalid": "invite-invalid",
+  "/onboarding": "onboarding-organization", "/onboarding/organization": "onboarding-organization",
+  "/onboarding/setup": "onboarding-setup", "/onboarding/status": "onboarding-status",
+  "/onboarding/complete": "onboarding-complete", "/onboarding/problem": "onboarding-problem",
+  "/mfa-challenge": "mfa-challenge", "/mfa/setup": "mfa-setup", "/mfa/verify-setup": "mfa-verify-setup",
+  "/mfa/recovery-codes": "mfa-recovery-codes", "/mfa/recovery": "mfa-recovery",
+  "/security/verify": "security-verify", "/session-expired": "session-expired",
+  "/account-locked": "account-locked", "/account/pending": "account-pending",
+  "/access-denied": "access-denied", "/signed-out": "signed-out",
+  "/sso": "sso", "/sso/callback": "sso-callback", "/settings/security/sso": "sso-settings",
+  "/reauthenticate": "reauthenticate", "/404": "not-found", "/500": "server-error",
 };
 
 function authRouteFromPath(pathname: string): AuthRoute | null {
@@ -46,10 +55,19 @@ function authRouteFromPath(pathname: string): AuthRoute | null {
 function authPathForRoute(route: AuthRoute): string {
   const paths: Record<AuthRoute, string> = {
     "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
-    "forgot-password": "/forgot-password", "reset-password": "/reset-password",
-    "accept-invite": "/accept-invite", onboarding: "/onboarding", "mfa-challenge": "/mfa-challenge",
-    "session-expired": "/session-expired", "account-locked": "/account-locked", "invite-expired": "/invite-expired", "access-denied": "/access-denied",
-    "not-found": "/404", "server-error": "/500",
+    "verify-email-expired": "/verify-email/expired", "forgot-password": "/forgot-password",
+    "reset-password": "/reset-password", "password-updated": "/password-updated",
+    "mfa-challenge": "/mfa-challenge", "mfa-setup": "/mfa/setup", "mfa-verify-setup": "/mfa/verify-setup",
+    "mfa-recovery-codes": "/mfa/recovery-codes", "mfa-recovery": "/mfa/recovery",
+    "security-verify": "/security/verify", "accept-invite": "/accept-invite",
+    "invite-expired": "/invite-expired", "invite-accepted": "/invite/accepted",
+    "invite-invalid": "/invite/invalid", "account-pending": "/account/pending",
+    "onboarding-organization": "/onboarding/organization", "onboarding-setup": "/onboarding/setup",
+    "onboarding-status": "/onboarding/status", "onboarding-complete": "/onboarding/complete",
+    "onboarding-problem": "/onboarding/problem", "session-expired": "/session-expired",
+    "account-locked": "/account-locked", "access-denied": "/access-denied", "signed-out": "/signed-out",
+    "not-found": "/404", "server-error": "/500", "sso": "/sso", "sso-callback": "/sso/callback",
+    "sso-settings": "/settings/security/sso", "reauthenticate": "/reauthenticate",
   };
   return paths[route];
 }
@@ -96,7 +114,22 @@ export default function App() {
       window.history.pushState({}, "", "/");
     } else {
       setAuthRoute(nextRoute);
-      window.history.pushState({}, "", authPathForRoute(nextRoute));
+      window.history.pushState({}, "", ({
+        "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
+        "verify-email-expired": "/verify-email/expired", "forgot-password": "/forgot-password",
+        "reset-password": "/reset-password", "password-updated": "/password-updated",
+        "mfa-challenge": "/mfa-challenge", "mfa-setup": "/mfa/setup", "mfa-verify-setup": "/mfa/verify-setup",
+        "mfa-recovery-codes": "/mfa/recovery-codes", "mfa-recovery": "/mfa/recovery",
+        "security-verify": "/security/verify", "accept-invite": "/accept-invite",
+        "invite-expired": "/invite-expired", "invite-accepted": "/invite/accepted", "invite-invalid": "/invite/invalid",
+        "account-pending": "/account/pending", "onboarding-organization": "/onboarding/organization",
+        "onboarding-setup": "/onboarding/setup", "onboarding-status": "/onboarding/status",
+        "onboarding-complete": "/onboarding/complete", "onboarding-problem": "/onboarding/problem",
+        "session-expired": "/session-expired", "account-locked": "/account-locked", "access-denied": "/access-denied",
+        "signed-out": "/signed-out", "not-found": "/404", "server-error": "/500",
+        "sso": "/sso", "sso-callback": "/sso/callback", "sso-settings": "/settings/security/sso",
+        "reauthenticate": "/reauthenticate",
+      } as Record<AuthRoute, string>)[nextRoute]);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
