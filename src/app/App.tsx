@@ -308,7 +308,7 @@ export default function App() {
       {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
       {page === "transaction-lifecycle" && <TransactionLifecyclePage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
       {page === "transaction-detail" && <TransactionDetailPage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
-      {page !== "transaction-detail" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {page !== "transaction-detail" && page !== "transaction-lifecycle" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
       {!implementedPages.includes(page) && !isExtendedPage(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
     </DashboardLayout>
   );
