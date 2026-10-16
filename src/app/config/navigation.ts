@@ -20,6 +20,8 @@ import {
   UsersRound,
   WalletCards,
   Webhook,
+  BriefcaseBusiness,
+  Workflow,
   type LucideIcon,
 } from "lucide-react";
 import type { DashboardPage } from "./routes";
@@ -32,7 +34,9 @@ export interface NavigationItem {
 }
 
 export const navigationItems: NavigationItem[] = [
-  { label: "Overview", page: "home", icon: LayoutDashboard, group: "Overview" },
+  { label: "Dashboard overview", page: "home", icon: LayoutDashboard, group: "Overview" },
+  { label: "Executive overview", page: "executive-overview", icon: BriefcaseBusiness, group: "Overview" },
+  { label: "Operational activity", page: "operational-activity", icon: Workflow, group: "Overview" },
   { label: "Transactions", page: "transactions", icon: Activity, group: "Payments" },
   { label: "Reconciliation", page: "reconciliation", icon: GitCompareArrows, group: "Payments" },
   { label: "Exceptions", page: "exceptions", icon: TriangleAlert, group: "Payments" },
