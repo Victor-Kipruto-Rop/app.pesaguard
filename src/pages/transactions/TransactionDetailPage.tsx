@@ -44,7 +44,7 @@ export function TransactionDetailPage({ workspace, transactions, onNavigate }: P
   }
 
   const isCompleted = /matched|completed|success/i.test(transaction.status);
-  const timeline = timelineLabels.map((event, index) => ({
+  async function copyReference() {\n    try {\n      await navigator.clipboard.writeText(transaction.reference);\n      setCopied(true);\n    } catch {\n      setCopied(false);\n    }\n  }\n\n  const timeline = timelineLabels.map((event, index) => ({
     ...event,
     state: index === 0 ? "complete" : index === 1 && !/pending/i.test(transaction.status) ? "complete" : index === 2 && isCompleted ? "complete" : index === 3 && isCompleted ? "complete" : index === 1 ? "current" : "upcoming",
   }));
@@ -112,7 +112,7 @@ export function TransactionDetailPage({ workspace, transactions, onNavigate }: P
             <div><dt>Ledger counterpart</dt><dd><span className="td-muted">Awaiting API evidence</span></dd></div>
             <div><dt>Review state</dt><dd><span className={`td-inline-status ${transaction.reviewed ? "is-reviewed" : ""}`}>{transaction.reviewed ? "Marked reviewed in sample" : "Not marked reviewed"}</span></dd></div>
           </dl>
-          <button type="button" className="td-copy-button" onClick={() => { setCopied(true); }}><Copy size={14} /> {copied ? "Reference selected for copy" : "Select reference"} <span>{copied ? "Preview only" : "No clipboard access"}</span></button>
+          <button type="button" className="td-copy-button" onClick={() => void copyReference()}><Copy size={14} /> {copied ? "Reference copied" : "Copy transaction reference"} <span>{copied ? "Copied" : "Clipboard"}</span></button>
         </section>
       </div>
 
