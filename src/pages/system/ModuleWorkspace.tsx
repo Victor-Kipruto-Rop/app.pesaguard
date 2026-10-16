@@ -4,7 +4,7 @@ import {
   Database, Download, ExternalLink, FileClock, FileSpreadsheet, FileText,
   Fingerprint, HeartPulse, KeyRound, Link2, Mail, RefreshCw, Search, Server,
   ShieldAlert, ShieldCheck, SlidersHorizontal, UploadCloud, UsersRound, Webhook,
-  BellRing, Building2, CircleHelp, LockKeyhole, type LucideIcon,
+  BellRing, Building2, LockKeyhole, type LucideIcon,
 } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { Customer, Transaction, Workspace } from "../../types/dashboard";
