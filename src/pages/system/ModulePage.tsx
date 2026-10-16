@@ -207,6 +207,8 @@ function OperationalActivity({ workspace, transactions, onNavigate }: ModulePage
   );
 }
 
+function pageIn(page: DashboardPage, candidates: DashboardPage[]): boolean { return candidates.includes(page); }
+
 export function ModulePage({ page, workspace, transactions, customers, onNavigate }: ModulePageProps) {
   if (page === "executive-overview") return <ExecutiveOverview page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={onNavigate} />;
   if (page === "operational-activity") return <OperationalActivity page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={onNavigate} />;
@@ -216,18 +218,18 @@ export function ModulePage({ page, workspace, transactions, customers, onNavigat
   const description = descriptions[page] ?? "Manage this part of your tenant workspace.";
   const detail = moduleDetails[page];
   const relatedPages: DashboardPage[] =
-    ["data-quality", "data-sources", "validation-results", "duplicate-detection", "schema-mapping", "freshness-monitoring"].includes(page) ? ["data-imports", "data-quality", "data-sources"] :
+    pageIn(page, ["data-quality", "data-sources", "validation-results", "duplicate-detection", "schema-mapping", "freshness-monitoring"]) ? ["data-imports", "data-quality", "data-sources"] :
     page === "data-lineage" ? ["processing-jobs", "reconciliation-runs", "data-quality"] :
-    ["processing-jobs", "import-sync-activity"].includes(page) ? ["data-imports", "activity-log", "system-health"] :
-    ["risk-overview", "fraud-detection", "risk-events", "suspicious-transactions", "alerts", "investigations", "risk-rules"].includes(page) ? ["risk-overview", "alerts", "investigations"] :
-    ["reconciliation-runs", "matching-rules", "matching-history", "scheduled-reconciliation"].includes(page) ? ["reconciliation", "exceptions", "matching-history"] :
-    ["settlements", "settlement-batches"].includes(page) ? ["settlements", "reconciliation", "reports"] :
-    ["reports", "report-builder", "scheduled-reports", "export-center"].includes(page) ? ["reports", "transactions", "export-center"] :
-    ["integrations", "webhooks", "webhook-deliveries"].includes(page) ? ["integrations", "webhooks", "webhook-deliveries"] :
-    ["security", "roles-permissions", "approvals", "retention-privacy"].includes(page) ? ["team-members", "roles-permissions", "activity-log"] :
-    ["help-support", "support-requests"].includes(page) ? ["help-support", "support-requests", "activity-log"] :
-    ["team-members"].includes(page) ? ["approvals", "roles-permissions", "activity-log"] :
-    ["notifications", "account-authentication", "preferences"].includes(page) ? ["account-authentication", "security", "preferences"] :
+    pageIn(page, ["processing-jobs", "import-sync-activity"]) ? ["data-imports", "activity-log", "system-health"] :
+    pageIn(page, ["risk-overview", "fraud-detection", "risk-events", "suspicious-transactions", "alerts", "investigations", "risk-rules"]) ? ["risk-overview", "alerts", "investigations"] :
+    pageIn(page, ["reconciliation-runs", "matching-rules", "matching-history", "scheduled-reconciliation"]) ? ["reconciliation", "exceptions", "matching-history"] :
+    pageIn(page, ["settlements", "settlement-batches"]) ? ["settlements", "reconciliation", "reports"] :
+    pageIn(page, ["reports", "report-builder", "scheduled-reports", "export-center"]) ? ["reports", "transactions", "export-center"] :
+    pageIn(page, ["integrations", "webhooks", "webhook-deliveries"]) ? ["integrations", "webhooks", "webhook-deliveries"] :
+    pageIn(page, ["security", "roles-permissions", "approvals", "retention-privacy"]) ? ["team-members", "roles-permissions", "activity-log"] :
+    pageIn(page, ["help-support", "support-requests"]) ? ["help-support", "support-requests", "activity-log"] :
+    pageIn(page, ["team-members"]) ? ["approvals", "roles-permissions", "activity-log"] :
+    pageIn(page, ["notifications", "account-authentication", "preferences"]) ? ["account-authentication", "security", "preferences"] :
     ["home", "transactions", "reconciliation"];
 
   return (
