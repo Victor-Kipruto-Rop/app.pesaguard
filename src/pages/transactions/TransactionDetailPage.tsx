@@ -44,7 +44,16 @@ export function TransactionDetailPage({ workspace, transactions, onNavigate }: P
   }
 
   const isCompleted = /matched|completed|success/i.test(transaction.status);
-  async function copyReference() {\n    try {\n      await navigator.clipboard.writeText(transaction.reference);\n      setCopied(true);\n    } catch {\n      setCopied(false);\n    }\n  }\n\n  const timeline = timelineLabels.map((event, index) => ({
+  async function copyReference() {
+    try {
+      await navigator.clipboard.writeText(transaction.reference);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  const timeline = timelineLabels.map((event, index) => ({
     ...event,
     state: index === 0 ? "complete" : index === 1 && !/pending/i.test(transaction.status) ? "complete" : index === 2 && isCompleted ? "complete" : index === 3 && isCompleted ? "complete" : index === 1 ? "current" : "upcoming",
   }));
