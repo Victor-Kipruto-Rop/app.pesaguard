@@ -1,5 +1,7 @@
 export type DashboardPage =
   | "home"
+  | "executive-overview"
+  | "operational-activity"
   | "transactions"
   | "reconciliation"
   | "exceptions"
@@ -26,6 +28,8 @@ export type DashboardPage =
 
 const routeByPath: Record<string, DashboardPage> = {
   "/": "home",
+  "/executive-overview": "executive-overview",
+  "/operational-activity": "operational-activity",
   "/transactions": "transactions",
   "/reconciliation": "reconciliation",
   "/exceptions": "exceptions",
