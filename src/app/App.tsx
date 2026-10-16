@@ -9,6 +9,7 @@ import { TransactionsPage } from "../pages/transactions/TransactionsPage";
 import { TransactionDetailPage } from "../pages/transactions/TransactionDetailPage";
 import { TransactionLifecyclePage } from "../pages/transactions/TransactionLifecyclePage";
 import { ProviderCallbackHistoryPage } from "../pages/webhooks/ProviderCallbackHistoryPage";
+import { CallbackConfigurationPage, CredentialRotationPage } from "../pages/webhooks/CallbackSecurityPages";
 import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
@@ -309,8 +310,10 @@ export default function App() {
       {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
       {page === "transaction-lifecycle" && <TransactionLifecyclePage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
       {page === "provider-callback-history" && <ProviderCallbackHistoryPage workspace={workspace} onNavigate={navigate} />}
+      {page === "callback-configuration" && <CallbackConfigurationPage workspace={workspace} onNavigate={navigate} />}
+      {page === "credential-rotation" && <CredentialRotationPage workspace={workspace} onNavigate={navigate} />}
       {page === "transaction-detail" && <TransactionDetailPage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
-      {page !== "transaction-detail" && page !== "transaction-lifecycle" && page !== "provider-callback-history" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {page !== "transaction-detail" && page !== "transaction-lifecycle" && page !== "provider-callback-history" && page !== "callback-configuration" && page !== "credential-rotation" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
       {!implementedPages.includes(page) && !isExtendedPage(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
     </DashboardLayout>
   );
