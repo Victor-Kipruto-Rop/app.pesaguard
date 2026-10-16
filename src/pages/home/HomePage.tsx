@@ -35,7 +35,7 @@ function exportSummary(workspace: Workspace, transactions: Transaction[]) {
 }
 
 export function HomePage({ workspace, customers, transactions, onNavigate }: HomePageProps) {
-  const matched = transactions.filter((transaction) => transaction.status === "Matched");
+  const matched = transactions.filter((transaction) => transaction.status === "Matched" || transaction.status === "Completed");
   const volume = matched.reduce((total, transaction) => total + transaction.amount, 0);
   const activeCustomers = customers.filter((customer) => customer.status === "Active").length;
   const successRate = transactions.length ? Math.round((matched.length / transactions.length) * 100) : 0;
