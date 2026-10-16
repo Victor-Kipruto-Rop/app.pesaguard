@@ -29,8 +29,8 @@ const authPaths: Record<string, AuthRoute> = {
   "/signup": "create-account", "/register": "create-account", "/create-account": "create-account",
   "/verify-email": "verify-email", "/forgot-password": "forgot-password",
   "/reset-password": "reset-password", "/accept-invite": "accept-invite",
-  "/invite/accept": "accept-invite", "/onboarding": "onboarding",
-  "/session-expired": "session-expired", "/access-denied": "access-denied",
+  "/invite/accept": "accept-invite", "/invite-expired": "invite-expired", "/onboarding": "onboarding",
+  "/mfa-challenge": "mfa-challenge", "/session-expired": "session-expired", "/account-locked": "account-locked", "/access-denied": "access-denied",
   "/404": "not-found", "/500": "server-error",
 };
 
@@ -43,8 +43,8 @@ function authPathForRoute(route: AuthRoute): string {
   const paths: Record<AuthRoute, string> = {
     "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
     "forgot-password": "/forgot-password", "reset-password": "/reset-password",
-    "accept-invite": "/accept-invite", onboarding: "/onboarding",
-    "session-expired": "/session-expired", "access-denied": "/access-denied",
+    "accept-invite": "/accept-invite", onboarding: "/onboarding", "mfa-challenge": "/mfa-challenge",
+    "session-expired": "/session-expired", "account-locked": "/account-locked", "invite-expired": "/invite-expired", "access-denied": "/access-denied",
     "not-found": "/404", "server-error": "/500",
   };
   return paths[route];
