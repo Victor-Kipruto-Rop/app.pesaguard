@@ -8,6 +8,7 @@ import type { DashboardPage } from "../../app/config/routes";
 import type { Customer, Transaction, Workspace } from "../../types/dashboard";
 import { formatKes } from "../../utils/formatting";
 import { downloadCsv } from "../../utils/csv";
+import { ModuleWorkspace } from "./ModuleWorkspace";
 
 const descriptions: Partial<Record<DashboardPage, string>> = {
   exceptions: "Investigate records that need review and keep every resolution traceable.",
@@ -194,6 +195,7 @@ export function ModulePage({ page, workspace, transactions, customers, onNavigat
     <>
       <PageHeading eyebrow={detail.eyebrow} title={title} description={description} />
       <PreviewNotice />
+      <ModuleWorkspace page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={onNavigate} />
       <section className="module-hero panel">
         <div className="module-hero__icon"><Icon size={23} strokeWidth={1.8} /></div>
         <div className="module-hero__content"><span className="sample-tag">INTEGRATION PREVIEW</span><h2>{title} workspace</h2><p>This page defines the operational surface and expected information architecture. Live records and write actions remain disabled until the corresponding API contract, tenant authorization, and audit trail are verified.</p></div>
