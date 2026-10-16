@@ -39,7 +39,7 @@ export type DashboardPage =
   | "report-detail" | "scheduled-report-detail" | "integration-detail" | "webhook-delivery-detail"
   | "alert-detail" | "service-status" | "security-settings" | "active-sessions" | "access-history"
   | "account-closure" | "onboarding-resume" | "first-login-checklist"
-  | "transaction-detail" | "transaction-lifecycle" | "provider-callback-history" | "create-reconciliation-run" | "reconciliation-results" | "rematch-confirmation" | "exception-resolution" | "import-wizard" | "column-mapping" | "validation-review" | "mpesa-setup" | "callback-configuration" | "credential-rotation" | "settlement-statement-upload" | "settlement-comparison" | "settlement-variance-review" | "customer-detail" | "team-invitations" | "member-detail" | "role-editor" | "webhook-endpoint-editor" | "webhook-signing-secret" | "webhook-retry" | "report-create" | "report-schedule-config" | "report-recipients" | "export-history" | "branch-detail" | "validation-rule-editor" | "pipeline-failure-detail" | "lineage-record-detail" | "investigation-evidence" | "investigation-notes" | "risk-rule-simulation" | "audit-event-detail" | "data-export-request" | "deletion-request-status" | "notification-preferences" | "notification-delivery-history" | "support-case-detail" | "diagnostic-attachments";
+  | "transaction-detail" | "transaction-lifecycle" | "provider-callback-history" | "create-reconciliation-run" | "reconciliation-results" | "rematch-confirmation" | "exception-resolution" | "import-wizard" | "column-mapping" | "validation-review" | "mpesa-setup" | "callback-configuration" | "credential-rotation" | "settlement-statement-upload" | "settlement-comparison" | "settlement-variance-review" | "customer-detail" | "team-invitations" | "member-detail" | "role-editor" | "webhook-endpoint-editor" | "webhook-signing-secret" | "webhook-retry" | "webhook-delivery-analytics" | "report-create" | "report-schedule-config" | "report-recipients" | "export-history" | "branch-detail" | "validation-rule-editor" | "pipeline-failure-detail" | "lineage-record-detail" | "investigation-evidence" | "investigation-notes" | "risk-rule-simulation" | "audit-event-detail" | "data-export-request" | "deletion-request-status" | "notification-preferences" | "notification-delivery-history" | "support-case-detail" | "diagnostic-attachments";
 
 const routeByPath: Record<string, DashboardPage> = {
   "/": "home",
@@ -139,6 +139,7 @@ const routeByPath: Record<string, DashboardPage> = {
   "/webhook-endpoint-editor": "webhook-endpoint-editor",
   "/webhook-signing-secret": "webhook-signing-secret",
   "/webhook-retry": "webhook-retry",
+  "/webhook-delivery-analytics": "webhook-delivery-analytics",
   "/report-create": "report-create",
   "/report-schedule-config": "report-schedule-config",
   "/report-recipients": "report-recipients",
