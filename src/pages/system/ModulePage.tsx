@@ -215,7 +215,20 @@ export function ModulePage({ page, workspace, transactions, customers, onNavigat
   const title = item?.label ?? "Workspace";
   const description = descriptions[page] ?? "Manage this part of your tenant workspace.";
   const detail = moduleDetails[page];
-  const relatedPages: DashboardPage[] = page === "reports" ? ["transactions", "reconciliation", "exceptions"] : page === "integrations" ? ["data-imports", "webhooks", "system-health"] : page === "security" || page === "roles-permissions" ? ["team-members", "account-authentication", "activity-log"] : ["home", "transactions", "reconciliation"];
+  const relatedPages: DashboardPage[] =
+    ["data-quality", "data-sources", "validation-results", "duplicate-detection", "schema-mapping", "freshness-monitoring"].includes(page) ? ["data-imports", "data-quality", "data-sources"] :
+    page === "data-lineage" ? ["processing-jobs", "reconciliation-runs", "data-quality"] :
+    ["processing-jobs", "import-sync-activity"].includes(page) ? ["data-imports", "activity-log", "system-health"] :
+    ["risk-overview", "fraud-detection", "risk-events", "suspicious-transactions", "alerts", "investigations", "risk-rules"].includes(page) ? ["risk-overview", "alerts", "investigations"] :
+    ["reconciliation-runs", "matching-rules", "matching-history", "scheduled-reconciliation"].includes(page) ? ["reconciliation", "exceptions", "matching-history"] :
+    ["settlements", "settlement-batches"].includes(page) ? ["settlements", "reconciliation", "reports"] :
+    ["reports", "report-builder", "scheduled-reports", "export-center"].includes(page) ? ["reports", "transactions", "export-center"] :
+    ["integrations", "webhooks", "webhook-deliveries"].includes(page) ? ["integrations", "webhooks", "webhook-deliveries"] :
+    ["security", "roles-permissions", "approvals", "retention-privacy"].includes(page) ? ["team-members", "roles-permissions", "activity-log"] :
+    ["help-support", "support-requests"].includes(page) ? ["help-support", "support-requests", "activity-log"] :
+    ["team-members"].includes(page) ? ["approvals", "roles-permissions", "activity-log"] :
+    ["notifications", "account-authentication", "preferences"].includes(page) ? ["account-authentication", "security", "preferences"] :
+    ["home", "transactions", "reconciliation"];
 
   return (
     <>
