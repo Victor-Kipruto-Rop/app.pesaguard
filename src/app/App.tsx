@@ -140,6 +140,7 @@ const knownDashboardPaths = new Set([
   "/webhook-endpoint-editor",
   "/webhook-signing-secret",
   "/webhook-retry",
+  "/webhook-delivery-analytics",
   "/report-create",
   "/report-schedule-config",
   "/report-recipients",
