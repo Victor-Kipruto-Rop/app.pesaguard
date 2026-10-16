@@ -35,7 +35,7 @@ const authPaths: Record<string, AuthRoute> = {
 };
 
 function authRouteFromPath(pathname: string): AuthRoute | null {
-  const path = pathname.replace(/\\/+$/, "") || "/";
+  const path = pathname.replace(/\/+$/, "") || "/";
   return authPaths[path] ?? (knownDashboardPaths.has(path) ? null : "not-found");
 }
 
