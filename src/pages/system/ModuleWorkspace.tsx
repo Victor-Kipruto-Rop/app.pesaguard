@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   Activity, AlertTriangle, ArrowRight, BookOpen, CheckCircle2, Clock3, Code2,
-  Database, Download, ExternalLink, FileClock, FileSpreadsheet, FileText,
+  Database, Download, ExternalLink, FileClock, FileSpreadsheet, FileText, GitCompareArrows,
   Fingerprint, HeartPulse, KeyRound, Link2, Mail, RefreshCw, Search, Server,
   ShieldAlert, ShieldCheck, SlidersHorizontal, UploadCloud, UsersRound, Webhook,
   BellRing, Building2, LockKeyhole, type LucideIcon,
