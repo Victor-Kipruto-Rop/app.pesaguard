@@ -786,3 +786,11 @@ body { background: var(--paper-sunken); letter-spacing: -.008em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+.stat-card__note { color: var(--text-faint); font-size: 10px; line-height: 1.5; font-weight: 500; }
+.health-score__ring--unknown { border-color: var(--line-strong); background: var(--paper-sunken); color: var(--text-faint); }
+.health-score__ring--unknown strong { font-size: 24px; }
+.bar-chart__bar--pending { background: #dba44c; }
+.bar-chart__bar--unmatched { background: #d76c64; }
+.bar-chart__bar--disputed { background: #9283c1; }
+.bar-chart__label { max-width: 100%; overflow-wrap: anywhere; }
