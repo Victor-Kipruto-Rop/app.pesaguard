@@ -8,8 +8,8 @@ import "./auth.css";
 
 export type AuthRoute =
   | "sign-in" | "create-account" | "verify-email" | "forgot-password"
-  | "reset-password" | "accept-invite" | "onboarding" | "session-expired"
-  | "access-denied" | "not-found" | "server-error";
+  | "reset-password" | "accept-invite" | "onboarding" | "mfa-challenge" | "session-expired"
+  | "account-locked" | "invite-expired" | "access-denied" | "not-found" | "server-error";
 
 interface AuthPagesProps {
   route: AuthRoute;
@@ -24,7 +24,10 @@ const routeContent: Record<AuthRoute, { eyebrow: string; title: string; descript
   "reset-password": { eyebrow: "SECURE YOUR ACCOUNT", title: "Choose a new password", description: "Use a unique password that you do not use for another service." },
   "accept-invite": { eyebrow: "TEAM INVITATION", title: "Join your team workspace", description: "Review the invitation details and continue through the secure account flow." },
   onboarding: { eyebrow: "WORKSPACE SETUP", title: "Let’s set up your workspace", description: "Tell us a little about your organization so the workspace can be configured correctly." },
+  "mfa-challenge": { eyebrow: "ADDITIONAL VERIFICATION", title: "Confirm it’s you", description: "Enter the verification code from your configured authenticator or approved delivery channel." },
   "session-expired": { eyebrow: "SESSION ENDED", title: "Your session has expired", description: "Sign in again to continue. Unsaved work may not be available." },
+  "account-locked": { eyebrow: "ACCOUNT PROTECTION", title: "Sign-in temporarily restricted", description: "Your account may be temporarily locked after repeated unsuccessful sign-in attempts." },
+  "invite-expired": { eyebrow: "INVITATION EXPIRED", title: "This invitation is no longer valid", description: "Ask a workspace administrator to issue a new invitation through the verified access workflow." },
   "access-denied": { eyebrow: "ACCESS RESTRICTED", title: "You don’t have access to this page", description: "Your current account or role may not have permission to open this resource." },
   "not-found": { eyebrow: "PAGE NOT FOUND", title: "We can’t find that page", description: "The address may be outdated or the page may have moved." },
   "server-error": { eyebrow: "TEMPORARY PROBLEM", title: "Something didn’t load correctly", description: "Try again in a moment. If the problem continues, contact support with the page you were opening." },
@@ -54,6 +57,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
   const [organizationType, setOrganizationType] = useState("SACCO");
   const [phone, setPhone] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
   const [step, setStep] = useState(1);
@@ -76,6 +80,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
     }
     const messages: Partial<Record<AuthRoute, string>> = {
       "sign-in": "Preview only: authentication is not connected, so no sign-in session was created.",
+      "mfa-challenge": "Preview only: the verification code was not checked and no authentication challenge was completed.",
       "create-account": "Preview only: no account was created. Connect the verified identity service to enable registration.",
       "verify-email": "Preview only: verification email delivery is not connected.",
       "forgot-password": "Preview only: password recovery email delivery is not connected.",
@@ -86,7 +91,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
     setNotice(messages[route] ?? "This action is not connected in the current preview.");
   }
 
-  const formRoutes: AuthRoute[] = ["sign-in", "create-account", "verify-email", "forgot-password", "reset-password", "accept-invite", "onboarding"];
+  const formRoutes: AuthRoute[] = ["sign-in", "create-account", "verify-email", "forgot-password", "reset-password", "accept-invite", "onboarding", "mfa-challenge"];
   const showForm = formRoutes.includes(route);
   const showEmail = ["sign-in", "create-account", "verify-email", "forgot-password", "accept-invite", "onboarding"].includes(route);
   const showPasswordFields = ["sign-in", "create-account", "reset-password"].includes(route);
@@ -125,6 +130,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
               {route === "create-account" && <Field label="Full name" id="full-name" placeholder="Your full name" value={fullName} onChange={setFullName} autoComplete="name" />}
               {showEmail && <Field label={route === "onboarding" ? "Work email" : "Email address"} id="email" type="email" placeholder="you@organization.co.ke" value={email} onChange={setEmail} autoComplete="email" />}
               {route === "accept-invite" && <Field label="Invitation code" id="invite-code" placeholder="Paste your invitation code" value={inviteCode} onChange={setInviteCode} />}
+              {route === "mfa-challenge" && <Field label="Verification code" id="verification-code" placeholder="Enter your one-time code" value={otp} onChange={setOtp} autoComplete="one-time-code" />}
               {showPasswordFields && <label className="auth-field" htmlFor="password"><span>{route === "reset-password" ? "New password" : "Password"}</span><span className="auth-password-wrap"><input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={route === "sign-in" ? "Enter your password" : "At least 12 characters"} required minLength={route === "sign-in" ? 1 : 12} autoComplete={route === "sign-in" ? "current-password" : "new-password"} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((value) => !value)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></span>{route !== "sign-in" && <small>Use 12 or more characters. Never reuse a password from another service.</small>}</label>}
               {(route === "create-account" || route === "reset-password") && <Field label="Confirm password" id="confirm-password" type={showPassword ? "text" : "password"} placeholder="Enter the same password again" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />}
               {route === "onboarding" && step === 1 && <><Field label="Organization name" id="organization" placeholder="Registered organization name" value={organization} onChange={setOrganization} /><label className="auth-field" htmlFor="organization-type"><span>Organization type</span><select id="organization-type" value={organizationType} onChange={(event) => setOrganizationType(event.target.value)}><option>SACCO</option><option>Merchant</option><option>Financial services</option><option>Other organization</option></select></label><Field label="Business contact phone" id="phone" type="tel" placeholder="+254 7XX XXX XXX" value={phone} onChange={setPhone} autoComplete="tel" /></>}
@@ -132,7 +138,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
               {route === "sign-in" && <div className="auth-form-row"><label className="auth-checkbox"><input type="checkbox" /> <span>Remember this device</span></label><AuthLink onClick={() => onNavigate("forgot-password")}>Forgot password?</AuthLink></div>}
               {route === "create-account" && <label className="auth-checkbox auth-checkbox--legal"><input type="checkbox" required /> <span>I agree to the <a href="https://pesaguard.co.ke/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="https://pesaguard.co.ke/privacy" target="_blank" rel="noreferrer">Privacy Notice</a>.</span></label>}
               {notice && <div className="auth-notice" role="status"><AlertTriangle size={16} /><span>{notice}</span></div>}
-              <button className="auth-submit" type="submit">{route === "sign-in" ? "Sign in" : route === "create-account" ? "Create account" : route === "verify-email" ? "Resend verification email" : route === "forgot-password" ? "Send recovery instructions" : route === "reset-password" ? "Set new password" : route === "accept-invite" ? "Review invitation" : step === 1 ? "Review workspace" : "Submit workspace request"} <ArrowRight size={16} /></button>
+              <button className="auth-submit" type="submit">{route === "sign-in" ? "Sign in" : route === "create-account" ? "Create account" : route === "verify-email" ? "Resend verification email" : route === "forgot-password" ? "Send recovery instructions" : route === "reset-password" ? "Set new password" : route === "accept-invite" ? "Review invitation" : route === "mfa-challenge" ? "Verify code" : step === 1 ? "Review workspace" : "Submit workspace request"} <ArrowRight size={16} /></button>
               <p className="auth-preview-note"><ShieldCheck size={14} /> Preview interface only. No credentials are sent or saved.</p>
             </form>
           )}
@@ -144,6 +150,9 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
               {route === "not-found" && <p>Check the URL, or return to sign in and open a page from your workspace navigation.</p>}
               {route === "server-error" && <p>No live server diagnostic is available from this frontend preview. Avoid sharing passwords, API keys, or payment secrets with support.</p>}
               {route === "session-expired" && <p>For your security, continue by signing in again. This preview does not maintain a real authenticated session.</p>}
+              {route === "account-locked" && <p>Use the official recovery process or contact your workspace administrator. Do not repeatedly retry credentials while the account is restricted.</p>}
+              {route === "invite-expired" && <p>Invitation tokens must be checked server-side, expire according to policy and never grant access after expiry.</p>}
+              {route === "mfa-challenge" && <p>Never share a one-time code with another person. The real identity service must validate the challenge and enforce expiry and attempt limits.</p>}
               <button className="auth-submit" type="button" onClick={() => onNavigate("sign-in")}>Return to sign in <ArrowRight size={16} /></button>
               <button className="auth-secondary" type="button" onClick={() => onNavigate("dashboard")}>Open dashboard preview <ChevronRight size={15} /></button>
             </div>
