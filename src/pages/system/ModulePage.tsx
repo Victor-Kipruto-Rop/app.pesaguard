@@ -186,11 +186,12 @@ export function ModulePage({ page, workspace, transactions, customers, onNavigat
   const item = navigationItems.find((navigationItem) => navigationItem.page === page);
   const title = item?.label ?? "Workspace";
   const description = descriptions[page] ?? "Manage this part of your tenant workspace.";
+  const detail = moduleDetails[page];
   const relatedPages: DashboardPage[] = page === "reports" ? ["transactions", "reconciliation", "exceptions"] : page === "integrations" ? ["data-imports", "webhooks", "system-health"] : page === "security" || page === "roles-permissions" ? ["team-members", "account-authentication", "activity-log"] : ["home", "transactions", "reconciliation"];
 
   return (
     <>
-      <PageHeading eyebrow={item?.group.toUpperCase() ?? "TENANT WORKSPACE"} title={title} description={description} />
+      <PageHeading eyebrow={detail?.eyebrow ?? item?.group.toUpperCase() ?? "TENANT WORKSPACE"} title={title} description={description} />
       <PreviewNotice />
       <ModuleWorkspace page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={onNavigate} />
       <section className="panel executive-panel related-modules"><div className="panel-heading"><div><h2>Continue your workflow</h2><p>Move to a related workspace</p></div></div><div className="related-module-grid">{relatedPages.map((relatedPage) => { const related = navigationItems.find((entry) => entry.page === relatedPage); if (!related) return null; const RelatedIcon = related.icon; return <button key={relatedPage} type="button" onClick={() => onNavigate(relatedPage)}><span className="related-module-grid__icon"><RelatedIcon size={18} /></span><span><strong>{related.label}</strong><small>Open workspace</small></span><ArrowRight size={16} /></button>; })}</div></section>
