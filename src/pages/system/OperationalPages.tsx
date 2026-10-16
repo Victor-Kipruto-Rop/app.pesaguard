@@ -1,7 +1,7 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import {
   Activity, ArrowLeft, ArrowRight, BadgeCheck, Building2, CalendarClock, CheckCircle2,
-  ChevronDown, CircleHelp, Clock3, Database, Download, FileClock, FileText, Filter,
+  ChevronDown, Clock3, Database, Download, FileClock, FileText, Filter,
   GitCompareArrows, KeyRound, Layers3, LockKeyhole, Mail, Search, ShieldAlert,
   ShieldCheck, SlidersHorizontal, UsersRound, WalletCards, Webhook, type LucideIcon,
 } from "lucide-react";
@@ -83,7 +83,7 @@ function StatusPill({ children }: { children: string }) {
   const tone = /matched|complete|verified|ready|healthy/i.test(children) ? "good" : /failed|blocked|critical|unmatched/i.test(children) ? "bad" : /unknown|preview|not connected|pending|not verified/i.test(children) ? "warn" : "quiet";
   return <span className={`op-status op-status--${tone}`}>{children}</span>;
 }
-function Panel({ title, subtitle, children, action }: { title: string; subtitle: string; children: React.ReactNode; action?: React.ReactNode }) {
+function Panel({ title, subtitle, children, action }: { title: string; subtitle: string; children: ReactNode; action?: ReactNode }) {
   return <section className="op-panel"><header className="op-panel__head"><div><h2>{title}</h2><p>{subtitle}</p></div>{action}</header>{children}</section>;
 }
 
@@ -107,8 +107,6 @@ export function OperationalPages({ page, workspace, transactions, customers, onN
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [decision, setDecision] = useState("Needs review");
   const [note, setNote] = useState("");
-  const [period, setPeriod] = useState("Last 30 days");
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const visibleTransactions = useMemo(() => transactions.filter((item) => {
     const haystack = [item.reference, item.id, item.customer, item.source, item.status, item.anomalyType].join(" ").toLowerCase();
