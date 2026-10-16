@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, ChevronRight, CircleHelp,
-  Clock3, Copy, Download, Fingerprint, Gauge, GitBranch, LockKeyhole, RefreshCw,
+  Activity, AlertTriangle, ArrowRight, CheckCircle2, ChevronRight, CircleHelp,
+  Clock3, Download, Fingerprint, Gauge, GitBranch, LockKeyhole,
   ShieldCheck, Timer, Webhook, XCircle, Zap,
 } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
@@ -24,7 +24,6 @@ export function WebhookDeliveryDetailPage({ workspace, onNavigate }: Props) {
   const [showEnvelope, setShowEnvelope] = useState(false);
   const [showHeaders, setShowHeaders] = useState(false);
   const [notice, setNotice] = useState("");
-  const [expanded, setExpanded] = useState<string | null>("attempt-4");
   const current = sampleAttempts[selectedAttempt];
   const event = useMemo(() => ({ id: "evt_8F31A2", type: "transaction.completed", created_at: "2026-10-16T04:09:07Z", tenant_reference: "tenant_sample_01", data: { transaction_reference: "txn_sample_94A1", amount: 1250, currency: "KES", status: "completed" } }), []);
 
