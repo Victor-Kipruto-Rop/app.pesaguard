@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, ArrowRight, CheckCircle2, ChevronRight, CircleHelp,
-  Clock3, ExternalLink, Fingerprint, Gauge, History, LockKeyhole, RefreshCw,
+  Clock3, Fingerprint, Gauge, History, LockKeyhole,
   ShieldCheck, ShieldAlert, Timer, Webhook, XCircle, ClipboardCheck, Ban,
 } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
