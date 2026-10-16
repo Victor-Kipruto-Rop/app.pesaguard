@@ -7,7 +7,6 @@ import { navigationItems } from "../../app/config/navigation";
 import type { DashboardPage } from "../../app/config/routes";
 import type { Customer, Transaction, Workspace } from "../../types/dashboard";
 import { formatKes } from "../../utils/formatting";
-import { downloadCsv } from "../../utils/csv";
 import { ModuleWorkspace } from "./ModuleWorkspace";
 
 const descriptions: Partial<Record<DashboardPage, string>> = {
