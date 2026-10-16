@@ -65,6 +65,8 @@ const detailPages: Partial<Record<DashboardPage, { description: string; icon: Lu
   "retention-privacy": { description: "Review documented retention, export and privacy controls with evidence of actual enforcement.", icon: ShieldCheck, parent: "settings", evidence: "A written policy is not proof of deletion, retention enforcement or legal compliance.", checks: ["Data category, retention period and legal basis", "Deletion and export request workflow", "Access log and policy version", "Evidence of scheduled enforcement and exception handling"] },
 };
 
+function pageIn(page: DashboardPage, candidates: DashboardPage[]): boolean { return candidates.includes(page); }
+
 export function ModuleWorkspace({ page, workspace, transactions, customers, onNavigate }: ModuleWorkspaceProps) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All statuses");
@@ -117,7 +119,7 @@ export function ModuleWorkspace({ page, workspace, transactions, customers, onNa
     setNotice("A CSV generated from the visible sample dataset was downloaded in your browser. It is not a production report, and the selected reporting window is a preview control only.");
   }
 
-  if (["exceptions", "payments", "reports"].includes(page)) {
+  if (pageIn(page, ["exceptions", "payments", "reports"])) {
     const metrics: Metric[] = page === "exceptions" ? [
       { label: "Needs review", value: String(unresolved.length), note: "Unresolved sample transactions", icon: AlertTriangle, tone: "amber" },
       { label: "Exposure in sample", value: formatKes(openValue), note: "Pending, unmatched and disputed", icon: ShieldAlert, tone: "red" },
