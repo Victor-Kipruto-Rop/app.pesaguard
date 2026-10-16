@@ -60,10 +60,16 @@ export function ModuleWorkspace({ page, workspace, transactions, customers, onNa
     event.preventDefault();
     setNotice(message);
   }
+  const displayedTransactions = page === "exceptions"
+    ? filteredTransactions.filter((item) => ["Pending", "Unmatched", "Disputed", "Failed"].includes(item.status))
+    : page === "reports" && reportType === "Exceptions register"
+      ? filteredTransactions.filter((item) => ["Pending", "Unmatched", "Disputed", "Failed"].includes(item.status))
+      : filteredTransactions;
+
   function exportRows() {
-    downloadCsv(`pesaguard-preview-${page}.csv`,
+    downloadCsv(`pesaguard-preview-${page}-${reportType.toLowerCase().replace(/\\s+/g, "-")}.csv`,
       ["Timestamp", "Reference", "Customer", "Amount KES", "Status", "Source", "Severity"],
-      filteredTransactions.map((item) => [item.timestamp, item.reference, item.customer, String(item.amount), item.status, item.source, item.severity]));
+      displayedTransactions.map((item) => [item.timestamp, item.reference, item.customer, String(item.amount), item.status, item.source, item.severity]));
     setNotice("A CSV of the visible sample transaction rows was generated in your browser. It contains preview data only.");
   }
 
@@ -85,9 +91,9 @@ export function ModuleWorkspace({ page, workspace, transactions, customers, onNa
       <Metrics items={metrics}/>
       {page === "reports" && <Section title="Build a report" description="Choose a report definition and reporting window. The export uses the visible sample transaction set."><form className="mw-report-form" onSubmit={(event) => { event.preventDefault(); exportRows(); }}><label>Report type<select value={reportType} onChange={(event) => setReportType(event.target.value)}><option>Transaction register</option><option>Reconciliation summary</option><option>Exceptions register</option><option>Payment status summary</option><option>Data quality review</option></select></label><label>Reporting window<select value={reportRange} onChange={(event) => setReportRange(event.target.value)}><option>Today</option><option>Last 7 days</option><option>Last 30 days</option><option>Custom range</option></select></label><button className="button button--primary" type="submit"><Download size={15}/> Export preview report</button></form><p className="mw-helper">Selected: {reportType} · {reportRange}. A real report must be generated from authorized server-side data.</p></Section>}
       <Section title={page === "exceptions" ? "Exception review queue" : page === "payments" ? "Payment records" : "Report data preview"} description={page === "exceptions" ? "Filter sample records that may require investigation." : page === "payments" ? "Review payment status and references in the local sample dataset." : "Filter the sample rows included in the reporting workspace."} action={<button className="button button--secondary" type="button" onClick={exportRows}><Download size={14}/> Export CSV</button>}>
-        <div className="mw-table-tools"><label className="mw-search"><Search size={15}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search reference, customer, source…" aria-label="Search records"/></label><select aria-label="Filter record status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All statuses</option><option>Matched</option><option>Completed</option><option>Pending</option><option>Unmatched</option><option>Disputed</option><option>Failed</option></select><span>{filteredTransactions.length} sample rows</span></div>
-        <div className="mw-table-wrap"><table className="mw-table"><thead><tr><th>Reference</th><th>Customer</th><th>Amount</th><th>Status</th><th>Source</th><th>Action</th></tr></thead><tbody>{filteredTransactions.map((item) => <tr key={item.id}><td><strong>{item.reference}</strong><small>{item.timestamp}</small></td><td>{item.customer}</td><td className="mw-number">{formatKes(item.amount)}</td><td><StatusTag>{item.status}</StatusTag></td><td>{item.source}</td><td><button className="mw-row-action" type="button" onClick={() => onNavigate(page === "exceptions" ? "reconciliation" : "transactions")}>Review <ArrowRight size={13}/></button></td></tr>)}</tbody></table></div>
-        {filteredTransactions.length === 0 && <EmptyState icon={Search} title="No matching sample records" description="Try a different search term or clear the status filter." action={<button className="button button--secondary" type="button" onClick={() => {setQuery("");setStatusFilter("All statuses");}}>Clear filters</button>}/>}
+        <div className="mw-table-tools"><label className="mw-search"><Search size={15}/><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search reference, customer, source…" aria-label="Search records"/></label><select aria-label="Filter record status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option>All statuses</option><option>Matched</option><option>Completed</option><option>Pending</option><option>Unmatched</option><option>Disputed</option><option>Failed</option></select><span>{displayedTransactions.length} sample rows</span></div>
+        <div className="mw-table-wrap"><table className="mw-table"><thead><tr><th>Reference</th><th>Customer</th><th>Amount</th><th>Status</th><th>Source</th><th>Action</th></tr></thead><tbody>{displayedTransactions.map((item) => <tr key={item.id}><td><strong>{item.reference}</strong><small>{item.timestamp}</small></td><td>{item.customer}</td><td className="mw-number">{formatKes(item.amount)}</td><td><StatusTag>{item.status}</StatusTag></td><td>{item.source}</td><td><button className="mw-row-action" type="button" onClick={() => onNavigate(page === "exceptions" ? "reconciliation" : "transactions")}>Review <ArrowRight size={13}/></button></td></tr>)}</tbody></table></div>
+        {displayedTransactions.length === 0 && <EmptyState icon={Search} title="No matching sample records" description="Try a different search term or clear the status filter." action={<button className="button button--secondary" type="button" onClick={() => {setQuery("");setStatusFilter("All statuses");}}>Clear filters</button>}/>}
       </Section>
       {notice && <p className="mw-feedback" role="status"><CheckCircle2 size={15}/>{notice}</p>}
     </div>;
