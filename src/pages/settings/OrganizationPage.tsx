@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Building2, CircleCheck, CircleHelp, LockKeyhole, PlugZap, Save, ShieldCheck, SlidersHorizontal, Clock3, Mail } from "lucide-react";
+import { Building2, CircleCheck, CircleHelp, LockKeyhole, PlugZap, Save, ShieldCheck, Clock3, Mail } from "lucide-react";
 import type { Workspace } from "../../types/dashboard";
 
 export function OrganizationPage({ workspace, title = "Tenant profile" }: { workspace: Workspace; title?: string }) {
