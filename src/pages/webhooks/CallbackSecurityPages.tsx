@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
   AlertTriangle, ArrowRight, Check, CheckCircle2, ChevronRight, CircleHelp,
-  Clock3, Eye, EyeOff, Fingerprint, KeyRound, LockKeyhole, Plus, RotateCw,
-  Save, ShieldCheck, SlidersHorizontal, Trash2, Webhook, X,
+  Clock3, Eye, EyeOff, Fingerprint, KeyRound, LockKeyhole, RotateCw,
+  Save, ShieldCheck, SlidersHorizontal, Webhook, X,
 } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { Workspace } from "../../types/dashboard";
@@ -86,8 +86,6 @@ export function CredentialRotationPage({ workspace, onNavigate }: Props) {
   const [operator, setOperator] = useState("");
   const [confirmImpact, setConfirmImpact] = useState(false);
   const [notice, setNotice] = useState("");
-  const [maskedValue, setMaskedValue] = useState("");
-  const [showValue, setShowValue] = useState(false);
   const credential = credentialRows.find((item) => item.id === selectedCredential) ?? credentialRows[1];
 
   function resetFlow() {
