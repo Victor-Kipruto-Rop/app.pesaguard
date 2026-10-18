@@ -25,9 +25,10 @@ interface DashboardLayoutProps {
   onNavigate: (page: DashboardPage) => void;
   onSearch: (query: string) => void;
   children: ReactNode;
+  isLiveData?: boolean;
 }
 
-export function DashboardLayout({ activePage, workspace, workspaces, onWorkspaceChange, onNavigate, onSearch, children }: DashboardLayoutProps) {
+export function DashboardLayout({ activePage, workspace, workspaces, onWorkspaceChange, onNavigate, onSearch, children, isLiveData = false }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDark, setIsDark] = useState(readStoredTheme);
@@ -58,7 +59,7 @@ export function DashboardLayout({ activePage, workspace, workspaces, onWorkspace
         onCloseMobile={() => setMobileOpen(false)}
       />
       <div className="dashboard-main">
-        <PreviewBanner />
+        <PreviewBanner isLiveData={isLiveData} />
         <ApiConnectionStatus />
         <Topbar
           workspace={workspace}
