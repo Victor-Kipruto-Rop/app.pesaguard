@@ -310,7 +310,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
 
   const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!definition?.workflow || !workflowRecordId.trim() || !workflowStatus) return;
+    if (!definition?.workflow || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())) return;
     let updatePayload: Record<string, unknown> | undefined;
     if (workflowUpdatePayload.trim()) {
       try {
@@ -332,7 +332,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       const requestOptions = (token: string): RequestInit => ({
         method: "PATCH",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ status: workflowStatus, ...(updatePayload ? { payload: updatePayload } : {}) }),
+        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}) }),
         cache: "no-store",
       });
       let response = await fetch(url, requestOptions(activeSession.accessToken));
