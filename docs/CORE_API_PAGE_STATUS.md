@@ -105,7 +105,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `scheduled-report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `integration-detail` | Route mapped — verification required | `/providers/{provider_id}` | Provider details; verify tenant ownership and supported-provider status in staging. |
-| `webhook-delivery-detail` | Route mapped — verification required | `/webhooks/{webhook_id}/deliveries` | Requires configured webhook ID and `manage:webhooks`; signing secrets are not rendered. |
+| `webhook-delivery-detail` | Unavailable — no suitable route mapped | — | API exposes delivery history by webhook, not a verified single-delivery detail endpoint. |
 | `alert-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `service-status` | Route mapped — verification required | `/public/status` | Current API status only; not a historical uptime report. |
 | `security-settings` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -118,7 +118,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `create-reconciliation-run` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated match outcomes; supported status filters only. Staging verification required. |
+| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcome collection; API PR #95 must merge and staging verification is required. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
