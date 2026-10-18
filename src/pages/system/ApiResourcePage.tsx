@@ -152,6 +152,16 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setAppliedSearch("");
     setRecordId("");
     setAppliedRecordId("");
+    setWorkflowTitle("");
+    setWorkflowDescription("");
+    setWorkflowPayload("{}");
+    setWorkflowRecordId("");
+    setWorkflowStatus("");
+    setWorkflowUpdatePayload("");
+    setWorkflowMessage("");
+    setEvidenceType("transaction_reference");
+    setEvidenceReference("");
+    setEvidenceNote("");
   }, [page, definition?.defaultStatus]);
 
   const load = useCallback((signal: AbortSignal) => {
@@ -399,7 +409,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                 <input value={workflowRecordId} onChange={(event) => setWorkflowRecordId(event.target.value)} maxLength={200} required disabled={workflowBusy} placeholder="wf_…" />
               </label>
               <label style={{ display: "grid", gap: 6, fontSize: 13 }}>New status
-                <select value={workflowStatus} onChange={(event) => setWorkflowStatus(event.target.value)} required disabled={workflowBusy}>
+                <select value={workflowStatus} onChange={(event) => setWorkflowStatus(event.target.value)} disabled={workflowBusy}>
                   <option value="">Select status</option>
                   {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
