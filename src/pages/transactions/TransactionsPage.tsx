@@ -67,7 +67,8 @@ function statusClass(status: TransactionStatus): string {
   if (status === "Pending") return "pending";
   if (status === "Disputed") return "disputed";
   if (status === "Unmatched" || status === "Failed") return "unmatched";
-  return "refunded";
+  if (status === "Refunded") return "refunded";
+  return "unknown";
 }
 
 export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, onRefresh, loadError = "" }: TransactionsPageProps) {
@@ -93,7 +94,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
   const filtered = useMemo(() => {
-    const previewAnchor = transactions.reduce(
+    const latestLoadedTimestamp = transactions.reduce(
       (latest, transaction) => Math.max(latest, new Date(transaction.timestamp).getTime()),
       0,
     );
@@ -108,8 +109,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
       if (maximum !== null && Number.isFinite(maximum) && transaction.amount > maximum) return false;
 
       const transactionDate = new Date(transaction.timestamp);
-      if (dateFilter === "Today" && transactionDate.getTime() < previewAnchor - 86_400_000) return false;
-      if (dateFilter === "7d" && previewAnchor - transactionDate.getTime() > 7 * 86_400_000) return false;
+      if (dateFilter === "Today" && transactionDate.getTime() < latestLoadedTimestamp - 86_400_000) return false;
+      if (dateFilter === "7d" && latestLoadedTimestamp - transactionDate.getTime() > 7 * 86_400_000) return false;
       if (dateFilter === "30d" && previewAnchor - transactionDate.getTime() > 30 * 86_400_000) return false;
       if (fromDate && transactionDate < new Date(`${fromDate}T00:00:00`)) return false;
       if (toDate && transactionDate > new Date(`${toDate}T23:59:59`)) return false;
