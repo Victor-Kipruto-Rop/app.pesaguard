@@ -7,7 +7,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - Authenticated dashboard pages render only the live transactions view or the shared Core API resource view.
 - No authenticated page falls back to preview fixtures.
 - Failed API calls and permission denials are displayed rather than replaced with demo records.
-- Pages requiring record IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
+- Pages requiring record IDs use explicit user-entered identifiers and do not fetch until an identifier is supplied. Pages requiring unsupported mutations or domain-specific contracts remain unavailable until the required API exists.
 - The generic resource view is read-only. It does not implement financial writes, reconciliation runs, settlements, refunds, or payment initiation.
 
 ## Status legend
@@ -17,6 +17,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
 ## Page inventory
+
+Recent wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes and preserves that identifier when retrying after session renewal. These additions are still route-mapped, not staging-verified.
 
 | Dashboard page ID | Status | Route | Limitations |
 |---|---|---|---|
@@ -48,9 +50,9 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `api-developer-resources` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-sources` | Route mapped — verification required | `/providers` | Provider registry only; this is not a data-quality result. |
-| `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `duplicate-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `schema-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `validation-results` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Import-level validation counters only; row-level findings are not available. |
+| `duplicate-detection` | Route mapped — verification required | `/api/v1/reconciliation/results?status=DUPLICATE` | Persisted reconciliation outcomes marked duplicate; not a standalone fraud or global duplicate-detection service. |
+| `schema-mapping` | Route mapped — verification required | `/api/v1/catalog/datasets/{dataset_name}` | Read-only governed dataset metadata; does not edit mappings. |
 | `data-lineage` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
 | `processing-jobs` | Route mapped — verification required | `/api/v1/imports` | Import jobs only, not all background processing tasks. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -96,14 +98,14 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `data-quality-issue-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-source-health` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality-trends` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-alert-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `flagged-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `risk-alert-detail` | Route mapped — verification required | `/api/v1/fraud/{transaction_id}` | Transaction-level risk assessment only; no investigation workflow. |
+| `flagged-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments?status=HIGH,CRITICAL` | High/critical persisted risk assessments for review; flags are not proof of fraud. |
 | `fraud-investigation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rule-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `scheduled-report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `integration-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `webhook-delivery-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `integration-detail` | Route mapped — verification required | `/providers/{provider_id}` | Provider details; verify tenant ownership and supported-provider status in staging. |
+| `webhook-delivery-detail` | Unavailable — no suitable route mapped | — | API exposes delivery history by webhook, not a verified single-delivery detail endpoint. |
 | `alert-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `service-status` | Route mapped — verification required | `/public/status` | Current API status only; not a historical uptime report. |
 | `security-settings` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -112,16 +114,16 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `account-closure` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `onboarding-resume` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `first-login-checklist` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `transaction-detail` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}` | Requires internal transaction ID; response contract and staging verification required. |
-| `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; staging verification required. |
+| `transaction-detail` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
+| `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `create-reconciliation-run` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/{transaction_id}` | Transaction-level reconciliation result/history; not run history. |
+| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcome collection; API PR #95 must merge and staging verification is required. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `column-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `validation-review` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `validation-review` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Read-only validation summary; no approval or reprocessing action. |
 | `mpesa-setup` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `callback-configuration` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `credential-rotation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -183,3 +185,18 @@ These views require an identifier before making a request. They remain read-only
 - Reconciliation result collections: `GET /api/v1/reconciliation/results` supports tenant-scoped pagination, validated outcome filters, and exact transaction ID filtering. The response deliberately omits raw matched-record payloads.
 
 - Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.
+\n## Additional wiring in this branch\n\nThe resource registry now maps transaction detail/status, import job detail, transaction lineage, dataset metadata, webhook deliveries, reconciliation outcome collections (matched/unmatched/partial/duplicate), persisted risk-assessment collections (including high/critical flags), and provider detail to read-only Core API routes. Record-specific pages require an identifier before making a request. These routes remain **verification required** until contract tests and staging smoke tests pass. Unsupported reconciliation-run CRUD, data-quality findings, fraud investigation workflows, settlements, refund/reversal operations, report execution, privacy requests, and support cases remain unavailable rather than being backed by unrelated endpoints.\n
+
+## Additional catalog and analytics page mappings
+
+The following sidebar pages now use existing Core API read routes. These mappings are **verification required**, not proof of production readiness:
+
+| Dashboard page ID | Route | Scope limitation |
+|---|---|---|
+| `dataset-catalog` | `GET /api/v1/catalog/datasets` | Governed dataset metadata only; not persisted data-quality findings. |
+| `dataset-catalog-detail` | `GET /api/v1/catalog/datasets/{dataset_name}` | Requires a dataset name from the catalog; does not edit mappings. |
+| `resolution-time-analytics` | `GET /analytics/resolution-times` | API-provided resolution-time metrics; definitions and tenant scope require staging verification. |
+| `operator-performance` | `GET /analytics/operator-stats` | API-provided operator statistics; not a complete productivity or HR evaluation. |
+| `sla-metrics` | `GET /analytics/sla-metrics` | API-provided SLA metrics; definitions and tenant scope require staging verification. |
+
+All remain read-only. No reconciliation-run, data-quality-finding, settlement, refund, investigation-case, report-execution, privacy-request, or support-case API is implied by these mappings.

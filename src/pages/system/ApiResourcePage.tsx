@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { LoginResult } from "../../lib/api";
 import { PesaguardApiError, refreshApiSession } from "../../lib/api";
@@ -168,7 +168,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
             const renewed = await refreshApiSession(session);
             if (signal.aborted) return;
             onSessionRefresh(renewed);
-            const response = await fetchDashboardResource(page, renewed, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch });
+            const response = await fetchDashboardResource(page, renewed, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch, recordId: appliedRecordId });
             if (!signal.aborted) setResult(response);
             return;
           } catch (refreshCause: unknown) {
@@ -192,7 +192,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       }
     })();
     return () => undefined;
-  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch]);
+  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch, appliedRecordId]);
 
   useEffect(() => {
     const controller = new AbortController();
