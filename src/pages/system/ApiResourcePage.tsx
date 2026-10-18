@@ -394,6 +394,48 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     }
   };
 
+  const submitMatchingRuleDisable = async () => {
+    if (page !== "matching-rules") return;
+    const recordId = workflowRecordId.trim();
+    if (!recordId) {
+      setError({ message: "Enter the matching rule ID before disabling it.", status: 400, code: "matching_rule_id_required" });
+      return;
+    }
+    if (!window.confirm("Disable this matching rule? It will be soft-disabled and retained for audit history. Existing reconciliation results will not be changed.")) return;
+
+    setWorkflowBusy(true);
+    setWorkflowMessage("");
+    setError(null);
+    try {
+      let activeSession = session;
+      const url = API_BASE_URL + "/api/v1/matching-rules/" + encodeURIComponent(recordId);
+      const send = (token: string) => fetch(url, {
+        method: "DELETE",
+        headers: { Accept: "application/json", Authorization: "Bearer " + token },
+        cache: "no-store",
+      });
+      let response = await send(activeSession.accessToken);
+      if (response.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        response = await send(activeSession.accessToken);
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) onSessionExpired();
+        const message = isRecord(payload) && typeof payload.message === "string" ? payload.message : "Matching rule could not be disabled.";
+        setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "matching_rule_disable_failed" });
+        return;
+      }
+      setWorkflowMessage("Matching rule soft-disabled by the Core API. The rule and its history remain stored.");
+      setReloadVersion((version) => version + 1);
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Matching rule could not be disabled.", status: 0, code: "matching_rule_disable_failed" });
+    } finally {
+      setWorkflowBusy(false);
+    }
+  };
+
   return (
     <section className="page-stack">
       <section className="panel" style={{ padding: 24 }}>
@@ -452,6 +494,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                 <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to keep the current payload" />
               </label>
               <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim() && !workflowUpdateTitle.trim() && !workflowUpdateDescription.trim())}>Update record</button>
+              {page === "matching-rules" && <button type="button" className="button button-secondary" onClick={submitMatchingRuleDisable} disabled={workflowBusy || !workflowRecordId.trim()} aria-label="Soft-disable matching rule">Disable rule</button>
             </form>
           </details>)}
           {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
