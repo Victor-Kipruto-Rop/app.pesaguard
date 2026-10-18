@@ -67,7 +67,7 @@ function PayloadView({ payload }: { payload: unknown }) {
 }
 
 export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
-  const definition = dashboardResourceDefinition(page, session.tenantId);
+  const definition = useMemo(() => dashboardResourceDefinition(page, session.tenantId), [page, session.tenantId]);
   const [result, setResult] = useState<DashboardResourceResult | null>(null);
   const [error, setError] = useState<{ message: string; status: number; code: string } | null>(null);
   const [loading, setLoading] = useState(Boolean(definition));
