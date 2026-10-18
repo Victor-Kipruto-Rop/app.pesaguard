@@ -1,19 +1,19 @@
 # Tenant dashboard page integration status
 
-Generated from the current `DashboardPage` union and the resource registry. This is a conservative inventory, not a claim that route mapping alone makes a page production-ready.
+Generated from the current `DashboardPage` union and resource registry. Route mapping alone does not make a page production-ready.
 
 ## Guarantees
 
 - Authenticated dashboard pages render only the live transactions view or the shared Core API resource view.
 - No authenticated page falls back to preview fixtures.
-- A mapped route may return an authorization or contract error; those errors are displayed rather than replaced with demo records.
-- Pages that need IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
+- Failed API calls and permission denials are displayed rather than replaced with demo records.
+- Pages requiring record IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
 - The generic resource view is read-only. It does not implement financial writes, reconciliation runs, settlements, refunds, or payment initiation.
 
 ## Status legend
 
-- **Connected — existing**: existing transaction integration; still requires staging and security verification.
-- **Route mapped — verification required**: an existing route is called, but tenant isolation, permission and response-contract verification remain release gates.
+- **Connected — existing**: transaction API integration exists; tenant-isolation and staging verification remain release gates.
+- **Route mapped — verification required**: an existing route is called, but tenant isolation, permissions, and response contracts must be verified.
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
 ## Page inventory
@@ -45,7 +45,7 @@ Generated from the current `DashboardPage` union and the resource registry. This
 | `account-authentication` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `preferences` | Route mapped — verification required | `/tenant/current/locale` | Locale preference only; not a full preference service. |
 | `help-support` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `api-developer-resources` | Route mapped — verification required | `/api/v1/iam/api-clients` | API client metadata. Secret material must never be exposed. |
+| `api-developer-resources` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-sources` | Route mapped — verification required | `/providers` | Provider registry only; this is not a data-quality result. |
 | `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -58,7 +58,7 @@ Generated from the current `DashboardPage` union and the resource registry. This
 | `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `alerts` | Route mapped — verification required | `/incidents/search` | Operational incident search only; not a dedicated financial-alert service. |
+| `alerts` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `investigations` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-runs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -150,7 +150,7 @@ Generated from the current `DashboardPage` union and the resource registry. This
 | `data-export-request` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `deletion-request-status` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `notification-preferences` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `notification-delivery-history` | Route mapped — verification required | `/api/v1/communications/messages` | Communication message history; delivery detail requires a message ID. |
+| `notification-delivery-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `support-case-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `diagnostic-attachments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 
@@ -159,6 +159,6 @@ Generated from the current `DashboardPage` union and the resource registry. This
 1. Add a contract test for every mapped route and response shape.
 2. Prove tenant A cannot read or mutate tenant B's records.
 3. Verify route-level permissions and safe error responses.
-4. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
+4. Implement missing endpoints with persistence, validation, audit logging, and idempotency for mutations.
 5. Pass frontend typecheck/build and backend CI, then verify staging with a real tenant.
 6. Do not label any mapped page production-ready before these checks pass.
