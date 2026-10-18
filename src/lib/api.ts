@@ -2,7 +2,7 @@ const DEFAULT_API_BASE_URL = "https://api.pesaguard.co.ke";
 
 export const API_BASE_URL = (
   import.meta.env.VITE_PESAGUARD_API_BASE_URL || DEFAULT_API_BASE_URL
-).replace(/\\/+$/, "");
+).replace(/\/+$/, "");
 
 export type ApiConnectionState = "checking" | "healthy" | "degraded" | "unreachable";
 
