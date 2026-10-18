@@ -16,6 +16,20 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - **Route mapped — verification required**: a route appears in the route audit, but tenant isolation, permissions, response contracts and deployed availability must be verified.
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
+## Follow-up workflow and result wiring
+
+The workflow API mappings below use persisted tenant-scoped Core API resources. A successful request confirms only the API response; it does not imply an external worker or provider action has run.
+
+| Dashboard page IDs | Route | Contract boundary |
+|---|---|---|
+| `matching-history`, `reconciliation-results`, `matched-transactions`, `unmatched-transactions`, `partial-matches` | `GET /api/v1/reconciliation/results` | Persisted reconciliation outcomes; filters use the API's uppercase result states. No posting or automatic rematching. |
+| `fraud-detection`, `risk-events` | `GET /api/v1/fraud/assessments` | Persisted risk assessment summaries only; not proof of fraud, an investigation case, or a probability of loss. |
+| `report-schedule-config` | `/api/v1/report-definitions` | Stores report definitions and schedule metadata; recurring delivery requires a configured worker. |
+| `export-history` | `/api/v1/report-runs` | Bounded JSON summaries and run state; not a downloadable CSV/PDF artifact. |
+| `investigation-notes` | `GET /api/v1/fraud-investigations/{record_id}` | Read-only investigation and evidence metadata; adding evidence uses the dedicated evidence workflow. |
+
+Workflow mutations now send the current record version as an optimistic concurrency guard. If another operator updates a record first, the API returns a conflict and the user must reload the record rather than overwriting newer state.
+
 ## Page inventory
 
 Recent wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes and preserves that identifier when retrying after session renewal. These additions are still route-mapped, not staging-verified.
