@@ -19,7 +19,7 @@ export type AuthRoute =
 interface AuthPagesProps {
   route: AuthRoute;
   onNavigate: (route: AuthRoute | "dashboard") => void;
-  onSignIn?: (email: string, password: string, tenantId: string) => Promise<void>;
+  onSignIn?: (email: string, password: string, tenantId: string, mfaCode: string) => Promise<void>;
 }
 
 const routeContent: Record<AuthRoute, { eyebrow: string; title: string; description: string; action?: string }> = {
@@ -85,6 +85,7 @@ export function AuthPages({ route, onNavigate, onSignIn }: AuthPagesProps) {
   const [otp, setOtp] = useState("");
   const [domain, setDomain] = useState("");
   const [tenantId, setTenantId] = useState("default");
+  const [mfaCode, setMfaCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [recordSource, setRecordSource] = useState("Spreadsheet / CSV");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -111,7 +112,7 @@ export function AuthPages({ route, onNavigate, onSignIn }: AuthPagesProps) {
     if (route === "sign-in" && onSignIn) {
       setIsSubmitting(true);
       try {
-        await onSignIn(email, password, tenantId);
+        await onSignIn(email, password, tenantId, mfaCode);
       } catch (error) {
         setNotice(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
       } finally {
@@ -198,6 +199,7 @@ export function AuthPages({ route, onNavigate, onSignIn }: AuthPagesProps) {
             {route === "create-account" && <Field label="Full name" id="full-name" placeholder="Your full name" value={fullName} onChange={setFullName} autoComplete="name" />}
             {showEmail && <Field label={route === "onboarding-organization" ? "Work email" : "Email address"} id="email" type="email" placeholder="you@organization.co.ke" value={email} onChange={setEmail} autoComplete="email" />}
             {route === "sign-in" && <Field label="Workspace / tenant ID" id="tenant-id" placeholder="default or your assigned tenant ID" value={tenantId} onChange={setTenantId} hint="Use the tenant ID supplied by your PesaGuard administrator. It is not a password." />}
+            {route === "sign-in" && <Field label="Authenticator / recovery code (if enabled)" id="mfa-code" placeholder="Enter code if your account requires MFA" value={mfaCode} onChange={setMfaCode} required={false} autoComplete="one-time-code" hint="Optional. Use a current TOTP code or one-time recovery code if your account requires it." />}
             {route === "accept-invite" && <Field label="Invitation token" id="invite-code" placeholder="Paste invitation token" value={inviteCode} onChange={setInviteCode} hint="Invitation tokens are validated by the server, never trusted from the browser." />}
             {codeRoutes.includes(route) && <Field label="Verification code" id="verification-code" placeholder="Enter your one-time code" value={otp} onChange={setOtp} autoComplete="one-time-code" hint="Codes are checked and rate-limited by the identity service when connected." />}
             {route === "sso" && <Field label="Organization domain" id="organization-domain" placeholder="organization.co.ke" value={domain} onChange={setDomain} hint="Enter the domain your organization uses for sign-in." />}
