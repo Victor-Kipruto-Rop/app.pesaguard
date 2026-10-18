@@ -137,6 +137,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [workflowDescription, setWorkflowDescription] = useState("");
   const [workflowPayload, setWorkflowPayload] = useState("{}");
   const [workflowRecordId, setWorkflowRecordId] = useState("");
+  const [workflowVersion, setWorkflowVersion] = useState("");
   const [workflowStatus, setWorkflowStatus] = useState("");
   const [workflowUpdatePayload, setWorkflowUpdatePayload] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState(false);
@@ -156,6 +157,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setWorkflowDescription("");
     setWorkflowPayload("{}");
     setWorkflowRecordId("");
+    setWorkflowVersion("");
     setWorkflowStatus("");
     setWorkflowUpdatePayload("");
     setWorkflowMessage("");
@@ -321,6 +323,11 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!definition?.workflow || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())) return;
+    const expectedVersion = Number(workflowVersion);
+    if (!Number.isInteger(expectedVersion) || expectedVersion < 1) {
+      setError({ message: "Enter the current record version shown in the Core API response before updating.", status: 400, code: "workflow_version_required" });
+      return;
+    }
     let updatePayload: Record<string, unknown> | undefined;
     if (workflowUpdatePayload.trim()) {
       try {
@@ -342,7 +349,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       const requestOptions = (token: string): RequestInit => ({
         method: "PATCH",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}) }),
+        body: JSON.stringify({ version: expectedVersion, ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}) }),
         cache: "no-store",
       });
       let response = await fetch(url, requestOptions(activeSession.accessToken));
@@ -358,7 +365,8 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
         setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "workflow_update_failed" });
         return;
       }
-      setWorkflowMessage("Workflow status updated by the Core API.");
+      setWorkflowVersion(String(expectedVersion + 1));
+      setWorkflowMessage("Workflow record updated by the Core API. Review the returned version before the next update.");
       setReloadVersion((version) => version + 1);
     } catch (cause) {
       setError({ message: cause instanceof Error ? cause.message : "Workflow status could not be updated.", status: 0, code: "workflow_update_failed" });
@@ -408,6 +416,10 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
               <label style={{ display: "grid", gap: 6, flex: "1 1 240px", fontSize: 13 }}>Record ID
                 <input value={workflowRecordId} onChange={(event) => setWorkflowRecordId(event.target.value)} maxLength={200} required disabled={workflowBusy} placeholder="wf_…" />
               </label>
+              <label style={{ display: "grid", gap: 6, flex: "0 1 180px", fontSize: 13 }}>Current version
+                <input type="number" min={1} step={1} value={workflowVersion} onChange={(event) => setWorkflowVersion(event.target.value)} required disabled={workflowBusy} placeholder="e.g. 1" />
+                <small style={{ opacity: 0.7 }}>Use the <code>version</code> returned by the API. Stale versions are rejected.</small>
+              </label>
               <label style={{ display: "grid", gap: 6, fontSize: 13 }}>New status
                 <select value={workflowStatus} onChange={(event) => setWorkflowStatus(event.target.value)} disabled={workflowBusy}>
                   <option value="">Select status</option>
@@ -417,7 +429,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
               <label style={{ display: "grid", gap: 6, flex: "1 1 100%", fontSize: 13 }}>Replacement payload JSON (optional)
                 <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to change status only" />
               </label>
-              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())}>Update record</button>
+              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || !workflowVersion.trim() || (!workflowStatus && !workflowUpdatePayload.trim())}>Update record</button>
             </form>
           </details>
           {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
