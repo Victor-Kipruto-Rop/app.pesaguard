@@ -18,7 +18,7 @@ export interface Customer {
   lifetimeValue: number;
 }
 
-export type TransactionStatus = "Matched" | "Pending" | "Unmatched" | "Disputed" | "Completed" | "Failed" | "Refunded";
+export type TransactionStatus = "Matched" | "Pending" | "Unmatched" | "Disputed" | "Completed" | "Failed" | "Refunded" | "Unknown";
 
 export interface TransactionTimelineEntry {
   id: string;
@@ -42,7 +42,7 @@ export interface Transaction {
   source: string;
   anomalyType: string;
   discrepancyId: string;
-  severity: "Low" | "Medium" | "High";
+  severity: "Low" | "Medium" | "High" | "Unknown";
   notes: string;
   resolved: boolean;
   reviewed: boolean;
