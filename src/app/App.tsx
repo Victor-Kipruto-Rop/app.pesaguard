@@ -328,6 +328,8 @@ export default function App() {
     setLiveTransactionPage(nextPage);
     setLiveTransactionPerPage(nextPerPage);
     setLiveTransactionFilter(nextFilter);
+    setLiveTransactions(null);
+    setTransactionError("");
     void refreshLiveTransactions(nextPage, nextPerPage, nextFilter);
   }, [refreshLiveTransactions, liveTransactionFilter]);
 
