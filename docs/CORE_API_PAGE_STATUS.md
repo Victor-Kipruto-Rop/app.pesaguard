@@ -52,6 +52,12 @@ Latest wiring adds provider detail and governed dataset metadata lookup. The gen
 | `api-developer-resources` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-sources` | Route mapped — verification required | `/providers` | Provider registry only; this is not a data-quality result. |
+| `dataset-catalog` | Route mapped — verification required | `/api/v1/catalog/datasets` | Governed dataset metadata only; not persisted data-quality findings. |
+| `dataset-catalog-detail` | Route mapped — verification required | `/api/v1/catalog/datasets/{dataset_name}` | Dataset metadata lookup; does not edit column mappings. |
+| `resolution-time-analytics` | Route mapped — verification required | `/analytics/resolution-times` | Operational discrepancy resolution timing, not settlement timing. |
+| `operator-performance` | Route mapped — verification required | `/analytics/operator-stats` | Operational discrepancy statistics; verify tenant scoping and metric definitions. |
+| `sla-metrics` | Route mapped — verification required | `/analytics/sla-metrics` | Operational discrepancy SLA metrics, not a settlement guarantee. |
+| `flagged-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments` | High/critical persisted risk assessments are review flags, not proof of fraud. |
 | `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `duplicate-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `schema-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
