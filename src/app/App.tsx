@@ -228,7 +228,7 @@ export default function App() {
           : normalizedStatus === "failed" ? "Failed"
           : normalizedStatus === "refunded" ? "Refunded"
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
+          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
         return {
           id: item.id, customerId: "", customer: "Not supplied by transaction endpoint",
           reference: item.trans_id, method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
