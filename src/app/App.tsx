@@ -265,7 +265,7 @@ export default function App() {
         if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
         activeSession = await refreshApiSession(activeSession);
         setSession(activeSession);
-        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter, requestedStatus);
       }
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
