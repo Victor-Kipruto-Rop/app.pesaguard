@@ -55,9 +55,9 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Tenant-scoped weekly/monthly discrepancy trends; not a fraud probability model or financial loss forecast. |
-| `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `fraud-detection` | Route mapped — verification required | `/api/v1/fraud/assessments` | Existing persisted risk assessments only; not model execution or an investigation workflow. API PR #95 and staging verification required. |
+| `risk-events` | Route mapped — verification required | `/api/v1/fraud/assessments` | Persisted risk assessment records; API PR #95 and staging verification required. |
+| `suspicious-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments?status=HIGH,CRITICAL` | High/critical risk flags only; flags are not proof of fraud. API PR #95 and staging verification required. |
 | `alerts` | Route mapped — verification required | `/incidents/search` | Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts. |
 | `investigations` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -181,3 +181,5 @@ These views require an identifier before making a request. They remain read-only
 - Per-transaction risk assessment: `GET /api/v1/fraud/{transaction_id}`.
 
 - Reconciliation result collections: `GET /api/v1/reconciliation/results` supports tenant-scoped pagination, validated outcome filters, and exact transaction ID filtering. The response deliberately omits raw matched-record payloads.
+
+- Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.
