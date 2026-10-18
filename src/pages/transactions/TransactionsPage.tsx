@@ -32,7 +32,8 @@ interface TransactionsPageProps {
   livePage?: number;
   livePageSize?: number;
   liveFilter?: string;
-  onLivePageChange?: (page: number, perPage: number, filterText?: string) => void;
+  liveStatus?: string;
+  onLivePageChange?: (page: number, perPage: number, filterText?: string, statusFilter?: string) => void;
   onRefresh?: () => void;
   loadError?: string;
 }
@@ -77,6 +78,13 @@ function shortId(id: string): string {
   return `${id.slice(0, 10)}…${id.slice(-6)}`;
 }
 
+function apiStatusFilter(filter: StatusFilter): string {
+  if (filter === "All") return "";
+  if (filter === "Failed") return "FAILED";
+  if (filter === "Rejected") return "REJECTED";
+  return filter.toUpperCase();
+}
+
 function statusClass(status: TransactionStatus): string {
   if (status === "Matched" || status === "Completed" || status === "Reconciled") return "matched";
   if (status === "Pending" || status === "Received" || status === "Validated" || status === "Processing" || status === "Reconciling") return "pending";
@@ -86,7 +94,7 @@ function statusClass(status: TransactionStatus): string {
   return "unknown";
 }
 
-export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, livePage, livePageSize, liveFilter = "", onLivePageChange, onRefresh, loadError = "" }: TransactionsPageProps) {
+export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, livePage, livePageSize, liveFilter = "", liveStatus = "", onLivePageChange, onRefresh, loadError = "" }: TransactionsPageProps) {
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<StatusFilter>("All");
   const [dateFilter, setDateFilter] = useState<DateFilter>("All");
@@ -218,13 +226,13 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
     setMinAmount("");
     setMaxAmount("");
     setPageNumber(0);
-    if (isLiveData) onLivePageChange?.(1, pageSize, "");
+    if (isLiveData) onLivePageChange?.(1, pageSize, "", "");
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPageNumber(0);
-    if (isLiveData) onLivePageChange?.(1, pageSize, query.trim());
+    if (isLiveData) onLivePageChange?.(1, pageSize, query.trim(), liveStatus);
   }
 
   function copyId(transaction: Transaction) {
@@ -289,7 +297,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div className="transaction-toolbar__row transaction-toolbar__row--filters">
               <div className="transaction-status-filters" role="group" aria-label={isLiveData ? "Filter by transaction processing status" : "Filter by reconciliation status"}>
                 {visibleStatusFilters.map((filter) => (
-                  <button key={filter} type="button" className={`transaction-filter-chip${status === filter ? " is-active" : ""}${filter !== "All" ? ` transaction-filter-chip--${filter.toLowerCase()}` : ""}`} aria-pressed={status === filter} onClick={() => { setStatus(filter); setPageNumber(0); }}>{filter}</button>
+                  <button key={filter} type="button" className={`transaction-filter-chip${status === filter ? " is-active" : ""}${filter !== "All" ? ` transaction-filter-chip--${filter.toLowerCase()}` : ""}`} aria-pressed={status === filter} onClick={() => { setStatus(filter); setPageNumber(0); if (isLiveData) onLivePageChange?.(1, pageSize, query.trim(), apiStatusFilter(filter)); }}>{filter}</button>
                 ))}
               </div>
               <div className="transaction-date-filters" role="group" aria-label="Filter by date">
@@ -311,7 +319,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           </div>
 
           <div className="transaction-result-meta">
-            <span>{isLiveData ? `${liveTotal ?? filtered.length} tenant records in the API · ${transactions.length} loaded locally; filters apply only to loaded records` : `Showing ${filtered.length} sample transactions`}</span>
+            <span>{isLiveData ? `${liveTotal ?? filtered.length} matching tenant records · status/search are server-filtered; date/amount filters apply to this page` : `Showing ${filtered.length} sample transactions`}</span>
             <button type="button" onClick={clearFilters}>Clear filters <ListFilter size={14} aria-hidden="true" /></button>
           </div>
           {loadError && <p className="transaction-copy-feedback" role="alert">{loadError}</p>}
@@ -349,15 +357,15 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
 
           <div className="transaction-pagination">
             <label>Rows
-              <select aria-label="Transactions per page" value={pageSize} onChange={(event) => { const nextSize = Number(event.target.value); setPageSize(nextSize); setPageNumber(0); if (isLiveData) onLivePageChange?.(1, nextSize, query.trim()); }}>
+              <select aria-label="Transactions per page" value={pageSize} onChange={(event) => { const nextSize = Number(event.target.value); setPageSize(nextSize); setPageNumber(0); if (isLiveData) onLivePageChange?.(1, nextSize, query.trim(), liveStatus); }}>
                 {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </label>
             <span>{isLiveData ? `Page ${currentPage + 1} of ${pageCount} · ${filtered.length} matching records on this page · ${liveTotal ?? filtered.length} total in API` : `Showing ${filtered.length === 0 ? 0 : currentPage * pageSize + 1}–${Math.min((currentPage + 1) * pageSize, filtered.length)} of ${filtered.length} sample transactions`}</span>
             <div className="transaction-pagination__controls">
-              <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => { if (isLiveData) onLivePageChange?.(Math.max(1, currentPage), pageSize, query.trim()); else setPageNumber((page) => Math.max(0, page - 1)); }}><ChevronLeft size={14} /></button>
+              <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => { if (isLiveData) onLivePageChange?.(Math.max(1, currentPage), pageSize, query.trim(), liveStatus); else setPageNumber((page) => Math.max(0, page - 1)); }}><ChevronLeft size={14} /></button>
               <span>Page {currentPage + 1} of {pageCount}</span>
-              <button type="button" aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => { if (isLiveData) onLivePageChange?.(Math.min(pageCount, currentPage + 2), pageSize, query.trim()); else setPageNumber((page) => Math.min(pageCount - 1, page + 1)); }}><ChevronRight size={14} /></button>
+              <button type="button" aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => { if (isLiveData) onLivePageChange?.(Math.min(pageCount, currentPage + 2), pageSize, query.trim(), liveStatus); else setPageNumber((page) => Math.min(pageCount - 1, page + 1)); }}><ChevronRight size={14} /></button>
             </div>
           </div>
         </section>
