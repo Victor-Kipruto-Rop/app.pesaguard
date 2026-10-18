@@ -23,7 +23,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `home` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report returned by the Core API; not synthetic executive KPIs. |
 | `executive-overview` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; this route does not supply unrelated executive metrics. |
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
-| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; tenant isolation and staging verification remain release gates. |
+| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; tenant isolation and staging verification remain release gates. Current client loads the first API page only. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -160,5 +160,6 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 2. Prove tenant A cannot read or mutate tenant B's records.
 3. Verify route-level permissions and safe error responses.
 4. Implement missing endpoints with persistence, validation, audit logging, and idempotency for mutations.
-5. Pass frontend typecheck/build and backend CI, then verify staging with a real tenant.
-6. Do not label any mapped page production-ready before these checks pass.
+5. Fix the currently failing GitHub Actions CI run, then pass frontend typecheck/build and backend CI.
+6. Verify staging with a real tenant and confirm pagination/filter semantics against the deployed API.
+7. Do not label any mapped page production-ready before these checks pass.
