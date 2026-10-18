@@ -40,13 +40,23 @@ type SortColumn = "timestamp" | "amount";
 const statusFilters: StatusFilter[] = ["All", "Matched", "Pending", "Unmatched", "Disputed"];
 const pageSizes = [25, 50, 100];
 
+function formatTransactionAmount(transaction: Transaction): string {
+  if (!transaction.currency) return formatTransactionAmount(transaction);
+  try {
+    return new Intl.NumberFormat("en-KE", { style: "currency", currency: transaction.currency }).format(transaction.amount);
+  } catch {
+    return `${transaction.currency} ${transaction.amount.toLocaleString("en-KE")}`;
+  }
+}
+
 function exportTransactions(transactions: Transaction[], filename: string) {
   downloadCsv(
     filename,
-    ["Timestamp", "Amount (KES)", "Transaction ID", "Status", "Source", "Anomaly type", "Discrepancy ID", "Severity", "Reviewed"],
+    ["Timestamp", "Amount", "Currency", "Transaction ID", "Status", "Source", "Anomaly type", "Discrepancy ID", "Severity", "Reviewed"],
     transactions.map((transaction) => [
       transaction.timestamp,
       String(transaction.amount),
+      transaction.currency ?? "",
       transaction.reference,
       transaction.status,
       transaction.source,
@@ -365,7 +375,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <span className={`transaction-status transaction-status--${statusClass(activeTransaction.status)}`}><i />{activeTransaction.status}</span>
           </div>
           <dl className="transaction-detail__fields">
-            <div><dt>Amount</dt><dd>{formatKes(activeTransaction.amount)}</dd></div>
+            <div><dt>Amount</dt><dd>{formatTransactionAmount(activeTransaction)}</dd></div>
             <div><dt>Timestamp</dt><dd>{activeTransaction.timestamp}</dd></div>
             <div><dt>Source</dt><dd>{activeTransaction.source}</dd></div>
             <div><dt>Status</dt><dd><span className={`transaction-status transaction-status--${statusClass(activeTransaction.status)}`}><i />{activeTransaction.status}</span></dd></div>
