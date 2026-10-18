@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { LoginResult } from "../../lib/api";
@@ -207,7 +208,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     return () => { controller.abort(); cancel(); };
   }, [load, reloadVersion]);
 
-  const submitWorkflowCreate = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitWorkflowCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!definition?.workflow || !workflowTitle.trim()) return;
     let parsedPayload: unknown;
@@ -259,7 +260,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     }
   };
 
-  const submitWorkflowUpdate = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!definition?.workflow || !workflowRecordId.trim() || !workflowStatus) return;
     const basePath = definition.path.includes("/{record}") ? definition.path.split("/{record}")[0] : definition.path;
