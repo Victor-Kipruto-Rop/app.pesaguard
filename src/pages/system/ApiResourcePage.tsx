@@ -150,6 +150,12 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       setError({ message: "No dedicated, verified Core API endpoint is mapped to this page. Sample data and local-only mutations are disabled.", status: 501, code: "endpoint_not_implemented" });
       return () => undefined;
     }
+    if (definition.recordIdParam && !appliedRecordId.trim()) {
+      setLoading(false);
+      setError(null);
+      setResult(null);
+      return () => undefined;
+    }
     setLoading(true);
     void (async () => {
       try {
