@@ -217,6 +217,7 @@ The workflow detail editor now reads the latest record before PATCH and includes
 
 ## Additional workflow page wiring
 
+- `reconciliation-results` now uses the tenant-scoped paginated `/api/v1/reconciliation/results` collection, with match-outcome filters and exact transaction-ID search. It is read-only and does not start a reconciliation run.
 - `report-schedule-config` uses the persisted report-definition API for schedule metadata. It supports read/create/update flows with the record-version guard; recurring execution and delivery are not claimed until a scheduler/worker is deployed and monitored.
 - `export-history` reads paginated report-run summaries from `GET /api/v1/report-runs`. This is execution-summary history, not downloadable CSV/PDF artifact history.
 - The following pages remain intentionally unavailable until suitable domain APIs exist: manual matching actions, settlement statement comparison/variance detail, persisted data-quality trend analytics, report-recipient management, investigation-note append operations, and downloadable export artifact history. They must not be mapped to unrelated endpoints or populated with fixtures.
