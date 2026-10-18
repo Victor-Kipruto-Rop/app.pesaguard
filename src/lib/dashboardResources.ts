@@ -8,7 +8,7 @@ export interface DashboardResourceResult {
   fetchedAt: string;
 }
 
-type ResourceDefinition = { path: string; note: string; auth?: boolean };
+type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; queryParams?: Record<string, string> };
 
 // This registry deliberately includes only GET routes found in the Core API
 // route audit. It does not claim that a legacy route is production-safe; every
@@ -17,15 +17,15 @@ type ResourceDefinition = { path: string; note: string; auth?: boolean };
 const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   home: { path: "/api/v1/dashboard/overview", note: "Tenant-scoped persisted transaction and discrepancy metrics from the Core API." },
   "executive-overview": { path: "/api/v1/dashboard/overview", note: "Tenant-scoped persisted transaction and discrepancy metrics; no fabricated risk or revenue KPIs." },
-  "risk-overview": { path: "/analytics/incident-trends", note: "Incident trends; not a fraud probability model or financial loss forecast." },
+  "risk-overview": { path: "/analytics/incident-trends", note: "Tenant-scoped weekly and monthly discrepancy incident trends; not a fraud probability model or financial loss forecast." },
   alerts: { path: "/incidents/search", note: "Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts." },
-  "operational-activity": { path: "/activity-feed", note: "Activity feed returned by the Core API." },
+  "operational-activity": { path: "/activity-feed", note: "Latest tenant-scoped discrepancy activity events. This feed reflects discrepancy timelines, not every platform audit event.", queryParams: { limit: "50" } },
   "activity-log": { path: "/v1/customers/{tenant}/audit", note: "Tenant audit events; verify tenant authorization, event coverage and pagination before relying on it." },
-  exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
-  reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
-  "data-imports": { path: "/api/v1/imports?page=1&per_page=100", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions." },
-  "failed-transactions": { path: "/api/v1/transactions/search?status=FAILED%2CREJECTED&per_page=100", note: "Tenant-scoped failed/rejected transaction lifecycle records; not refunds or settlement failures." },
-  "pending-transactions": { path: "/api/v1/transactions/search?status=RECEIVED%2CVALIDATED%2CPROCESSING%2CRECONCILING&per_page=100", note: "Tenant-scoped in-progress transaction lifecycle records; these states are not reconciliation match outcomes." },
+  exceptions: { path: "/discrepancies", note: "Tenant-scoped discrepancy records with server-side pagination and supported status filtering.", paginated: true, statusFilter: true, statusLabel: "Discrepancy status", searchParam: "q", searchLabel: "Search discrepancy reference or type", statusOptions: [{ value: "open", label: "Open" }, { value: "pending", label: "Pending" }, { value: "needs_review", label: "Needs review" }, { value: "assigned", label: "Assigned" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }, { value: "missing_payment", label: "Missing payment" }, { value: "missing_transaction", label: "Missing transaction" }, { value: "amount_mismatch", label: "Amount mismatch" }, { value: "duplicate", label: "Duplicate" }] },
+  reconciliation: { path: "/analytics/reconciliation-report", note: "Tenant-scoped discrepancy operations summary for the last 30 days; not reconciliation-run history or a settlement report.", queryParams: { days: "30" } },
+  "data-imports": { path: "/api/v1/imports", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions.", paginated: true, statusFilter: true, statusLabel: "Import status", statusOptions: [{ value: "queued", label: "Queued" }, { value: "running", label: "Running" }, { value: "completed", label: "Completed" }, { value: "failed", label: "Failed" }] },
+  "failed-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped failed/rejected transaction lifecycle records; not refunds or settlement failures.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "FAILED,REJECTED", statusOptions: [{ value: "FAILED,REJECTED", label: "Failed and rejected" }, { value: "FAILED", label: "Failed" }, { value: "REJECTED", label: "Rejected" }] },
+  "pending-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped in-progress transaction lifecycle records; these states are not reconciliation match outcomes.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", statusOptions: [{ value: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", label: "All in-progress states" }, { value: "RECEIVED", label: "Received" }, { value: "VALIDATED", label: "Validated" }, { value: "PROCESSING", label: "Processing" }, { value: "RECONCILING", label: "Reconciling" }] },
   "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
   "service-status": { path: "/public/status", note: "Current API status only; not a historical uptime report.", auth: false },
   integrations: { path: "/providers", note: "Provider registry. Only backend-configured, supported provider types should be shown." },
@@ -52,10 +52,13 @@ export function dashboardResourceDefinition(page: DashboardPage, tenantId?: stri
   return definition;
 }
 
+export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; search?: string; }
+
 export async function fetchDashboardResource(
   page: DashboardPage,
   session: LoginResult,
   signal?: AbortSignal,
+  options: DashboardResourceOptions = {},
 ): Promise<DashboardResourceResult> {
   const definition = dashboardResourceDefinition(page, session.tenantId);
   if (!definition) {
@@ -64,7 +67,19 @@ export async function fetchDashboardResource(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${definition.path}`, {
+    const url = new URL(`${API_BASE_URL}${definition.path}`);
+    for (const [key, value] of Object.entries(definition.queryParams ?? {})) url.searchParams.set(key, value);
+    if (definition.searchParam && options.search) url.searchParams.set(definition.searchParam, options.search.slice(0, 200));
+    if (definition.paginated) {
+      url.searchParams.set("page", String(Math.max(1, Math.floor(options.page ?? 1))));
+      url.searchParams.set("per_page", String(Math.min(100, Math.max(1, Math.floor(options.perPage ?? 25)))));
+    }
+    if (definition.statusFilter) {
+      const status = options.status === undefined ? definition.defaultStatus : options.status;
+      if (status) url.searchParams.set("status", status);
+      else url.searchParams.delete("status");
+    }
+    response = await fetch(url.toString(), {
       method: "GET",
       headers: {
         Accept: "application/json",

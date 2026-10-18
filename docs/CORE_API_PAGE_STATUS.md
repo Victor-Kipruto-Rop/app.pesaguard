@@ -22,14 +22,14 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 |---|---|---|---|
 | `home` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; endpoint test and staging verification remain required. |
 | `executive-overview` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; no fabricated risk or revenue KPIs. |
-| `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
+| `operational-activity` | Route mapped — verification required | `/activity-feed?limit=50` | Tenant-scoped latest discrepancy timeline events; not a complete platform audit log. |
 | `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination, text search and lifecycle status filters are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
-| `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
-| `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
+| `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report?days=30` | Tenant-scoped discrepancy operations summary; not reconciliation-run history or a settlement report. |
+| `exceptions` | Route mapped — verification required | `/discrepancies` | Tenant-scoped discrepancy records with server-side pagination and supported status filters; API contract and staging verification remain required. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reports` | Route mapped — verification required | `/v1/customers/{tenant}/reports` | Tenant report listing; verify tenant authorization and deployed response contract before release. |
-| `data-imports` | Route mapped — verification required | `/api/v1/imports?page=1&per_page=100` | Tenant-scoped import history; upload and processing workflow verification remain separate. |
+| `data-imports` | Route mapped — verification required | `/api/v1/imports` | Server-side pagination and queued/running/completed/failed filters; upload and processing workflow verification remain separate. |
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
 | `import-sync-activity` | Route mapped — verification required | `/api/v1/operations/outbox` | Operational outbox records; not a complete import-job history. |
@@ -54,7 +54,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `data-lineage` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Incident trends; not a fraud probability model or financial loss forecast. |
+| `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Tenant-scoped weekly/monthly discrepancy trends; not a fraud probability model or financial loss forecast. |
 | `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -77,8 +77,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `branches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `user-profile` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `notification-center` | Route mapped — verification required | `/api/v1/communications/messages` | Communication messages; not notification preferences. |
-| `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search?status=FAILED,REJECTED` | Server-side lifecycle filter; does not represent refunds or settlement failures. |
-| `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search?status=RECEIVED,VALIDATED,PROCESSING,RECONCILING` | Processing lifecycle only; not a reconciliation outcome. |
+| `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and failed/rejected lifecycle filters; does not represent refunds or settlement failures. |
+| `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and received/validated/processing/reconciling lifecycle filters; not a reconciliation outcome. |
 | `refunds-reversals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `transaction-import-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-run-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
