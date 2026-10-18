@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { LoginResult } from "../../lib/api";
 import { PesaguardApiError, refreshApiSession } from "../../lib/api";
