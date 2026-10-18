@@ -213,3 +213,11 @@ Explicitly out of scope: scheduler execution without a deployed worker, automati
 ## Workflow mutation safety follow-up
 
 The workflow detail editor now reads the latest record before PATCH and includes the returned integer `version` in the update request. This activates the Core API optimistic-concurrency guard and avoids sending a mutation if the record version is absent or the pre-update read fails. Privacy request detail controls no longer offer the unsupported `completed` transition; actual privacy export/deletion execution remains a separate workflow. These changes reduce accidental overwrites but still require CI and staging verification.
+
+
+## Additional workflow page wiring
+
+- `report-schedule-config` uses the persisted report-definition API for schedule metadata. It supports read/create/update flows with the record-version guard; recurring execution and delivery are not claimed until a scheduler/worker is deployed and monitored.
+- `export-history` reads paginated report-run summaries from `GET /api/v1/report-runs`. This is execution-summary history, not downloadable CSV/PDF artifact history.
+- The following pages remain intentionally unavailable until suitable domain APIs exist: manual matching actions, settlement statement comparison/variance detail, persisted data-quality trend analytics, report-recipient management, investigation-note append operations, and downloadable export artifact history. They must not be mapped to unrelated endpoints or populated with fixtures.
+- Settlement/reversal pages are review workflows only; they do not execute payment, settlement, refund, reversal, or ledger-posting actions. Privacy pages register requests but do not claim data has been exported or deleted.
