@@ -153,11 +153,12 @@ export interface ApiTransactionPage {
   total: number;
 }
 
-export async function fetchTenantTransactions(accessToken: string, page = 1, perPage = 25, filterText = "", signal?: AbortSignal): Promise<ApiTransactionPage> {
+export async function fetchTenantTransactions(accessToken: string, page = 1, perPage = 25, filterText = "", statusFilter = "", signal?: AbortSignal): Promise<ApiTransactionPage> {
   let response: Response;
   try {
     const query = new URLSearchParams({ page: String(page), per_page: String(perPage), sort: "created_at:desc" });
     if (filterText.trim()) query.set("filter", filterText.trim());
+    if (statusFilter.trim()) query.set("status", statusFilter.trim());
     response = await fetch(`${API_BASE_URL}/api/v1/transactions/search?${query.toString()}`, {
       method: "GET",
       headers: { Accept: "application/json", Authorization: `Bearer ${accessToken}` },
