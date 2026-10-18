@@ -144,6 +144,7 @@ export const navigationItems: NavigationItem[] = [
   { label: "Branches", page: "branches", icon: Building2, group: "People & Access" },
   { label: "Failed Transactions", page: "failed-transactions", icon: Activity, group: "Payments" },
   { label: "Refunds & Reversals", page: "refunds-reversals", icon: WalletCards, group: "Payments" },
+  { label: "Refund / Reversal Review Detail", page: "refund-reversal-detail", icon: FileText, group: "Payments" },
   { label: "Unmatched Transactions", page: "unmatched-transactions", icon: GitCompareArrows, group: "Payments" },
   { label: "Manual Matching", page: "manual-matching", icon: GitCompareArrows, group: "Payments" },
   { label: "Settlement Discrepancies", page: "settlement-discrepancies", icon: WalletCards, group: "Payments" },
