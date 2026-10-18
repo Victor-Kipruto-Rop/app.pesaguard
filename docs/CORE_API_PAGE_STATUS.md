@@ -50,7 +50,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `api-developer-resources` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-sources` | Route mapped — verification required | `/providers` | Provider registry only; this is not a data-quality result. |
-| `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `validation-results` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Import-level validation counters only; row-level findings are not available. |
 | `duplicate-detection` | Route mapped — verification required | `/api/v1/reconciliation/results?status=DUPLICATE` | Persisted reconciliation outcomes marked duplicate; not a standalone fraud or global duplicate-detection service. |
 | `schema-mapping` | Route mapped — verification required | `/api/v1/catalog/datasets/{dataset_name}` | Read-only governed dataset metadata; does not edit mappings. |
 | `data-lineage` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
@@ -123,7 +123,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `column-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `validation-review` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `validation-review` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Read-only validation summary; no approval or reprocessing action. |
 | `mpesa-setup` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `callback-configuration` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `credential-rotation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
