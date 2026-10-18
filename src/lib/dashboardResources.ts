@@ -8,7 +8,7 @@ export interface DashboardResourceResult {
   fetchedAt: string;
 }
 
-type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; queryParams?: Record<string, string> };
+type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; recordIdParam?: { label: string; help: string }; queryParams?: Record<string, string> };
 
 // This registry deliberately includes only GET routes found in the Core API
 // route audit. It does not claim that a legacy route is production-safe; every
@@ -23,7 +23,23 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "activity-log": { path: "/v1/customers/{tenant}/audit", note: "Tenant audit events; verify tenant authorization, event coverage and pagination before relying on it." },
   exceptions: { path: "/discrepancies", note: "Tenant-scoped discrepancy records with server-side pagination and supported status filtering.", paginated: true, statusFilter: true, statusLabel: "Discrepancy status", searchParam: "q", searchLabel: "Search discrepancy reference or type", statusOptions: [{ value: "open", label: "Open" }, { value: "pending", label: "Pending" }, { value: "needs_review", label: "Needs review" }, { value: "assigned", label: "Assigned" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }, { value: "missing_payment", label: "Missing payment" }, { value: "missing_transaction", label: "Missing transaction" }, { value: "amount_mismatch", label: "Amount mismatch" }, { value: "duplicate", label: "Duplicate" }] },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Tenant-scoped discrepancy operations summary for the last 30 days; not reconciliation-run history or a settlement report.", queryParams: { days: "30" } },
+  "processing-jobs": { path: "/api/v1/imports", note: "Tenant-scoped import jobs only, not every background processing task; server-side pagination and import lifecycle filters are available.", paginated: true, statusFilter: true, statusLabel: "Import status", statusOptions: [{ value: "queued", label: "Queued" }, { value: "running", label: "Running" }, { value: "completed", label: "Completed" }, { value: "failed", label: "Failed" }] },
   "data-imports": { path: "/api/v1/imports", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions.", paginated: true, statusFilter: true, statusLabel: "Import status", statusOptions: [{ value: "queued", label: "Queued" }, { value: "running", label: "Running" }, { value: "completed", label: "Completed" }, { value: "failed", label: "Failed" }] },
+  "transaction-detail": { path: "/api/v1/transactions/{record}", note: "Tenant-scoped transaction detail by internal transaction ID; phone numbers and raw payloads are redacted in the dashboard.", recordIdParam: { label: "Internal transaction ID", help: "Enter the transaction record ID returned by the Core API." } },
+  "transaction-lifecycle": { path: "/api/v1/transactions/{record}/status", note: "Tenant-scoped lifecycle status for one transaction.", recordIdParam: { label: "Internal transaction ID", help: "Enter the transaction record ID returned by the Core API." } },
+  "transaction-import-results": { path: "/api/v1/imports/{record}", note: "Tenant-scoped import job details. Enter an import job ID from Data Imports.", recordIdParam: { label: "Import job ID", help: "Use an import ID returned by Data Imports." } },
+  "data-lineage": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage for one persisted transaction, not a dataset-wide lineage graph.", recordIdParam: { label: "Transaction identifier", help: "Enter the transaction identifier expected by the Core API lineage endpoint." } },
+  "lineage-record-detail": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage record for one transaction.", recordIdParam: { label: "Transaction identifier", help: "Enter a transaction identifier." } },
+  "webhook-deliveries": { path: "/webhooks/{record}/deliveries", note: "Delivery history for one configured webhook. Signing secrets are never displayed.", recordIdParam: { label: "Webhook ID", help: "Enter a configured webhook ID from the Webhooks page." } },
+  "reconciliation-results": { path: "/api/v1/reconciliation/{record}", note: "Tenant-scoped reconciliation result and transaction event history for one transaction; not a reconciliation-run collection.", recordIdParam: { label: "Internal transaction ID", help: "Enter the transaction record ID returned by the Core API." } },
+  "risk-alert-detail": { path: "/api/v1/fraud/{record}", note: "Tenant-scoped risk assessment for one transaction; this is not an investigation queue.", recordIdParam: { label: "Transaction ID or reference", help: "Enter an internal transaction ID or provider transaction reference supported by the Core API." } },
+  "matched-transactions": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped paginated reconciliation match records filtered to MATCHED outcomes; does not execute reconciliation.", paginated: true, statusFilter: true, defaultStatus: "MATCHED", statusLabel: "Match outcome", statusOptions: [{ value: "MATCHED", label: "Matched" }] },
+  "unmatched-transactions": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped paginated reconciliation outcomes filtered to unmatched, mismatched, and duplicate results.", paginated: true, statusFilter: true, defaultStatus: "UNMATCHED,MISMATCH,DUPLICATE", statusLabel: "Match outcome", statusOptions: [{ value: "UNMATCHED,MISMATCH,DUPLICATE", label: "All unmatched / mismatch / duplicate" }, { value: "UNMATCHED", label: "Unmatched" }, { value: "MISMATCH", label: "Mismatch" }, { value: "DUPLICATE", label: "Duplicate" }] },
+  "partial-matches": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped paginated reconciliation outcomes filtered to PARTIAL matches.", paginated: true, statusFilter: true, defaultStatus: "PARTIAL", statusLabel: "Match outcome", statusOptions: [{ value: "PARTIAL", label: "Partial" }] },
+  "matching-history": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped paginated reconciliation match history. Records are read-only; this endpoint does not create or rerun reconciliation jobs.", paginated: true, statusFilter: true, statusLabel: "Match outcome", searchParam: "transaction_id", searchLabel: "Search exact transaction ID", statusOptions: [{ value: "MATCHED", label: "Matched" }, { value: "UNMATCHED", label: "Unmatched" }, { value: "PARTIAL", label: "Partial" }, { value: "MISMATCH", label: "Mismatch" }, { value: "DUPLICATE", label: "Duplicate" }, { value: "PENDING", label: "Pending" }, { value: "EXCEPTION", label: "Exception" }] },
+  "fraud-detection": { path: "/api/v1/fraud/assessments", note: "Persisted tenant-scoped transaction risk assessments only; this does not trigger model inference or guarantee fraud detection.", paginated: true, statusFilter: true, statusLabel: "Risk level", statusOptions: [{ value: "LOW", label: "Low" }, { value: "MEDIUM", label: "Medium" }, { value: "HIGH", label: "High" }, { value: "CRITICAL", label: "Critical" }] },
+  "risk-events": { path: "/api/v1/fraud/assessments", note: "Persisted tenant-scoped transaction risk assessments. These are model/rule outputs, not a complete investigation or incident workflow.", paginated: true, statusFilter: true, statusLabel: "Risk level", statusOptions: [{ value: "LOW", label: "Low" }, { value: "MEDIUM", label: "Medium" }, { value: "HIGH", label: "High" }, { value: "CRITICAL", label: "Critical" }] },
+  "suspicious-transactions": { path: "/api/v1/fraud/assessments", note: "Tenant-scoped high/critical persisted risk assessments; these are flags for review, not proof of fraud.", paginated: true, statusFilter: true, defaultStatus: "HIGH,CRITICAL", statusLabel: "Risk level", statusOptions: [{ value: "HIGH,CRITICAL", label: "High and critical" }, { value: "HIGH", label: "High" }, { value: "CRITICAL", label: "Critical" }] },
   "failed-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped failed/rejected transaction lifecycle records; not refunds or settlement failures.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "FAILED,REJECTED", statusOptions: [{ value: "FAILED,REJECTED", label: "Failed and rejected" }, { value: "FAILED", label: "Failed" }, { value: "REJECTED", label: "Rejected" }] },
   "pending-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped in-progress transaction lifecycle records; these states are not reconciliation match outcomes.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", statusOptions: [{ value: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", label: "All in-progress states" }, { value: "RECEIVED", label: "Received" }, { value: "VALIDATED", label: "Validated" }, { value: "PROCESSING", label: "Processing" }, { value: "RECONCILING", label: "Reconciling" }] },
   "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
@@ -52,7 +68,7 @@ export function dashboardResourceDefinition(page: DashboardPage, tenantId?: stri
   return definition;
 }
 
-export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; search?: string; }
+export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; search?: string; recordId?: string; }
 
 export async function fetchDashboardResource(
   page: DashboardPage,
@@ -65,9 +81,16 @@ export async function fetchDashboardResource(
     throw new PesaguardApiError("This page has no dedicated, verified Core API resource. It remains unavailable rather than displaying sample data.", 501, "endpoint_not_implemented");
   }
 
+  const recordId = options.recordId?.trim();
+  if (definition.recordIdParam && !recordId) {
+    throw new PesaguardApiError(`Enter ${definition.recordIdParam.label.toLowerCase()} to load this resource.`, 400, "record_id_required");
+  }
+  const resolvedPath = definition.path.includes("{record}")
+    ? definition.path.replace("{record}", encodeURIComponent(recordId ?? ""))
+    : definition.path;
   let response: Response;
   try {
-    const url = new URL(`${API_BASE_URL}${definition.path}`);
+    const url = new URL(`${API_BASE_URL}${resolvedPath}`);
     for (const [key, value] of Object.entries(definition.queryParams ?? {})) url.searchParams.set(key, value);
     if (definition.searchParam && options.search) url.searchParams.set(definition.searchParam, options.search.slice(0, 200));
     if (definition.paginated) {
@@ -102,7 +125,7 @@ export async function fetchDashboardResource(
       typeof record.error === "string" ? record.error : "api_error",
     );
   }
-  return { path: definition.path, status: response.status, payload, fetchedAt: new Date().toISOString() };
+  return { path: resolvedPath, status: response.status, payload, fetchedAt: new Date().toISOString() };
 }
 
 export function dashboardResourceNote(page: DashboardPage, tenantId?: string): string {

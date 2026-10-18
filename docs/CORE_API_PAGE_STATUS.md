@@ -51,26 +51,26 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `duplicate-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `schema-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `data-lineage` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `data-lineage` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
+| `processing-jobs` | Route mapped — verification required | `/api/v1/imports` | Import jobs only, not all background processing tasks. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Tenant-scoped weekly/monthly discrepancy trends; not a fraud probability model or financial loss forecast. |
-| `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `fraud-detection` | Route mapped — verification required | `/api/v1/fraud/assessments` | Existing persisted risk assessments only; not model execution or an investigation workflow. API PR #95 and staging verification required. |
+| `risk-events` | Route mapped — verification required | `/api/v1/fraud/assessments` | Persisted risk assessment records; API PR #95 and staging verification required. |
+| `suspicious-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments?status=HIGH,CRITICAL` | High/critical risk flags only; flags are not proof of fraud. API PR #95 and staging verification required. |
 | `alerts` | Route mapped — verification required | `/incidents/search` | Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts. |
 | `investigations` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-runs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `matching-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matching-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `matching-history` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation match history; API PR #95 must merge and staging verification is required. |
 | `settlement-batches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `scheduled-reconciliation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-builder` | Unavailable — no suitable route mapped | — | A dataset catalog is not a report builder; report definition and execution APIs are required. |
 | `scheduled-reports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `export-center` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `webhook-deliveries` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `webhook-deliveries` | Route mapped — verification required | `/webhooks/{webhook_id}/deliveries` | Requires webhook ID and `manage:webhooks` permission; staging verification required. |
 | `support-requests` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `retention-privacy` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `organization-profile` | Route mapped — verification required | `/tenant/current` | Authenticated tenant context; not organization CRUD. |
@@ -80,11 +80,11 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and failed/rejected lifecycle filters; does not represent refunds or settlement failures. |
 | `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and received/validated/processing/reconciling lifecycle filters; not a reconciliation outcome. |
 | `refunds-reversals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `transaction-import-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `transaction-import-results` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Requires an import job ID; staging verification required. |
 | `reconciliation-run-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matched-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `unmatched-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `partial-matches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `matched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=MATCHED` | Tenant-scoped reconciliation outcomes; API PR #95 must merge and staging verification is required. |
+| `unmatched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=UNMATCHED,MISMATCH,DUPLICATE` | Tenant-scoped unmatched/mismatch/duplicate outcomes; API PR #95 must merge and staging verification is required. |
+| `partial-matches` | Route mapped — verification required | `/api/v1/reconciliation/results?status=PARTIAL` | Tenant-scoped partial-match outcomes; API PR #95 must merge and staging verification is required. |
 | `manual-matching` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `match-approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -112,11 +112,11 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `account-closure` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `onboarding-resume` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `first-login-checklist` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `transaction-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `transaction-lifecycle` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `transaction-detail` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}` | Requires internal transaction ID; response contract and staging verification required. |
+| `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `create-reconciliation-run` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reconciliation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/{transaction_id}` | Transaction-level reconciliation result/history; not run history. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -142,7 +142,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `branch-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `validation-rule-editor` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `pipeline-failure-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `lineage-record-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `lineage-record-detail` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
 | `investigation-evidence` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `investigation-notes` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rule-simulation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -163,3 +163,23 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 5. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
 6. Verify server-side transaction pagination/text search/status filters against the deployed API; promote date/amount filters and sorting to server-side parameters if required for large datasets.
 7. Verify staging with a real tenant. Do not label any mapped page production-ready before these checks pass.
+
+
+## Expanded record-level integrations
+
+The dashboard resource layer now supports identifier-driven loading for existing Core API routes:
+
+- Transaction detail: `GET /api/v1/customers/{tenant_id}/transactions/{trans_id}`
+- Import job detail: `GET /api/v1/imports/{import_id}`
+- Transaction lineage: `GET /api/v1/lineage/transactions/{transaction_id}`
+- Webhook delivery history: `GET /webhooks/{webhook_id}/deliveries`
+
+These views require an identifier before making a request. They remain read-only, use the authenticated bearer token, avoid sample-data fallback, and show API errors directly. Tenant access, permissions, deployed response shapes, and staging behavior still require verification before production readiness can be claimed. A Daraja transaction reference and an internal transaction ID may not be interchangeable.
+- Transaction detail: `GET /api/v1/transactions/{transaction_id}` (internal transaction ID).
+- Transaction lifecycle: `GET /api/v1/transactions/{transaction_id}/status`.
+- Transaction reconciliation result/history: `GET /api/v1/reconciliation/{transaction_id}`.
+- Per-transaction risk assessment: `GET /api/v1/fraud/{transaction_id}`.
+
+- Reconciliation result collections: `GET /api/v1/reconciliation/results` supports tenant-scoped pagination, validated outcome filters, and exact transaction ID filtering. The response deliberately omits raw matched-record payloads.
+
+- Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.

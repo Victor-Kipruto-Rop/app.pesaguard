@@ -32,7 +32,7 @@ function redactSensitive(value: unknown): unknown {
   if (!isRecord(value)) return value;
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [
     key,
-    /(secret|token|password|credential|private.?key|signing.?key|authorization|api.?key)/i.test(key)
+    /(secret|token|password|credential|private.?key|signing.?key|authorization|api.?key|raw.?payload|msisdn|phone.?number)/i.test(key)
       ? "[REDACTED]"
       : redactSensitive(item),
   ]));
@@ -130,12 +130,16 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [resourceStatus, setResourceStatus] = useState("");
   const [resourceSearch, setResourceSearch] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
+  const [recordId, setRecordId] = useState("");
+  const [appliedRecordId, setAppliedRecordId] = useState("");
 
   useEffect(() => {
     setResourcePage(1);
     setResourceStatus(definition?.defaultStatus ?? "");
     setResourceSearch("");
     setAppliedSearch("");
+    setRecordId("");
+    setAppliedRecordId("");
   }, [page, definition?.defaultStatus]);
 
   const load = useCallback((signal: AbortSignal) => {
@@ -146,10 +150,16 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       setError({ message: "No dedicated, verified Core API endpoint is mapped to this page. Sample data and local-only mutations are disabled.", status: 501, code: "endpoint_not_implemented" });
       return () => undefined;
     }
+    if (definition.recordIdParam && !appliedRecordId.trim()) {
+      setLoading(false);
+      setError(null);
+      setResult(null);
+      return () => undefined;
+    }
     setLoading(true);
     void (async () => {
       try {
-        const response = await fetchDashboardResource(page, session, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch });
+        const response = await fetchDashboardResource(page, session, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch, recordId: appliedRecordId });
         if (!signal.aborted) setResult(response);
       } catch (cause: unknown) {
         if (signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
@@ -204,6 +214,20 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
         </div>
       </section>
 
+
+      {definition?.recordIdParam && (
+        <section className="panel" style={{ padding: 16 }}>
+          <form onSubmit={(event) => { event.preventDefault(); setAppliedRecordId(recordId.trim()); }} style={{ display: "flex", alignItems: "end", gap: 12, flexWrap: "wrap" }}>
+            <label style={{ display: "grid", gap: 6, flex: "1 1 320px", fontSize: 13 }}>
+              {definition.recordIdParam.label}
+              <input value={recordId} onChange={(event) => setRecordId(event.target.value)} placeholder={definition.recordIdParam.label} maxLength={200} autoComplete="off" />
+              <small style={{ opacity: 0.7 }}>{definition.recordIdParam.help}</small>
+            </label>
+            <button type="submit" className="button button-primary" disabled={loading || !recordId.trim()}>Load record</button>
+            {appliedRecordId && <button type="button" className="button button-secondary" onClick={() => { setRecordId(""); setAppliedRecordId(""); }} disabled={loading}>Clear</button>}
+          </form>
+        </section>
+      )}
 
       {definition && (definition.paginated || definition.statusFilter) && (
         <section className="panel" style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
