@@ -22,9 +22,9 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 |---|---|---|---|
 | `home` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; endpoint test and staging verification remain required. |
 | `executive-overview` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; no fabricated risk or revenue KPIs. |
-| `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
+| `operational-activity` | Route mapped — verification required | `/activity-feed?limit=50` | Tenant-scoped latest discrepancy timeline events; not a complete platform audit log. |
 | `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination, text search and lifecycle status filters are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
-| `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
+| `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report?days=30` | Tenant-scoped discrepancy operations summary; not reconciliation-run history or a settlement report. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Tenant-scoped discrepancy records with server-side pagination and supported status filters; API contract and staging verification remain required. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -54,7 +54,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `data-lineage` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Incident trends; not a fraud probability model or financial loss forecast. |
+| `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Tenant-scoped weekly/monthly discrepancy trends; not a fraud probability model or financial loss forecast. |
 | `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
