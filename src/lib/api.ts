@@ -49,6 +49,9 @@ export interface LoginResult {
   userId: string;
   username: string;
   expiresIn: number | null;
+  refreshToken: string;
+  deviceId: string;
+  sessionId: string;
 }
 
 export async function loginToApi(email: string, password: string, tenantId = "default"): Promise<LoginResult> {
@@ -76,7 +79,8 @@ export async function loginToApi(email: string, password: string, tenantId = "de
     ? record.access_token
     : typeof record.token === "string" ? record.token : "";
   const returnedTenant = typeof record.tenant_id === "string" ? record.tenant_id : "";
-  if (!accessToken || !returnedTenant) {
+  const refreshToken = typeof record.refresh_token === "string" ? record.refresh_token : "";
+  if (!accessToken || !returnedTenant || !refreshToken) {
     throw new PesaguardApiError("The identity service returned an incomplete session. No dashboard access was granted.", response.status, "invalid_session_response");
   }
 
@@ -86,6 +90,35 @@ export async function loginToApi(email: string, password: string, tenantId = "de
     tenantId: returnedTenant,
     userId: typeof record.user_id === "string" ? record.user_id : typeof user.id === "string" ? user.id : "",
     username: typeof record.username === "string" ? record.username : typeof user.username === "string" ? user.username : email.trim(),
+    expiresIn: typeof record.expires_in === "number" ? record.expires_in : null,
+    refreshToken,
+    deviceId: typeof record.device_id === "string" ? record.device_id : "",
+    sessionId: typeof record.session_id === "string" ? record.session_id : "",
+  };
+}
+
+export async function refreshApiSession(session: LoginResult): Promise<LoginResult> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ refresh_token: session.refreshToken, device_id: session.deviceId }),
+    });
+  } catch {
+    throw new PesaguardApiError("Could not reach PesaGuard session renewal. Please retry when the API is available.", 0, "network_error");
+  }
+  const payload = await readPayload(response);
+  if (!response.ok) throw apiError(payload, response.status);
+  const record = payload && typeof payload === "object" ? payload as Record<string, unknown> : {};
+  if (typeof record.access_token !== "string" || typeof record.refresh_token !== "string") {
+    throw new PesaguardApiError("The identity service returned an incomplete renewed session.", response.status, "invalid_session_response");
+  }
+  return {
+    ...session,
+    accessToken: record.access_token,
+    refreshToken: record.refresh_token,
     expiresIn: typeof record.expires_in === "number" ? record.expires_in : null,
   };
 }
