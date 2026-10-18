@@ -287,7 +287,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
               <label className="amount-input"><span className="visually-hidden">Minimum amount</span><input inputMode="numeric" type="number" min="0" placeholder="Min amount" value={minAmount} onChange={(event) => { setMinAmount(event.target.value); setPageNumber(0); }} /><ChevronsUpDown size={13} aria-hidden="true" /></label>
               <span className="amount-separator">–</span>
               <label className="amount-input"><span className="visually-hidden">Maximum amount</span><input inputMode="numeric" type="number" min="0" placeholder="Max amount" value={maxAmount} onChange={(event) => { setMaxAmount(event.target.value); setPageNumber(0); }} /><ChevronsUpDown size={13} aria-hidden="true" /></label>
-              <button className="tx-button tx-button--outline transaction-export" type="button" onClick={() => exportTransactions(filtered, "pesaguard-preview-transactions.csv")}><Download size={14} aria-hidden="true" /> Export CSV</button>
+              <button className="tx-button tx-button--outline transaction-export" type="button" onClick={() => exportTransactions(filtered, isLiveData ? "pesaguard-tenant-transactions.csv" : "pesaguard-preview-transactions.csv")}><Download size={14} aria-hidden="true" /> Export CSV</button>
             </div>
           </div>
 
@@ -348,7 +348,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div className="transaction-bulkbar__summary"><strong>{selectedIds.size} selected</strong><span>Select transactions to perform bulk actions.</span></div>
             <div className="transaction-bulkbar__actions">
               <button className="tx-button tx-button--primary" type="button" onClick={() => markReviewed(selectedIds)}><Check size={15} />Mark Reviewed</button>
-              <button className="tx-button tx-button--outline" type="button" onClick={() => exportTransactions(selectedTransactions, "pesaguard-preview-selected-transactions.csv")}><Download size={14} />Export Selected</button>
+              <button className="tx-button tx-button--outline" type="button" onClick={() => exportTransactions(selectedTransactions, isLiveData ? "pesaguard-tenant-selected-transactions.csv" : "pesaguard-preview-selected-transactions.csv")}><Download size={14} />Export Selected</button>
               <button className="tx-button tx-button--quiet" type="button" onClick={() => setSelectedIds(new Set())}>Clear Selection <X size={14} /></button>
             </div>
           </section>
