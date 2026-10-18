@@ -25,7 +25,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
 | `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination, text search and lifecycle status filters are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
-| `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
+| `exceptions` | Route mapped — verification required | `/discrepancies` | Tenant-scoped discrepancy records with server-side pagination and supported status filters; API contract and staging verification remain required. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reports` | Route mapped — verification required | `/v1/customers/{tenant}/reports` | Tenant report listing; verify tenant authorization and deployed response contract before release. |
