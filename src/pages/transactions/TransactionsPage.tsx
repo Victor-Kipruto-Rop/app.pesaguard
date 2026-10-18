@@ -29,31 +29,47 @@ interface TransactionsPageProps {
   onTransactionsChange: (transactions: Transaction[]) => void;
   isLiveData?: boolean;
   liveTotal?: number;
+  livePage?: number;
+  livePageSize?: number;
+  liveFilter?: string;
+  liveStatus?: string;
+  onLivePageChange?: (page: number, perPage: number, filterText?: string, statusFilter?: string) => void;
   onRefresh?: () => void;
   loadError?: string;
 }
 
-type StatusFilter = "All" | "Matched" | "Pending" | "Unmatched" | "Disputed";
+type StatusFilter = "All" | "Matched" | "Pending" | "Unmatched" | "Disputed" | "Received" | "Validated" | "Processing" | "Reconciling" | "Reconciled" | "Failed" | "Rejected";
 type DateFilter = "All" | "Today" | "7d" | "30d" | "Custom";
 type SortColumn = "timestamp" | "amount";
 
 const statusFilters: StatusFilter[] = ["All", "Matched", "Pending", "Unmatched", "Disputed"];
+const liveStatusFilters: StatusFilter[] = ["All", "Received", "Validated", "Processing", "Reconciling", "Reconciled", "Failed", "Rejected"];
 const pageSizes = [25, 50, 100];
+
+function formatTransactionAmount(transaction: Transaction): string {
+  if (!transaction.currency) return formatKes(transaction.amount);
+  try {
+    return new Intl.NumberFormat("en-KE", { style: "currency", currency: transaction.currency }).format(transaction.amount);
+  } catch {
+    return `${transaction.currency} ${transaction.amount.toLocaleString("en-KE")}`;
+  }
+}
 
 function exportTransactions(transactions: Transaction[], filename: string) {
   downloadCsv(
     filename,
-    ["Timestamp", "Amount (KES)", "Transaction ID", "Status", "Source", "Anomaly type", "Discrepancy ID", "Severity", "Reviewed"],
+    ["Timestamp", "Amount", "Currency", "Transaction ID", "Status", "Source", "Anomaly type", "Discrepancy ID", "Severity", "Reviewed"],
     transactions.map((transaction) => [
       transaction.timestamp,
       String(transaction.amount),
+      transaction.currency ?? "",
       transaction.reference,
       transaction.status,
       transaction.source,
       transaction.anomalyType,
       transaction.discrepancyId,
       transaction.severity,
-      transaction.reviewed ? "Yes" : "No",
+      transaction.reviewed === null ? "Unknown" : transaction.reviewed ? "Yes" : "No",
     ]),
   );
 }
@@ -62,15 +78,23 @@ function shortId(id: string): string {
   return `${id.slice(0, 10)}…${id.slice(-6)}`;
 }
 
-function statusClass(status: TransactionStatus): string {
-  if (status === "Matched" || status === "Completed") return "matched";
-  if (status === "Pending") return "pending";
-  if (status === "Disputed") return "disputed";
-  if (status === "Unmatched" || status === "Failed") return "unmatched";
-  return "refunded";
+function apiStatusFilter(filter: StatusFilter): string {
+  if (filter === "All") return "";
+  if (filter === "Failed") return "FAILED";
+  if (filter === "Rejected") return "REJECTED";
+  return filter.toUpperCase();
 }
 
-export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, onRefresh, loadError = "" }: TransactionsPageProps) {
+function statusClass(status: TransactionStatus): string {
+  if (status === "Matched" || status === "Completed" || status === "Reconciled") return "matched";
+  if (status === "Pending" || status === "Received" || status === "Validated" || status === "Processing" || status === "Reconciling") return "pending";
+  if (status === "Disputed") return "disputed";
+  if (status === "Unmatched" || status === "Failed" || status === "Rejected") return "unmatched";
+  if (status === "Refunded") return "refunded";
+  return "unknown";
+}
+
+export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, livePage, livePageSize, liveFilter = "", liveStatus = "", onLivePageChange, onRefresh, loadError = "" }: TransactionsPageProps) {
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<StatusFilter>("All");
   const [dateFilter, setDateFilter] = useState<DateFilter>("All");
@@ -90,13 +114,25 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
   const [copyFeedback, setCopyFeedback] = useState("");
   const [refreshLabel, setRefreshLabel] = useState(isLiveData ? "Live API · read-only" : "Preview · static data");
 
-  useEffect(() => setQuery(initialQuery), [initialQuery]);
+  useEffect(() => setQuery(isLiveData ? liveFilter : initialQuery), [initialQuery, isLiveData, liveFilter]);
+  useEffect(() => {
+    if (!isLiveData) return;
+    const statusLabels: Record<string, StatusFilter> = {
+      RECEIVED: "Received",
+      VALIDATED: "Validated",
+      PROCESSING: "Processing",
+      RECONCILING: "Reconciling",
+      RECONCILED: "Reconciled",
+      FAILED: "Failed",
+      REJECTED: "Rejected",
+    };
+    setStatus(statusLabels[liveStatus] ?? "All");
+  }, [isLiveData, liveStatus]);
+  useEffect(() => { if (isLiveData && livePageSize) setPageSize(livePageSize); }, [isLiveData, livePageSize]);
 
   const filtered = useMemo(() => {
-    const previewAnchor = transactions.reduce(
-      (latest, transaction) => Math.max(latest, new Date(transaction.timestamp).getTime()),
-      0,
-    );
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const minimum = minAmount.trim() ? Number(minAmount) : null;
     const maximum = maxAmount.trim() ? Number(maxAmount) : null;
 
@@ -108,9 +144,9 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
       if (maximum !== null && Number.isFinite(maximum) && transaction.amount > maximum) return false;
 
       const transactionDate = new Date(transaction.timestamp);
-      if (dateFilter === "Today" && transactionDate.getTime() < previewAnchor - 86_400_000) return false;
-      if (dateFilter === "7d" && previewAnchor - transactionDate.getTime() > 7 * 86_400_000) return false;
-      if (dateFilter === "30d" && previewAnchor - transactionDate.getTime() > 30 * 86_400_000) return false;
+      if (dateFilter === "Today" && transactionDate.getTime() < startOfToday) return false;
+      if (dateFilter === "7d" && Date.now() - transactionDate.getTime() > 7 * 86_400_000) return false;
+      if (dateFilter === "30d" && Date.now() - transactionDate.getTime() > 30 * 86_400_000) return false;
       if (fromDate && transactionDate < new Date(`${fromDate}T00:00:00`)) return false;
       if (toDate && transactionDate > new Date(`${toDate}T23:59:59`)) return false;
       return true;
@@ -122,9 +158,12 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
     });
   }, [transactions, query, status, minAmount, maxAmount, dateFilter, fromDate, toDate, sortColumn, sortAscending]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const currentPage = Math.min(pageNumber, pageCount - 1);
-  const pageTransactions = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  const pageCount = isLiveData
+    ? Math.max(1, Math.ceil((liveTotal ?? filtered.length) / pageSize))
+    : Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = isLiveData ? Math.max(0, (livePage ?? 1) - 1) : Math.min(pageNumber, pageCount - 1);
+  const pageTransactions = isLiveData ? filtered : filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  const visibleStatusFilters = isLiveData ? liveStatusFilters : statusFilters;
   const visibleSelected = pageTransactions.filter((transaction) => selectedIds.has(transaction.id));
   const selectedTransactions = filtered.filter((transaction) => selectedIds.has(transaction.id));
   const activeTransaction = transactions.find((transaction) => transaction.id === activeId) ?? null;
@@ -200,11 +239,13 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
     setMinAmount("");
     setMaxAmount("");
     setPageNumber(0);
+    if (isLiveData) onLivePageChange?.(1, pageSize, "", "");
   }
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPageNumber(0);
+    if (isLiveData) onLivePageChange?.(1, pageSize, query.trim(), liveStatus);
   }
 
   function copyId(transaction: Transaction) {
@@ -241,7 +282,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           <div>
             <p className="transaction-eyebrow"><span aria-hidden="true">›</span> TRANSACTIONS</p>
             <h1>Transactions</h1>
-            <p>Browse M-Pesa Daraja transactions and their reconciliation status.</p>
+            <p>Browse tenant transactions and their processing status. Reconciliation outcomes are shown only when the Core API provides them.</p>
           </div>
           <div className="transaction-refresh" role="status">
             <span className="transaction-refresh__dot" />
@@ -257,8 +298,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div className="transaction-toolbar__row transaction-toolbar__row--search">
               <form className="transaction-search" role="search" onSubmit={submitSearch}>
                 <Search size={15} aria-hidden="true" />
-                <label className="visually-hidden" htmlFor="transaction-search">Search transaction ID or amount</label>
-                <input id="transaction-search" type="search" placeholder="Search by Transaction ID or amount..." value={query} onChange={(event) => { setQuery(event.target.value); setPageNumber(0); }} />
+                <label className="visually-hidden" htmlFor="transaction-search">Search transaction ID or reference</label>
+                <input id="transaction-search" type="search" placeholder="Search by transaction ID or reference..." value={query} onChange={(event) => { setQuery(event.target.value); setPageNumber(0); }} />
               </form>
               <div className="density-toggle" role="group" aria-label="Table density">
                 <button type="button" aria-pressed={dense} className={dense ? "is-active" : ""} onClick={() => setDense(true)}>Dense</button>
@@ -267,9 +308,9 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             </div>
 
             <div className="transaction-toolbar__row transaction-toolbar__row--filters">
-              <div className="transaction-status-filters" role="group" aria-label="Filter by reconciliation status">
-                {statusFilters.map((filter) => (
-                  <button key={filter} type="button" className={`transaction-filter-chip${status === filter ? " is-active" : ""}${filter !== "All" ? ` transaction-filter-chip--${filter.toLowerCase()}` : ""}`} aria-pressed={status === filter} onClick={() => { setStatus(filter); setPageNumber(0); }}>{filter}</button>
+              <div className="transaction-status-filters" role="group" aria-label={isLiveData ? "Filter by transaction processing status" : "Filter by reconciliation status"}>
+                {visibleStatusFilters.map((filter) => (
+                  <button key={filter} type="button" className={`transaction-filter-chip${status === filter ? " is-active" : ""}${filter !== "All" ? ` transaction-filter-chip--${filter.toLowerCase()}` : ""}`} aria-pressed={status === filter} onClick={() => { setStatus(filter); setPageNumber(0); if (isLiveData) onLivePageChange?.(1, pageSize, query.trim(), apiStatusFilter(filter)); }}>{filter}</button>
                 ))}
               </div>
               <div className="transaction-date-filters" role="group" aria-label="Filter by date">
@@ -286,12 +327,12 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
               <label className="amount-input"><span className="visually-hidden">Minimum amount</span><input inputMode="numeric" type="number" min="0" placeholder="Min amount" value={minAmount} onChange={(event) => { setMinAmount(event.target.value); setPageNumber(0); }} /><ChevronsUpDown size={13} aria-hidden="true" /></label>
               <span className="amount-separator">–</span>
               <label className="amount-input"><span className="visually-hidden">Maximum amount</span><input inputMode="numeric" type="number" min="0" placeholder="Max amount" value={maxAmount} onChange={(event) => { setMaxAmount(event.target.value); setPageNumber(0); }} /><ChevronsUpDown size={13} aria-hidden="true" /></label>
-              <button className="tx-button tx-button--outline transaction-export" type="button" onClick={() => exportTransactions(filtered, "pesaguard-preview-transactions.csv")}><Download size={14} aria-hidden="true" /> Export CSV</button>
+              <button className="tx-button tx-button--outline transaction-export" type="button" onClick={() => exportTransactions(filtered, isLiveData ? "pesaguard-tenant-transactions.csv" : "pesaguard-preview-transactions.csv")}><Download size={14} aria-hidden="true" /> Export CSV</button>
             </div>
           </div>
 
           <div className="transaction-result-meta">
-            <span>{isLiveData ? `Showing ${liveTotal ?? filtered.length} tenant transactions · ${filtered.length} loaded on this page` : `Showing ${filtered.length} sample transactions`}</span>
+            <span>{isLiveData ? `${liveTotal ?? filtered.length} matching tenant records · status/search are server-filtered; date/amount filters apply to this page` : `Showing ${filtered.length} sample transactions`}</span>
             <button type="button" onClick={clearFilters}>Clear filters <ListFilter size={14} aria-hidden="true" /></button>
           </div>
           {loadError && <p className="transaction-copy-feedback" role="alert">{loadError}</p>}
@@ -312,7 +353,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                   <tr key={transaction.id} className={`${selectedIds.has(transaction.id) ? "is-selected " : ""}${activeId === transaction.id ? "is-active " : ""}${transaction.reviewed ? "is-reviewed" : ""}`} onClick={() => setActiveId(transaction.id)}>
                     <td className="transaction-check-cell"><input aria-label={`Select ${transaction.reference}`} type="checkbox" checked={selectedIds.has(transaction.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleSelected(transaction.id)} /></td>
                     <td>{transaction.timestamp}</td>
-                    <td>{formatKes(transaction.amount)}</td>
+                    <td>{formatTransactionAmount(transaction)}</td>
                     <td>
                       <button className="transaction-id-copy" type="button" title={`Copy ${transaction.reference}`} onClick={(event) => { event.stopPropagation(); copyId(transaction); }}>
                         <span>{shortId(transaction.reference)}</span>{copied ? <Check size={13} aria-label="Copied" /> : <Copy size={13} aria-hidden="true" />}
@@ -329,15 +370,15 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
 
           <div className="transaction-pagination">
             <label>Rows
-              <select aria-label="Transactions per page" value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPageNumber(0); }}>
+              <select aria-label="Transactions per page" value={pageSize} onChange={(event) => { const nextSize = Number(event.target.value); setPageSize(nextSize); setPageNumber(0); if (isLiveData) onLivePageChange?.(1, nextSize, query.trim(), liveStatus); }}>
                 {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </label>
-            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {isLiveData ? (liveTotal ?? filtered.length) : filtered.length} {isLiveData ? "tenant transactions" : "sample transactions"}</span>
+            <span>{isLiveData ? `Page ${currentPage + 1} of ${pageCount} · ${filtered.length} matching records on this page · ${liveTotal ?? filtered.length} total in API` : `Showing ${filtered.length === 0 ? 0 : currentPage * pageSize + 1}–${Math.min((currentPage + 1) * pageSize, filtered.length)} of ${filtered.length} sample transactions`}</span>
             <div className="transaction-pagination__controls">
-              <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPageNumber((page) => Math.max(0, page - 1))}><ChevronLeft size={14} /></button>
+              <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => { if (isLiveData) onLivePageChange?.(Math.max(1, currentPage), pageSize, query.trim(), liveStatus); else setPageNumber((page) => Math.max(0, page - 1)); }}><ChevronLeft size={14} /></button>
               <span>Page {currentPage + 1} of {pageCount}</span>
-              <button type="button" aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => setPageNumber((page) => Math.min(pageCount - 1, page + 1))}><ChevronRight size={14} /></button>
+              <button type="button" aria-label="Next page" disabled={currentPage + 1 >= pageCount} onClick={() => { if (isLiveData) onLivePageChange?.(Math.min(pageCount, currentPage + 2), pageSize, query.trim(), liveStatus); else setPageNumber((page) => Math.min(pageCount - 1, page + 1)); }}><ChevronRight size={14} /></button>
             </div>
           </div>
         </section>
@@ -347,7 +388,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div className="transaction-bulkbar__summary"><strong>{selectedIds.size} selected</strong><span>Select transactions to perform bulk actions.</span></div>
             <div className="transaction-bulkbar__actions">
               <button className="tx-button tx-button--primary" type="button" onClick={() => markReviewed(selectedIds)}><Check size={15} />Mark Reviewed</button>
-              <button className="tx-button tx-button--outline" type="button" onClick={() => exportTransactions(selectedTransactions, "pesaguard-preview-selected-transactions.csv")}><Download size={14} />Export Selected</button>
+              <button className="tx-button tx-button--outline" type="button" onClick={() => exportTransactions(selectedTransactions, isLiveData ? "pesaguard-tenant-selected-transactions.csv" : "pesaguard-preview-selected-transactions.csv")}><Download size={14} />Export Selected</button>
               <button className="tx-button tx-button--quiet" type="button" onClick={() => setSelectedIds(new Set())}>Clear Selection <X size={14} /></button>
             </div>
           </section>
@@ -366,14 +407,14 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <span className={`transaction-status transaction-status--${statusClass(activeTransaction.status)}`}><i />{activeTransaction.status}</span>
           </div>
           <dl className="transaction-detail__fields">
-            <div><dt>Amount</dt><dd>{formatKes(activeTransaction.amount)}</dd></div>
+            <div><dt>Amount</dt><dd>{formatTransactionAmount(activeTransaction)}</dd></div>
             <div><dt>Timestamp</dt><dd>{activeTransaction.timestamp}</dd></div>
             <div><dt>Source</dt><dd>{activeTransaction.source}</dd></div>
             <div><dt>Status</dt><dd><span className={`transaction-status transaction-status--${statusClass(activeTransaction.status)}`}><i />{activeTransaction.status}</span></dd></div>
             <div><dt>Anomaly Type</dt><dd>{activeTransaction.anomalyType}</dd></div>
             <div><dt>Discrepancy ID</dt><dd className="transaction-detail__mono">{activeTransaction.discrepancyId}</dd></div>
             <div><dt>Created At</dt><dd>{activeTransaction.timestamp}</dd></div>
-            <div><dt>Resolved</dt><dd>{activeTransaction.resolved ? "Yes" : "No"}</dd></div>
+            <div><dt>Resolved</dt><dd>{activeTransaction.resolved === null ? "Unknown" : activeTransaction.resolved ? "Yes" : "No"}</dd></div>
             <div><dt>Severity</dt><dd><span className={`transaction-severity transaction-severity--${activeTransaction.severity.toLowerCase()}`}><i />{activeTransaction.severity}</span></dd></div>
             <div className="transaction-detail__notes"><dt>Notes</dt><dd>{activeTransaction.notes}</dd></div>
           </dl>
