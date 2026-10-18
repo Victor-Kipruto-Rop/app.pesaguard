@@ -310,6 +310,19 @@ export default function App() {
     }
   }, [session]);
 
+  const handleSessionRefresh = useCallback((nextSession: LoginResult) => {
+    setSession(nextSession);
+  }, []);
+
+  const handleSessionExpired = useCallback(() => {
+    setSession(null);
+    setLiveTransactions(null);
+    setLiveTransactionTotal(0);
+    setTransactionError("");
+    setAuthRoute("session-expired");
+    window.history.pushState({}, "", "/session-expired");
+  }, []);
+
   const navigate = useCallback((nextPage: DashboardPage) => {
     setAuthRoute(null);
     setPage(nextPage);
@@ -379,7 +392,7 @@ export default function App() {
       onNavigate={navigate}
       onSearch={search}
     >
-      {page !== "transactions" && <ApiResourcePage page={page} session={session} />}
+      {page !== "transactions" && <ApiResourcePage page={page} session={session} onSessionRefresh={handleSessionRefresh} onSessionExpired={handleSessionExpired} />}
       {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
       {/* Preview-only page implementations are intentionally not rendered in an authenticated tenant session. */}
     </DashboardLayout>
