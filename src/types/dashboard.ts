@@ -36,6 +36,7 @@ export interface Transaction {
   accountReference?: string;
   method: string;
   amount: number;
+  currency?: string;
   status: TransactionStatus;
   createdAt: string;
   timestamp: string;
