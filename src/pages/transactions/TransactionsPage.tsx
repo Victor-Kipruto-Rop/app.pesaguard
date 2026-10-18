@@ -321,7 +321,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                   <tr key={transaction.id} className={`${selectedIds.has(transaction.id) ? "is-selected " : ""}${activeId === transaction.id ? "is-active " : ""}${transaction.reviewed ? "is-reviewed" : ""}`} onClick={() => setActiveId(transaction.id)}>
                     <td className="transaction-check-cell"><input aria-label={`Select ${transaction.reference}`} type="checkbox" checked={selectedIds.has(transaction.id)} onClick={(event) => event.stopPropagation()} onChange={() => toggleSelected(transaction.id)} /></td>
                     <td>{transaction.timestamp}</td>
-                    <td>{formatKes(transaction.amount)}</td>
+                    <td>{formatTransactionAmount(transaction)}</td>
                     <td>
                       <button className="transaction-id-copy" type="button" title={`Copy ${transaction.reference}`} onClick={(event) => { event.stopPropagation(); copyId(transaction); }}>
                         <span>{shortId(transaction.reference)}</span>{copied ? <Check size={13} aria-label="Copied" /> : <Copy size={13} aria-hidden="true" />}
