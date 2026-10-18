@@ -29,7 +29,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report?days=30` | Tenant-scoped discrepancy operations summary; not reconciliation-run history or a settlement report. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Tenant-scoped discrepancy records with server-side pagination and supported status filters; API contract and staging verification remain required. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `settlements` | Route mapped — API PR pending verification | `/api/v1/settlement-reviews` | Review records only; no settlement execution or movement of funds. API PR #96 pending merge and staging verification. |
 | `reports` | Route mapped — verification required | `/v1/customers/{tenant}/reports` | Tenant report listing; verify tenant authorization and deployed response contract before release. |
 | `data-imports` | Route mapped — verification required | `/api/v1/imports` | Server-side pagination and queued/running/completed/failed filters; upload and processing workflow verification remain separate. |
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
@@ -48,7 +48,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `preferences` | Route mapped — verification required | `/tenant/current/locale` | Locale preference only; not a full preference service. |
 | `help-support` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `api-developer-resources` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `data-quality` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `data-quality` | Route mapped — API PR pending verification | `/api/v1/data-quality-findings` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `data-sources` | Route mapped — verification required | `/providers` | Provider registry only; this is not a data-quality result. |
 | `validation-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `duplicate-detection` | Route mapped — verification required | `/api/v1/reconciliation/results?status=DUPLICATE` | Persisted reconciliation outcomes marked duplicate; not a standalone fraud or global duplicate-detection service. |
@@ -61,49 +61,49 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `risk-events` | Route mapped — verification required | `/api/v1/fraud/assessments` | Persisted risk assessment records; API PR #95 and staging verification required. |
 | `suspicious-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments?status=HIGH,CRITICAL` | High/critical risk flags only; flags are not proof of fraud. API PR #95 and staging verification required. |
 | `alerts` | Route mapped — verification required | `/incidents/search` | Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts. |
-| `investigations` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `investigations` | Route mapped — API PR pending verification | `/api/v1/fraud-investigations` | Case metadata/evidence workflow only; does not prove fraud or block payments. API PR #96 pending merge and staging verification. |
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reconciliation-runs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matching-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `reconciliation-runs` | Route mapped — API PR pending verification | `/api/v1/reconciliation-runs` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
+| `matching-rules` | Route mapped — API PR pending verification | `/api/v1/matching-rules` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `matching-history` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation match history; API PR #95 must merge and staging verification is required. |
-| `settlement-batches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `scheduled-reconciliation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `report-builder` | Unavailable — no suitable route mapped | — | A dataset catalog is not a report builder; report definition and execution APIs are required. |
-| `scheduled-reports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `export-center` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `settlement-batches` | Route mapped — API PR pending verification | `/api/v1/settlement-reviews` | Review records only; no settlement execution or movement of funds. API PR #96 pending merge and staging verification. |
+| `scheduled-reconciliation` | Route mapped — API PR pending verification | `/api/v1/reconciliation-schedules` | Schedule metadata only; scheduler/worker still required. API PR #96 pending merge and staging verification. |
+| `report-builder` | Route mapped — API PR pending verification | `/api/v1/report-definitions` | Report definitions and bounded summary runs only; no downloadable artifacts or scheduled delivery yet. API PR #96 pending merge and staging verification. |
+| `scheduled-reports` | Route mapped — API PR pending verification | `/api/v1/report-definitions` | Schedule metadata only; scheduler/worker still required. API PR #96 pending merge and staging verification. |
+| `export-center` | Route mapped — API PR pending verification | `/api/v1/report-runs` | Report definitions and bounded summary runs only; no downloadable artifacts or scheduled delivery yet. API PR #96 pending merge and staging verification. |
 | `approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-deliveries` | Route mapped — verification required | `/webhooks/{webhook_id}/deliveries` | Requires webhook ID and `manage:webhooks` permission; staging verification required. |
-| `support-requests` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `retention-privacy` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `support-requests` | Route mapped — API PR pending verification | `/api/v1/support-cases` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
+| `retention-privacy` | Route mapped — API PR pending verification | `/api/v1/privacy-requests` | Request registry only; deletion/export execution is not performed by these endpoints. API PR #96 pending merge and staging verification. |
 | `organization-profile` | Route mapped — verification required | `/tenant/current` | Authenticated tenant context; not organization CRUD. |
 | `branches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `user-profile` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `notification-center` | Route mapped — verification required | `/api/v1/communications/messages` | Communication messages; not notification preferences. |
 | `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and failed/rejected lifecycle filters; does not represent refunds or settlement failures. |
 | `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and received/validated/processing/reconciling lifecycle filters; not a reconciliation outcome. |
-| `refunds-reversals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `refunds-reversals` | Route mapped — API PR pending verification | `/api/v1/refund-reversal-requests` | Review requests only; no refunds/reversals are executed. API PR #96 pending merge and staging verification. |
 | `transaction-import-results` | Route mapped — verification required | `/api/v1/imports/{import_id}` | Requires an import job ID; staging verification required. |
-| `reconciliation-run-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `reconciliation-run-detail` | Route mapped — API PR pending verification | `/api/v1/reconciliation-runs/{record}` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `matched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=MATCHED` | Tenant-scoped reconciliation outcomes; API PR #95 must merge and staging verification is required. |
 | `unmatched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=UNMATCHED,MISMATCH,DUPLICATE` | Tenant-scoped unmatched/mismatch/duplicate outcomes; API PR #95 must merge and staging verification is required. |
 | `partial-matches` | Route mapped — verification required | `/api/v1/reconciliation/results?status=PARTIAL` | Tenant-scoped partial-match outcomes; API PR #95 must merge and staging verification is required. |
 | `manual-matching` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `match-approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matching-rule-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `settlement-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `matching-rule-detail` | Route mapped — API PR pending verification | `/api/v1/matching-rules/{record}` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
+| `settlement-detail` | Route mapped — API PR pending verification | `/api/v1/settlement-reviews/{record}` | Review records only; no settlement execution or movement of funds. API PR #96 pending merge and staging verification. |
 | `settlement-discrepancies` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `financial-summaries` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `data-quality-issues` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `data-quality-issue-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `data-quality-issues` | Route mapped — API PR pending verification | `/api/v1/data-quality-findings` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
+| `data-quality-issue-detail` | Route mapped — API PR pending verification | `/api/v1/data-quality-findings/{record}` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `data-source-health` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-quality-trends` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-alert-detail` | Route mapped — verification required | `/api/v1/fraud/{transaction_id}` | Transaction-level risk assessment only; no investigation workflow. |
 | `flagged-transactions` | Route mapped — verification required | `/api/v1/fraud/assessments?status=HIGH,CRITICAL` | High/critical persisted risk assessments for review; flags are not proof of fraud. |
-| `fraud-investigation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `fraud-investigation` | Route mapped — API PR pending verification | `/api/v1/fraud-investigations/{record}` | Case metadata/evidence workflow only; does not prove fraud or block payments. API PR #96 pending merge and staging verification. |
 | `risk-rule-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `scheduled-report-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `report-detail` | Route mapped — API PR pending verification | `/api/v1/report-definitions/{record}` | Report definitions and bounded summary runs only; no downloadable artifacts or scheduled delivery yet. API PR #96 pending merge and staging verification. |
+| `scheduled-report-detail` | Route mapped — API PR pending verification | `/api/v1/report-definitions/{record}` | Report definitions and bounded summary runs only; no downloadable artifacts or scheduled delivery yet. API PR #96 pending merge and staging verification. |
 | `integration-detail` | Route mapped — verification required | `/providers/{provider_id}` | Provider details; verify tenant ownership and supported-provider status in staging. |
 | `webhook-delivery-detail` | Unavailable — no suitable route mapped | — | API exposes delivery history by webhook, not a verified single-delivery detail endpoint. |
 | `alert-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -117,7 +117,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `transaction-detail` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `create-reconciliation-run` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `create-reconciliation-run` | Route mapped — API PR pending verification | `/api/v1/reconciliation-runs` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcome collection; API PR #95 must merge and staging verification is required. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -137,7 +137,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `webhook-endpoint-editor` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-signing-secret` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-retry` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `report-create` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `report-create` | Route mapped — API PR pending verification | `/api/v1/report-definitions` | Report definitions and bounded summary runs only; no downloadable artifacts or scheduled delivery yet. API PR #96 pending merge and staging verification. |
 | `report-schedule-config` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-recipients` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `export-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -145,15 +145,15 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `validation-rule-editor` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `pipeline-failure-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `lineage-record-detail` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
-| `investigation-evidence` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `investigation-evidence` | Route mapped — API PR pending verification | `/api/v1/fraud-investigations/{record}` | Case metadata/evidence workflow only; does not prove fraud or block payments. API PR #96 pending merge and staging verification. |
 | `investigation-notes` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rule-simulation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `audit-event-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `data-export-request` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `deletion-request-status` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `data-export-request` | Route mapped — API PR pending verification | `/api/v1/privacy-requests` | Request registry only; deletion/export execution is not performed by these endpoints. API PR #96 pending merge and staging verification. |
+| `deletion-request-status` | Route mapped — API PR pending verification | `/api/v1/privacy-requests/{record}` | Request registry only; deletion/export execution is not performed by these endpoints. API PR #96 pending merge and staging verification. |
 | `notification-preferences` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `notification-delivery-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `support-case-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `support-case-detail` | Route mapped — API PR pending verification | `/api/v1/support-cases/{record}` | New tenant workflow endpoint is defined in API PR #96; mapping is not live until that PR merges, migration is applied, and staging verification passes. |
 | `diagnostic-attachments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 
 ## Release gates
@@ -186,3 +186,6 @@ These views require an identifier before making a request. They remain read-only
 
 - Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.
 \n## Additional wiring in this branch\n\nThe resource registry now maps transaction detail/status, import job detail, transaction lineage, dataset metadata, webhook deliveries, reconciliation outcome collections (matched/unmatched/partial/duplicate), persisted risk-assessment collections (including high/critical flags), and provider detail to read-only Core API routes. Record-specific pages require an identifier before making a request. These routes remain **verification required** until contract tests and staging smoke tests pass. Unsupported reconciliation-run CRUD, data-quality findings, fraud investigation workflows, settlements, refund/reversal operations, report execution, privacy requests, and support cases remain unavailable rather than being backed by unrelated endpoints.\n
+## New workflow API dependency
+
+The pages marked **Route mapped — API PR pending verification** depend on [Core API PR #96](https://github.com/Victor-Kipruto-Rop/api.pesaguard/pull/96). They are not considered connected to the deployed API until the PR is merged, the SQL migration is applied, backend CI passes, and tenant-scoped staging smoke tests succeed. Scheduling, matching-engine execution, report artifact delivery, settlement/refund execution, and privacy deletion/export execution remain explicitly out of scope for the new workflow-record APIs.
