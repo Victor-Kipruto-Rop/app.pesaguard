@@ -31,7 +31,7 @@ export type DashboardPage =
   | "reconciliation-runs" | "matching-rules" | "matching-history" | "settlement-batches" | "scheduled-reconciliation"
   | "report-builder" | "scheduled-reports" | "export-center" | "approvals" | "webhook-deliveries" | "support-requests" | "retention-privacy"
   | "organization-profile" | "branches" | "user-profile" | "notification-center"
-  | "failed-transactions" | "pending-transactions" | "refunds-reversals" | "transaction-import-results"
+  | "failed-transactions" | "pending-transactions" | "refunds-reversals" | "refund-reversal-detail" | "transaction-import-results"
   | "reconciliation-run-detail" | "matched-transactions" | "unmatched-transactions" | "partial-matches"
   | "manual-matching" | "match-approvals" | "exception-detail" | "matching-rule-detail"
   | "settlement-detail" | "settlement-discrepancies" | "financial-summaries"
@@ -87,6 +87,7 @@ const routeByPath: Record<string, DashboardPage> = {
   "/failed-transactions": "failed-transactions",
   "/pending-transactions": "pending-transactions",
   "/refunds-reversals": "refunds-reversals",
+  "/refund-reversal-detail": "refund-reversal-detail",
   "/transaction-import-results": "transaction-import-results",
   "/reconciliation-run-detail": "reconciliation-run-detail",
   "/matched-transactions": "matched-transactions",
