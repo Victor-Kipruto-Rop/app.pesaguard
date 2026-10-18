@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { DashboardPage } from "../app/config/routes";
 import { PreviewBanner } from "../components/common/PreviewBanner";
+import { ApiConnectionStatus } from "../components/common/ApiConnectionStatus";
 import { Topbar } from "./header/Topbar";
 import { Sidebar } from "./navigation/Sidebar";
 import type { Workspace } from "../types/dashboard";
@@ -58,6 +59,7 @@ export function DashboardLayout({ activePage, workspace, workspaces, onWorkspace
       />
       <div className="dashboard-main">
         <PreviewBanner />
+        <ApiConnectionStatus />
         <Topbar
           workspace={workspace}
           workspaces={workspaces}

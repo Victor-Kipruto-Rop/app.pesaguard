@@ -927,3 +927,45 @@ body { background: var(--paper-sunken); letter-spacing: -.008em; }
 .settings-form-notice { margin-top: 14px; padding: 12px 14px; border: 1px solid #cfe8d7; border-radius: 9px; background: #f0faf3; color: #226441; font-size: 11px; line-height: 1.6; }
 :root[data-theme="dark"] .settings-form-notice { border-color: #294a35; background: #14251b; color: #a7e6be; }
 @media(max-width:650px){.settings-edit-form{grid-template-columns:1fr}.settings-form-actions{align-items:stretch;flex-direction:column}.settings-form-actions .button{width:100%;justify-content:center}}
+
+
+/* Live API status strip */
+.api-connection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 10px 24px;
+  color: var(--text);
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+.api-connection__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: var(--paper-deep);
+  color: var(--text-muted);
+}
+.api-connection--healthy .api-connection__icon { color: var(--signal-green); background: color-mix(in srgb, var(--signal-green) 10%, var(--paper)); }
+.api-connection--degraded .api-connection__icon { color: var(--signal-amber); background: color-mix(in srgb, var(--signal-amber) 10%, var(--paper)); }
+.api-connection--unreachable .api-connection__icon { color: var(--signal-red); background: color-mix(in srgb, var(--signal-red) 10%, var(--paper)); }
+.api-connection__copy { display: grid; gap: 1px; min-width: 0; }
+.api-connection__copy strong { font-size: 12px; font-weight: 700; }
+.api-connection__copy span { color: var(--text-muted); font-size: 11px; overflow-wrap: anywhere; }
+.api-connection__meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-left: auto; color: var(--text-faint); font-size: 10px; text-align: right; }
+.api-connection__refresh { display: grid; place-items: center; width: 30px; height: 30px; flex: 0 0 auto; color: var(--text-muted); background: transparent; border: 1px solid var(--line); border-radius: 9px; cursor: pointer; }
+.api-connection__refresh:disabled { opacity: .55; cursor: wait; }
+.api-connection__spinning { animation: api-status-spin .8s linear infinite; }
+@keyframes api-status-spin { to { transform: rotate(360deg); } }
+@media (max-width: 680px) {
+  .api-connection { align-items: flex-start; padding: 10px 14px; gap: 9px; }
+  .api-connection__meta { display: grid; margin-left: auto; font-size: 9px; }
+  .api-connection__copy span { max-width: 180px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .api-connection__spinning { animation: none; }
+}
