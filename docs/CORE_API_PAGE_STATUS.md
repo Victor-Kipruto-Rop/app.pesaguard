@@ -9,7 +9,6 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - Failed API calls and permission denials are displayed rather than replaced with demo records.
 - Pages requiring record IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
 - The generic resource view is read-only. It does not implement financial writes, reconciliation runs, settlements, refunds, or payment initiation.
-- Candidate mappings for the reports and audit-history pages were removed because the matching tenant-scoped routes could not be verified in the route audit.
 
 ## Status legend
 
@@ -29,7 +28,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `reports` | Route mapped — verification required | `/v1/customers/{tenant}/reports` | Tenant report listing; verify tenant authorization and deployed response contract before release. |
 | `data-imports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
@@ -55,11 +54,11 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `data-lineage` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `risk-overview` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Incident trends; not a fraud probability model or financial loss forecast. |
 | `fraud-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-events` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `suspicious-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `alerts` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `alerts` | Route mapped — verification required | `/incidents/search` | Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts. |
 | `investigations` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-runs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -109,7 +108,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `service-status` | Route mapped — verification required | `/public/status` | Current API status only; not a historical uptime report. |
 | `security-settings` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `active-sessions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `access-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `access-history` | Route mapped — verification required | `/v1/customers/{tenant}/audit` | Tenant audit events; verify tenant authorization and audit coverage before relying on it. |
 | `account-closure` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `onboarding-resume` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `first-login-checklist` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
