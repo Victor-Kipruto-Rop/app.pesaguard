@@ -12,7 +12,7 @@ import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
-import { fetchTenantTransactions, loginToApi, refreshApiSession, PesaguardApiError, type LoginResult } from "../lib/api";
+import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type LoginResult } from "../lib/api";
 import type { Customer, Transaction } from "../types/dashboard";
 
 const implementedPages: DashboardPage[] = [
@@ -317,6 +317,23 @@ export default function App() {
     }
   }, [session]);
 
+  const handleSignOut = useCallback(async () => {
+    const activeSession = session;
+    try {
+      if (activeSession) await logoutFromApi(activeSession);
+    } catch {
+      // Clear this browser session even if the API cannot confirm remote revocation.
+    } finally {
+      setSession(null);
+      setLiveTransactions(null);
+      setLiveTransactionTotal(0);
+      setTransactionError("");
+      setAuthRoute("signed-out");
+      setPage("home");
+      window.history.pushState({}, "", "/signed-out");
+    }
+  }, [session]);
+
   const navigate = useCallback((nextPage: DashboardPage) => {
     setAuthRoute(null);
     setPage(nextPage);
@@ -390,6 +407,7 @@ export default function App() {
       workspace={workspace}
       workspaces={session ? [workspace] : workspaces}
       isLiveData={Boolean(session)}
+      onSignOut={handleSignOut}
       onWorkspaceChange={(nextWorkspace) => {
         if (!session) setWorkspaceId(nextWorkspace.id);
         setSearchQuery("");
