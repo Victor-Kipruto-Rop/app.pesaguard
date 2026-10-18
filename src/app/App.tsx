@@ -240,8 +240,8 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [session, authRoute]);
 
-  const handleSignIn = useCallback(async (email: string, password: string, requestedTenantId: string) => {
-    const nextSession = await loginToApi(email, password, requestedTenantId);
+  const handleSignIn = useCallback(async (email: string, password: string, requestedTenantId: string, mfaCode: string) => {
+    const nextSession = await loginToApi(email, password, requestedTenantId, mfaCode);
     // Access and refresh tokens stay in memory only; they are never written to browser storage.
     setSession(nextSession);
     setLiveTransactions([]);
