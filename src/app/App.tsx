@@ -12,7 +12,8 @@ import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
-import type { Customer } from "../types/dashboard";
+import { fetchTenantTransactions, loginToApi, type LoginResult } from "../lib/api";
+import type { Customer, Transaction } from "../types/dashboard";
 
 const implementedPages: DashboardPage[] = [
   "home", "executive-overview", "operational-activity", "transactions",
@@ -201,7 +202,11 @@ function authPathForRoute(route: AuthRoute): string {
 
 export default function App() {
   const [page, setPage] = useState<DashboardPage>(() => pageFromPath(window.location.pathname));
-  const [authRoute, setAuthRoute] = useState<AuthRoute | null>(() => authRouteFromPath(window.location.pathname));
+  const [authRoute, setAuthRoute] = useState<AuthRoute | null>(() => authRouteFromPath(window.location.pathname) ?? "sign-in");
+  const [session, setSession] = useState<LoginResult | null>(null);
+  const [liveTransactions, setLiveTransactions] = useState<Transaction[] | null>(null);
+  const [liveTransactionTotal, setLiveTransactionTotal] = useState(0);
+  const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
   const [workspaceId, setWorkspaceId] = useState(workspaces[0].id);
   const [customersByWorkspace, setCustomersByWorkspace] = useState(
@@ -210,9 +215,10 @@ export default function App() {
   const [transactionsByWorkspace, setTransactionsByWorkspace] = useState(
     () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).transactions])),
   );
-  const workspace = workspaces.find((candidate) => candidate.id === workspaceId) ?? workspaces[0];
-  const customers = customersByWorkspace[workspace.id] ?? previewDataFor(workspace).customers;
-  const transactions = transactionsByWorkspace[workspace.id] ?? previewDataFor(workspace).transactions;
+  const previewWorkspace = workspaces.find((candidate) => candidate.id === workspaceId) ?? workspaces[0];
+  const workspace = session ? { ...previewWorkspace, id: session.tenantId, name: session.tenantId, category: "Live tenant", initials: session.tenantId.slice(0, 2).toUpperCase() } : previewWorkspace;
+  const customers = session ? [] : (customersByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).customers);
+  const transactions = session ? (liveTransactions ?? []) : (transactionsByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).transactions);
 
   useEffect(() => {
     function handlePopState() {
@@ -224,6 +230,68 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+
+  const handleSignIn = useCallback(async (email: string, password: string, requestedTenantId: string) => {
+    const nextSession = await loginToApi(email, password, requestedTenantId);
+    // Access tokens stay in memory only; refresh tokens are deliberately not persisted in browser storage.
+    const result = await fetchTenantTransactions(nextSession.accessToken);
+    const mapped: Transaction[] = result.items.map((item) => {
+      const amount = Number(item.trans_amount);
+      const date = new Date(item.created_at);
+      const normalizedStatus = String(item.status ?? "").toLowerCase();
+      const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
+        : normalizedStatus === "completed" ? "Completed"
+        : normalizedStatus === "failed" ? "Failed"
+        : normalizedStatus === "refunded" ? "Refunded"
+        : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
+        : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
+      return {
+        id: item.id,
+        customerId: "", customer: "Not supplied by transaction endpoint",
+        reference: item.trans_id,
+        method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
+        status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
+        anomalyType: "", discrepancyId: "", severity: "Low",
+        notes: "Read-only transaction record from the authenticated tenant API.",
+        resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
+      };
+    });
+    setSession(nextSession);
+    setLiveTransactions(mapped);
+    setLiveTransactionTotal(result.total);
+    setTransactionError("");
+    setAuthRoute(null);
+    setPage("home");
+    setSearchQuery("");
+    window.history.pushState({}, "", "/");
+  }, []);
+
+  const refreshLiveTransactions = useCallback(async () => {
+    if (!session) return;
+    try {
+      const result = await fetchTenantTransactions(session.accessToken);
+      const mapped: Transaction[] = result.items.map((item) => {
+        const amount = Number(item.trans_amount);
+        const date = new Date(item.created_at);
+        const normalizedStatus = String(item.status ?? "").toLowerCase();
+        const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
+          : normalizedStatus === "completed" ? "Completed"
+          : normalizedStatus === "failed" ? "Failed"
+          : normalizedStatus === "refunded" ? "Refunded"
+          : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
+          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
+        return { id: item.id, customerId: "", customer: "Not supplied by transaction endpoint", reference: item.trans_id,
+          method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
+          source: "M-Pesa API", anomalyType: "", discrepancyId: "", severity: "Low", notes: "Read-only transaction record from the authenticated tenant API.",
+          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [] };
+      });
+      setLiveTransactions(mapped);
+      setLiveTransactionTotal(result.total);
+      setTransactionError("");
+    } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : "Unable to refresh tenant transactions.");
+    }
+  }, [session]);
 
   const navigate = useCallback((nextPage: DashboardPage) => {
     setAuthRoute(null);
@@ -285,7 +353,7 @@ export default function App() {
     setTransactionsByWorkspace((current) => ({ ...current, [workspace.id]: nextTransactions }));
   }
 
-  if (authRoute) return <AuthPages route={authRoute} onNavigate={navigateAuth} />;
+  if (authRoute) return <AuthPages route={authRoute} onNavigate={navigateAuth} onSignIn={handleSignIn} />;
 
   return (
     <DashboardLayout
@@ -301,7 +369,7 @@ export default function App() {
     >
       {page === "home" && <HomePage key={workspace.id} workspace={workspace} customers={customers} transactions={transactions} onNavigate={navigate} />}
       {(page === "executive-overview" || page === "operational-activity") && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
-      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} />}
+      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData={Boolean(session)} liveTotal={liveTransactionTotal} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
       {page === "reconciliation" && <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} />}
       {page === "customers" && <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />}
       {page === "tenant-profile" && <OrganizationPage workspace={workspace} />}
