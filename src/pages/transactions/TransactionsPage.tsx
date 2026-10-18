@@ -37,11 +37,12 @@ interface TransactionsPageProps {
   loadError?: string;
 }
 
-type StatusFilter = "All" | "Matched" | "Pending" | "Unmatched" | "Disputed";
+type StatusFilter = "All" | "Matched" | "Pending" | "Unmatched" | "Disputed" | "Received" | "Validated" | "Processing" | "Reconciling" | "Reconciled" | "Failed" | "Rejected";
 type DateFilter = "All" | "Today" | "7d" | "30d" | "Custom";
 type SortColumn = "timestamp" | "amount";
 
 const statusFilters: StatusFilter[] = ["All", "Matched", "Pending", "Unmatched", "Disputed"];
+const liveStatusFilters: StatusFilter[] = ["All", "Received", "Validated", "Processing", "Reconciling", "Reconciled", "Failed", "Rejected"];
 const pageSizes = [25, 50, 100];
 
 function formatTransactionAmount(transaction: Transaction): string {
@@ -77,10 +78,10 @@ function shortId(id: string): string {
 }
 
 function statusClass(status: TransactionStatus): string {
-  if (status === "Matched" || status === "Completed") return "matched";
-  if (status === "Pending") return "pending";
+  if (status === "Matched" || status === "Completed" || status === "Reconciled") return "matched";
+  if (status === "Pending" || status === "Received" || status === "Validated" || status === "Processing" || status === "Reconciling") return "pending";
   if (status === "Disputed") return "disputed";
-  if (status === "Unmatched" || status === "Failed") return "unmatched";
+  if (status === "Unmatched" || status === "Failed" || status === "Rejected") return "unmatched";
   if (status === "Refunded") return "refunded";
   return "unknown";
 }
@@ -141,6 +142,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
     : Math.max(1, Math.ceil(filtered.length / pageSize));
   const currentPage = isLiveData ? Math.max(0, (livePage ?? 1) - 1) : Math.min(pageNumber, pageCount - 1);
   const pageTransactions = isLiveData ? filtered : filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
+  const visibleStatusFilters = isLiveData ? liveStatusFilters : statusFilters;
   const visibleSelected = pageTransactions.filter((transaction) => selectedIds.has(transaction.id));
   const selectedTransactions = filtered.filter((transaction) => selectedIds.has(transaction.id));
   const activeTransaction = transactions.find((transaction) => transaction.id === activeId) ?? null;
@@ -259,7 +261,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           <div>
             <p className="transaction-eyebrow"><span aria-hidden="true">›</span> TRANSACTIONS</p>
             <h1>Transactions</h1>
-            <p>Browse M-Pesa Daraja transactions and their reconciliation status.</p>
+            <p>Browse tenant transactions and their processing status. Reconciliation outcomes are shown only when the Core API provides them.</p>
           </div>
           <div className="transaction-refresh" role="status">
             <span className="transaction-refresh__dot" />
@@ -285,8 +287,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             </div>
 
             <div className="transaction-toolbar__row transaction-toolbar__row--filters">
-              <div className="transaction-status-filters" role="group" aria-label="Filter by reconciliation status">
-                {statusFilters.map((filter) => (
+              <div className="transaction-status-filters" role="group" aria-label={isLiveData ? "Filter by transaction processing status" : "Filter by reconciliation status"}>
+                {visibleStatusFilters.map((filter) => (
                   <button key={filter} type="button" className={`transaction-filter-chip${status === filter ? " is-active" : ""}${filter !== "All" ? ` transaction-filter-chip--${filter.toLowerCase()}` : ""}`} aria-pressed={status === filter} onClick={() => { setStatus(filter); setPageNumber(0); }}>{filter}</button>
                 ))}
               </div>
