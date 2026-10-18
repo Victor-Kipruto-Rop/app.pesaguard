@@ -32,7 +32,7 @@ function redactSensitive(value: unknown): unknown {
   if (!isRecord(value)) return value;
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [
     key,
-    /(secret|token|password|credential|private.?key|signing.?key|authorization|api.?key)/i.test(key)
+    /(secret|token|password|credential|private.?key|signing.?key|authorization|api.?key|raw.?payload|msisdn|phone.?number)/i.test(key)
       ? "[REDACTED]"
       : redactSensitive(item),
   ]));
