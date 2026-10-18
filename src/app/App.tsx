@@ -12,7 +12,7 @@ import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
-import { fetchTenantTransactions, loginToApi, type LoginResult } from "../lib/api";
+import { fetchTenantTransactions, loginToApi, refreshApiSession, PesaguardApiError, type LoginResult } from "../lib/api";
 import type { Customer, Transaction } from "../types/dashboard";
 
 const implementedPages: DashboardPage[] = [
@@ -278,7 +278,16 @@ export default function App() {
   const refreshLiveTransactions = useCallback(async () => {
     if (!session) return;
     try {
-      const result = await fetchTenantTransactions(session.accessToken);
+      let activeSession = session;
+      let result;
+      try {
+        result = await fetchTenantTransactions(activeSession.accessToken);
+      } catch (error) {
+        if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
+        activeSession = await refreshApiSession(activeSession);
+        setSession(activeSession);
+        result = await fetchTenantTransactions(activeSession.accessToken);
+      }
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
@@ -298,6 +307,12 @@ export default function App() {
       setLiveTransactionTotal(result.total);
       setTransactionError("");
     } catch (error) {
+      if (error instanceof PesaguardApiError && error.status === 401) {
+        setSession(null);
+        setLiveTransactions(null);
+        setAuthRoute("session-expired");
+        window.history.pushState({}, "", "/session-expired");
+      }
       setTransactionError(error instanceof Error ? error.message : "Unable to refresh tenant transactions.");
     }
   }, [session]);
