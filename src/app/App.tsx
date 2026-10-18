@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { pageFromPath, pathForPage, type DashboardPage } from "./config/routes";
-import { previewDataFor, workspaces } from "../data/preview";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { TransactionsPage } from "../pages/transactions/TransactionsPage";
 import { ApiResourcePage } from "../pages/system/ApiResourcePage";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type ApiTransactionPage, type LoginResult } from "../lib/api";
-import type { Transaction } from "../types/dashboard";
+import type { Transaction, Workspace } from "../types/dashboard";
 
 const knownDashboardPaths = new Set([
   "/",
@@ -196,17 +195,13 @@ export default function App() {
   const [liveTransactionTotal, setLiveTransactionTotal] = useState(0);
   const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0].id);
-  const [customersByWorkspace] = useState(
-    () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).customers])),
-  );
-  const [transactionsByWorkspace, setTransactionsByWorkspace] = useState(
-    () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).transactions])),
-  );
-  const previewWorkspace = workspaces.find((candidate) => candidate.id === workspaceId) ?? workspaces[0];
-  const workspace = session ? { ...previewWorkspace, id: session.tenantId, name: session.tenantId, category: "Live tenant", initials: session.tenantId.slice(0, 2).toUpperCase() } : previewWorkspace;
-  const customers = session ? [] : (customersByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).customers);
-  const transactions = session ? (liveTransactions ?? []) : (transactionsByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).transactions);
+  const workspace: Workspace | null = session ? {
+    id: session.tenantId,
+    name: session.tenantId,
+    category: "Authenticated tenant",
+    initials: session.tenantId.slice(0, 2).toUpperCase(),
+  } : null;
+  const transactions = liveTransactions ?? [];
 
   useEffect(() => {
     if (!session && authRoute === "sign-in" && authRouteFromPath(window.location.pathname) === null) {
@@ -378,19 +373,14 @@ export default function App() {
 
   function search(query: string) {
     if (!query) return;
-    const normalized = query.toLowerCase();
-    const matchedCustomer = customers.some((customer) =>
-      `${customer.name} ${customer.email} ${customer.phone}`.toLowerCase().includes(normalized),
-    );
-    const nextPage: DashboardPage = matchedCustomer ? "customers" : "transactions";
     setAuthRoute(null);
     setSearchQuery(query);
-    setPage(nextPage);
-    window.history.pushState({}, "", `${pathForPage(nextPage)}?q=${encodeURIComponent(query)}`);
+    setPage("transactions");
+    window.history.pushState({}, "", `${pathForPage("transactions")}?q=${encodeURIComponent(query)}`);
   }
 
-  function updateTransactions(nextTransactions: typeof transactions) {
-    setTransactionsByWorkspace((current) => ({ ...current, [workspace.id]: nextTransactions }));
+  function updateTransactions(_nextTransactions: Transaction[]) {
+    // Authenticated transaction records are read-only until a Core API mutation route exists.
   }
 
   if (authRoute || !session) return <AuthPages route={authRoute ?? "sign-in"} onNavigate={navigateAuth} onSignIn={handleSignIn} />;
@@ -398,12 +388,12 @@ export default function App() {
   return (
     <DashboardLayout
       activePage={page}
-      workspace={workspace}
-      workspaces={session ? [workspace] : workspaces}
+      workspace={workspace!}
+      workspaces={[workspace!]}
       isLiveData={Boolean(session)}
       onSignOut={handleSignOut}
-      onWorkspaceChange={(nextWorkspace) => {
-        if (!session) setWorkspaceId(nextWorkspace.id);
+      onWorkspaceChange={() => {
+        // Tenant switching is disabled until the Core API exposes an authorized tenant selector.
         setSearchQuery("");
       }}
       onNavigate={navigate}
