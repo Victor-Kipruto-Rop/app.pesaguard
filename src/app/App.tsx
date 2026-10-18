@@ -233,7 +233,7 @@ export default function App() {
           id: item.id, customerId: "", customer: "Not supplied by transaction endpoint",
           reference: item.trans_id, method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
           status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
-          anomalyType: "", discrepancyId: "", severity: "Low",
+          anomalyType: "", discrepancyId: "", severity: "Unknown",
           notes: "Read-only transaction record from the authenticated tenant API.",
           resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
         };
