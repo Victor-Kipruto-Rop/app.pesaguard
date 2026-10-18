@@ -23,7 +23,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `home` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; endpoint test and staging verification remain required. |
 | `executive-overview` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; no fabricated risk or revenue KPIs. |
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
-| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination and text search are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
+| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination, text search and lifecycle status filters are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -161,5 +161,5 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 3. Prove tenant A cannot read or mutate tenant B's records.
 4. Verify route-level permissions and safe error responses.
 5. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
-6. Verify server-side transaction pagination/text search against the deployed API; decide whether status/date/amount filters and sorting should be promoted to server-side filters.
+6. Verify server-side transaction pagination/text search/status filters against the deployed API; promote date/amount filters and sorting to server-side parameters if required for large datasets.
 7. Verify staging with a real tenant. Do not label any mapped page production-ready before these checks pass.
