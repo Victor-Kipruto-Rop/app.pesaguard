@@ -115,6 +115,19 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
   const [refreshLabel, setRefreshLabel] = useState(isLiveData ? "Live API · read-only" : "Preview · static data");
 
   useEffect(() => setQuery(isLiveData ? liveFilter : initialQuery), [initialQuery, isLiveData, liveFilter]);
+  useEffect(() => {
+    if (!isLiveData) return;
+    const statusLabels: Record<string, StatusFilter> = {
+      RECEIVED: "Received",
+      VALIDATED: "Validated",
+      PROCESSING: "Processing",
+      RECONCILING: "Reconciling",
+      RECONCILED: "Reconciled",
+      FAILED: "Failed",
+      REJECTED: "Rejected",
+    };
+    setStatus(statusLabels[liveStatus] ?? "All");
+  }, [isLiveData, liveStatus]);
   useEffect(() => { if (isLiveData && livePageSize) setPageSize(livePageSize); }, [isLiveData, livePageSize]);
 
   const filtered = useMemo(() => {
