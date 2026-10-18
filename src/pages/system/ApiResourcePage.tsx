@@ -54,7 +54,7 @@ function OverviewPayloadView({ payload }: { payload: Record<string, unknown> }) 
   const severities = isRecord(discrepancies.by_severity) ? discrepancies.by_severity : {};
   const metrics = [
     ["Total transactions", displayValue(transactions.total), displayValue(transactions.recent_30_days) + " in the last 30 days"],
-    ["Recorded transaction amount", displayValue(transactions.total_amount), "Persisted amount; currency totals are not converted"],
+    ["Recorded transaction amount by currency", displayValue(transactions.amount_by_currency), "Persisted amounts grouped by currency; no currency conversion is applied"],
     ["Total discrepancies", displayValue(discrepancies.total), displayValue(discrepancies.recent_30_days) + " detected in the last 30 days"],
     ["Open discrepancies", displayValue(discrepancies.open), displayValue(discrepancies.resolved) + " resolved"],
   ];
