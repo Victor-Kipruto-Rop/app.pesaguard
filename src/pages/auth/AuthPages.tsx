@@ -49,7 +49,7 @@ const routeContent: Record<AuthRoute, { eyebrow: string; title: string; descript
   "session-expired": { eyebrow: "SESSION ENDED", title: "Your session has expired.", description: "Sign in again to continue. Unsaved work may not be available.", action: "Sign in again" },
   "account-locked": { eyebrow: "ACCOUNT PROTECTION", title: "Sign-in is temporarily restricted.", description: "Repeated unsuccessful attempts can trigger protective controls. Follow your organization’s recovery process.", action: "Recover account" },
   "access-denied": { eyebrow: "ACCESS RESTRICTED", title: "You don’t have access to this page.", description: "Your current account or role may not have permission to open this resource.", action: "Return to sign in" },
-  "signed-out": { eyebrow: "SIGNED OUT", title: "You’ve left your workspace.", description: "The preview does not maintain a real session. When connected, the identity service should revoke or end the active session.", action: "Sign in again" },
+  "signed-out": { eyebrow: "SIGNED OUT", title: "You’ve left your workspace.", description: "This browser session has been cleared and PesaGuard has been asked to revoke the server session. Sign in again to continue.", action: "Sign in again" },
   "not-found": { eyebrow: "404 · PAGE NOT FOUND", title: "This page isn’t here.", description: "The address may be outdated or the page may have moved.", action: "Return to sign in" },
   "server-error": { eyebrow: "TEMPORARY PROBLEM", title: "Something didn’t load correctly.", description: "Try again in a moment. If the problem continues, contact support with the page you were opening.", action: "Try again" },
   "sso": { eyebrow: "ENTERPRISE IDENTITY", title: "Continue with your organization.", description: "Enter your organization domain to discover its configured identity provider.", action: "Continue with SSO" },
@@ -230,7 +230,7 @@ export function AuthPages({ route, onNavigate, onSignIn }: AuthPagesProps) {
             {route.startsWith("invite-") && <p>Invitation status and membership must be validated server-side before access is granted.</p>}
             {route === "account-pending" && <p>Current review status is illustrative only. A live status must come from the onboarding service.</p>}
             {route === "onboarding-problem" && <p>Your submitted credentials are not stored here. You can return to setup or contact support for help.</p>}
-            {route === "signed-out" && <p>When backend authentication is connected, this route should be reached only after the session is ended or revoked.</p>}
+            {route === "signed-out" && <p>The access token is short-lived. If the API was unreachable during sign-out, server-side revocation may not have been confirmed, but this browser no longer holds the session tokens.</p>}
             {route === "sso-callback" && <p>Never accept identity claims from URL parameters alone. Validate issuer, audience, signature, state, nonce, and callback transaction server-side.</p>}
             {route === "password-updated" && <p>This preview cannot verify whether a password was changed. The live page should appear only after server confirmation.</p>}
             {route === "mfa-recovery-codes" && null}
