@@ -33,7 +33,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
 | `import-sync-activity` | Route mapped — verification required | `/api/v1/operations/outbox` | Operational outbox records; not a complete import-job history. |
-| `activity-log` | Route mapped — verification required | `/activity-feed` | Activity feed; not a compliance-complete immutable audit log. |
+| `activity-log` | Route mapped — verification required | `/v1/customers/{tenant}/audit` | Tenant audit events; verify tenant authorization, event coverage and pagination. |
 | `security` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `system-health` | Route mapped — verification required | `/public/status` | Public API status only; not a full dependency-health dashboard. |
 | `customers` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
