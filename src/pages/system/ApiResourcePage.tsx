@@ -128,10 +128,14 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [reloadVersion, setReloadVersion] = useState(0);
   const [resourcePage, setResourcePage] = useState(1);
   const [resourceStatus, setResourceStatus] = useState("");
+  const [resourceSearch, setResourceSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
 
   useEffect(() => {
     setResourcePage(1);
     setResourceStatus(definition?.defaultStatus ?? "");
+    setResourceSearch("");
+    setAppliedSearch("");
   }, [page, definition?.defaultStatus]);
 
   const load = useCallback((signal: AbortSignal) => {
@@ -145,7 +149,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setLoading(true);
     void (async () => {
       try {
-        const response = await fetchDashboardResource(page, session, signal, { page: resourcePage, perPage: 25, status: resourceStatus });
+        const response = await fetchDashboardResource(page, session, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch });
         if (!signal.aborted) setResult(response);
       } catch (cause: unknown) {
         if (signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
@@ -204,6 +208,13 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       {definition && (definition.paginated || definition.statusFilter) && (
         <section className="panel" style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {definition.searchParam && (
+              <form onSubmit={(event) => { event.preventDefault(); setResourcePage(1); setAppliedSearch(resourceSearch.trim()); }} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input type="search" value={resourceSearch} onChange={(event) => setResourceSearch(event.target.value)} placeholder={definition.searchLabel ?? "Search records"} aria-label={definition.searchLabel ?? "Search records"} maxLength={200} disabled={loading} />
+                <button type="submit" className="button button-secondary" disabled={loading}>Search</button>
+                {appliedSearch && <button type="button" className="button button-secondary" onClick={() => { setResourceSearch(""); setAppliedSearch(""); setResourcePage(1); }} disabled={loading}>Clear</button>}
+              </form>
+            )}
             {definition.statusFilter && (
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 {definition.statusLabel ?? "Status"}
