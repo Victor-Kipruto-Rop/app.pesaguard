@@ -425,7 +425,7 @@ export default function App() {
       {page === "home" && <HomePage key={workspace.id} workspace={workspace} customers={customers} transactions={transactions} onNavigate={navigate} />}
       {(page === "executive-overview" || page === "operational-activity") && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
       {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData={Boolean(session)} liveTotal={liveTransactionTotal} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
-      {page === "reconciliation" && <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} />}
+      {page === "reconciliation" && <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} isLiveData={Boolean(session)} />}
       {page === "customers" && <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />}
       {page === "tenant-profile" && <OrganizationPage workspace={workspace} />}
       {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
