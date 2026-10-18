@@ -131,7 +131,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `create-reconciliation-run` | Workflow mapped — verification required | `/api/v1/reconciliation-runs` | Creates a persisted run request; does not start settlement or ledger posting. Apply migration and pass CI/staging tenant-isolation checks before production use. |
-| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcome collection; API PR #95 must merge and staging verification is required. |
+| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcomes with match-status filters and exact transaction-ID search; staging verification is required. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -151,9 +151,9 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `webhook-signing-secret` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-retry` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-create` | Workflow mapped — verification required | `/api/v1/report-definitions` | Persists a supported report definition. Apply migration and pass CI/staging tenant-isolation checks before production use. |
-| `report-schedule-config` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `report-schedule-config` | Workflow mapped — verification required | `/api/v1/report-definitions` | Saves schedule metadata with guarded updates; recurring execution and delivery require a deployed scheduler/worker. |
 | `report-recipients` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `export-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `export-history` | Workflow mapped — verification required | `/api/v1/report-runs` | Displays persisted report-run summaries, not downloadable CSV/PDF artifacts. |
 | `branch-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `validation-rule-editor` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `pipeline-failure-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -225,3 +225,12 @@ Explicitly out of scope: scheduler execution without a deployed worker, automati
 ## Workflow mutation safety follow-up
 
 The workflow detail editor now reads the latest record before PATCH and includes the returned integer `version` in the update request. This activates the Core API optimistic-concurrency guard and avoids sending a mutation if the record version is absent or the pre-update read fails. Privacy request detail controls no longer offer the unsupported `completed` transition; actual privacy export/deletion execution remains a separate workflow. These changes reduce accidental overwrites but still require CI and staging verification.
+
+
+## Additional workflow page wiring
+
+- `reconciliation-results` now uses the tenant-scoped paginated `/api/v1/reconciliation/results` collection, with match-outcome filters and exact transaction-ID search. It is read-only and does not start a reconciliation run.
+- `report-schedule-config` uses the persisted report-definition API for schedule metadata. It supports read/create/update flows with the record-version guard; recurring execution and delivery are not claimed until a scheduler/worker is deployed and monitored.
+- `export-history` reads paginated report-run summaries from `GET /api/v1/report-runs`. This is execution-summary history, not downloadable CSV/PDF artifact history.
+- The following pages remain intentionally unavailable until suitable domain APIs exist: manual matching actions, settlement statement comparison/variance detail, persisted data-quality trend analytics, report-recipient management, investigation-note append operations, and downloadable export artifact history. They must not be mapped to unrelated endpoints or populated with fixtures.
+- Settlement/reversal pages are review workflows only; they do not execute payment, settlement, refund, reversal, or ledger-posting actions. Privacy pages register requests but do not claim data has been exported or deleted.
