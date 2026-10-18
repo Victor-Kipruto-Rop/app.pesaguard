@@ -131,8 +131,8 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
 
   useEffect(() => {
     setResourcePage(1);
-    setResourceStatus("");
-  }, [page]);
+    setResourceStatus(definition?.defaultStatus ?? "");
+  }, [page, definition?.defaultStatus]);
 
   const load = useCallback((signal: AbortSignal) => {
     setResult(null);
@@ -206,13 +206,10 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             {definition.statusFilter && (
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
-                Import status
-                <select value={resourceStatus} onChange={(event) => { setResourceStatus(event.target.value); setResourcePage(1); }} disabled={loading} aria-label="Filter imports by status">
+                {definition.statusLabel ?? "Status"}
+                <select value={resourceStatus} onChange={(event) => { setResourceStatus(event.target.value); setResourcePage(1); }} disabled={loading} aria-label={`Filter by ${definition.statusLabel ?? "status"}`}>
                   <option value="">All statuses</option>
-                  <option value="queued">Queued</option>
-                  <option value="running">Running</option>
-                  <option value="completed">Completed</option>
-                  <option value="failed">Failed</option>
+                  {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
             )}
