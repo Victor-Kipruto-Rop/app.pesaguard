@@ -192,7 +192,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       }
     })();
     return () => undefined;
-  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch]);
+  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch, appliedRecordId]);
 
   useEffect(() => {
     const controller = new AbortController();
