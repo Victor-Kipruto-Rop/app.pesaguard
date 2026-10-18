@@ -94,10 +94,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
   const filtered = useMemo(() => {
-    const latestLoadedTimestamp = transactions.reduce(
-      (latest, transaction) => Math.max(latest, new Date(transaction.timestamp).getTime()),
-      0,
-    );
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const minimum = minAmount.trim() ? Number(minAmount) : null;
     const maximum = maxAmount.trim() ? Number(maxAmount) : null;
 
@@ -109,9 +107,9 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
       if (maximum !== null && Number.isFinite(maximum) && transaction.amount > maximum) return false;
 
       const transactionDate = new Date(transaction.timestamp);
-      if (dateFilter === "Today" && transactionDate.getTime() < latestLoadedTimestamp - 86_400_000) return false;
-      if (dateFilter === "7d" && latestLoadedTimestamp - transactionDate.getTime() > 7 * 86_400_000) return false;
-      if (dateFilter === "30d" && latestLoadedTimestamp - transactionDate.getTime() > 30 * 86_400_000) return false;
+      if (dateFilter === "Today" && transactionDate.getTime() < startOfToday) return false;
+      if (dateFilter === "7d" && Date.now() - transactionDate.getTime() > 7 * 86_400_000) return false;
+      if (dateFilter === "30d" && Date.now() - transactionDate.getTime() > 30 * 86_400_000) return false;
       if (fromDate && transactionDate < new Date(`${fromDate}T00:00:00`)) return false;
       if (toDate && transactionDate > new Date(`${toDate}T23:59:59`)) return false;
       return true;
