@@ -29,7 +29,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reports` | Route mapped — verification required | `/v1/customers/{tenant}/reports` | Tenant report listing; verify tenant authorization and deployed response contract before release. |
-| `data-imports` | Route mapped — verification required | `/api/v1/imports?page=1&per_page=100` | Tenant-scoped import history; upload and processing workflow verification remain separate. |
+| `data-imports` | Route mapped — verification required | `/api/v1/imports` | Server-side pagination and queued/running/completed/failed filters; upload and processing workflow verification remain separate. |
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
 | `import-sync-activity` | Route mapped — verification required | `/api/v1/operations/outbox` | Operational outbox records; not a complete import-job history. |
@@ -77,8 +77,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `branches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `user-profile` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `notification-center` | Route mapped — verification required | `/api/v1/communications/messages` | Communication messages; not notification preferences. |
-| `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search?status=FAILED,REJECTED` | Server-side lifecycle filter; does not represent refunds or settlement failures. |
-| `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search?status=RECEIVED,VALIDATED,PROCESSING,RECONCILING` | Processing lifecycle only; not a reconciliation outcome. |
+| `failed-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and failed/rejected lifecycle filters; does not represent refunds or settlement failures. |
+| `pending-transactions` | Route mapped — verification required | `/api/v1/transactions/search` | Server-side pagination and received/validated/processing/reconciling lifecycle filters; not a reconciliation outcome. |
 | `refunds-reversals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `transaction-import-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-run-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
