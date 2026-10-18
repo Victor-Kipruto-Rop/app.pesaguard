@@ -445,7 +445,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange, isLiveD
             <div><dt>Account reference</dt><dd>{activeTransaction.accountReference ?? "Not provided in preview"}</dd></div>
             <div><dt>Source</dt><dd>{activeTransaction.source}</dd></div>
             <div><dt>Anomaly type</dt><dd>{activeTransaction.anomalyType.replaceAll("_", " ")}</dd></div>
-            <div><dt>Resolved</dt><dd>{activeTransaction.resolved ? "Yes" : "No"}</dd></div>
+            <div><dt>Resolved</dt><dd>{activeTransaction.resolved === null ? "Unknown" : activeTransaction.resolved ? "Yes" : "No"}</dd></div>
             <div><dt>Result description</dt><dd>{activeTransaction.notes}</dd></div>
           </dl>
 

@@ -23,7 +23,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `home` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report returned by the Core API; not synthetic executive KPIs. |
 | `executive-overview` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; this route does not supply unrelated executive metrics. |
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
-| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; current client fetches the first 100 records; server-side pagination/filtering remains unfinished. |
+| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination and text search are wired. Status/date/amount filters and column sorting currently apply only to the loaded page. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -33,7 +33,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
 | `import-sync-activity` | Route mapped — verification required | `/api/v1/operations/outbox` | Operational outbox records; not a complete import-job history. |
-| `activity-log` | Route mapped — verification required | `/activity-feed` | Activity feed; not a compliance-complete immutable audit log. |
+| `activity-log` | Route mapped — verification required | `/v1/customers/{tenant}/audit` | Tenant audit events; verify tenant authorization, event coverage and pagination. |
 | `security` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `system-health` | Route mapped — verification required | `/public/status` | Public API status only; not a full dependency-health dashboard. |
 | `customers` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -161,5 +161,5 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 3. Prove tenant A cannot read or mutate tenant B's records.
 4. Verify route-level permissions and safe error responses.
 5. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
-6. Implement transaction server-side pagination/filtering and test against the deployed API.
+6. Verify server-side transaction pagination/text search against the deployed API; decide whether status/date/amount filters and sorting should be promoted to server-side filters.
 7. Verify staging with a real tenant. Do not label any mapped page production-ready before these checks pass.

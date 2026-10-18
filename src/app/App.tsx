@@ -1,24 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { pageFromPath, pathForPage, type DashboardPage } from "./config/routes";
-import { previewDataFor, workspaces } from "../data/preview";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-import { CustomersPage } from "../pages/customers/CustomersPage";
-import { HomePage } from "../pages/home/HomePage";
-import { OrganizationPage } from "../pages/settings/OrganizationPage";
 import { TransactionsPage } from "../pages/transactions/TransactionsPage";
-import { TransactionDetailPage } from "../pages/transactions/TransactionDetailPage";
-import { TransactionLifecyclePage } from "../pages/transactions/TransactionLifecyclePage";
-import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
-import { ModulePage } from "../pages/system/ModulePage";
-import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
+import { ApiResourcePage } from "../pages/system/ApiResourcePage";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type ApiTransactionPage, type LoginResult } from "../lib/api";
-import type { Customer, Transaction } from "../types/dashboard";
-
-const implementedPages: DashboardPage[] = [
-  "home", "executive-overview", "operational-activity", "transactions",
-  "reconciliation", "customers", "tenant-profile", "settings",
-];
+import type { Transaction, Workspace } from "../types/dashboard";
 
 const knownDashboardPaths = new Set([
   "/",
@@ -180,45 +167,24 @@ function authRouteFromPath(pathname: string): AuthRoute | null {
   return authPaths[path] ?? (knownDashboardPaths.has(path) ? null : "not-found");
 }
 
-function authPathForRoute(route: AuthRoute): string {
-  const paths: Record<AuthRoute, string> = {
-    "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
-    "verify-email-expired": "/verify-email/expired", "forgot-password": "/forgot-password",
-    "reset-password": "/reset-password", "password-updated": "/password-updated",
-    "mfa-challenge": "/mfa-challenge", "mfa-setup": "/mfa/setup", "mfa-verify-setup": "/mfa/verify-setup",
-    "mfa-recovery-codes": "/mfa/recovery-codes", "mfa-recovery": "/mfa/recovery",
-    "security-verify": "/security/verify", "accept-invite": "/accept-invite",
-    "invite-expired": "/invite-expired", "invite-accepted": "/invite/accepted",
-    "invite-invalid": "/invite/invalid", "account-pending": "/account/pending",
-    "onboarding-organization": "/onboarding/organization", "onboarding-setup": "/onboarding/setup",
-    "onboarding-status": "/onboarding/status", "onboarding-complete": "/onboarding/complete",
-    "onboarding-problem": "/onboarding/problem", "session-expired": "/session-expired",
-    "account-locked": "/account-locked", "access-denied": "/access-denied", "signed-out": "/signed-out",
-    "not-found": "/404", "server-error": "/500", "sso": "/sso", "sso-callback": "/sso/callback",
-    "sso-settings": "/settings/security/sso", "reauthenticate": "/reauthenticate",
-  };
-  return paths[route];
-}
-
 export default function App() {
   const [page, setPage] = useState<DashboardPage>(() => pageFromPath(window.location.pathname));
   const [authRoute, setAuthRoute] = useState<AuthRoute | null>(() => authRouteFromPath(window.location.pathname) ?? "sign-in");
   const [session, setSession] = useState<LoginResult | null>(null);
   const [liveTransactions, setLiveTransactions] = useState<Transaction[] | null>(null);
   const [liveTransactionTotal, setLiveTransactionTotal] = useState(0);
+  const [liveTransactionPage, setLiveTransactionPage] = useState(1);
+  const [liveTransactionPerPage, setLiveTransactionPerPage] = useState(25);
+  const [liveTransactionFilter, setLiveTransactionFilter] = useState("");
   const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
-  const [workspaceId, setWorkspaceId] = useState(workspaces[0].id);
-  const [customersByWorkspace, setCustomersByWorkspace] = useState(
-    () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).customers])),
-  );
-  const [transactionsByWorkspace, setTransactionsByWorkspace] = useState(
-    () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).transactions])),
-  );
-  const previewWorkspace = workspaces.find((candidate) => candidate.id === workspaceId) ?? workspaces[0];
-  const workspace = session ? { ...previewWorkspace, id: session.tenantId, name: session.tenantId, category: "Live tenant", initials: session.tenantId.slice(0, 2).toUpperCase() } : previewWorkspace;
-  const customers = session ? [] : (customersByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).customers);
-  const transactions = session ? (liveTransactions ?? []) : (transactionsByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).transactions);
+  const workspace: Workspace | null = session ? {
+    id: session.tenantId,
+    name: session.tenantId,
+    category: "Authenticated tenant",
+    initials: session.tenantId.slice(0, 2).toUpperCase(),
+  } : null;
+  const transactions = liveTransactions ?? [];
 
   useEffect(() => {
     if (!session && authRoute === "sign-in" && authRouteFromPath(window.location.pathname) === null) {
@@ -246,6 +212,9 @@ export default function App() {
     setSession(nextSession);
     setLiveTransactions([]);
     setLiveTransactionTotal(0);
+    setLiveTransactionPage(1);
+    setLiveTransactionPerPage(25);
+    setLiveTransactionFilter("");
     setTransactionError("");
     setAuthRoute(null);
     setPage("home");
@@ -255,24 +224,25 @@ export default function App() {
     // Authentication can succeed even when this account lacks transaction-read permission.
     // Keep the verified session, report the data error, and never substitute sample rows.
     try {
-      const result = await fetchTenantTransactions(nextSession.accessToken);
+      const result = await fetchTenantTransactions(nextSession.accessToken, 1, 25, "");
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
+        if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
         const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
           : normalizedStatus === "completed" ? "Completed"
           : normalizedStatus === "failed" ? "Failed"
           : normalizedStatus === "refunded" ? "Refunded"
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
+          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
         return {
-          id: item.id, customerId: "", customer: "Not supplied by transaction endpoint",
-          reference: item.trans_id, method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
-          status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
-          anomalyType: "", discrepancyId: "", severity: "Low",
-          notes: "Read-only transaction record from the authenticated tenant API.",
-          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
+          id: item.id, customerId: "", customer: "—",
+          reference: item.trans_id, method: "—", amount, currency: item.currency,
+          status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "—",
+          anomalyType: "—", discrepancyId: "—", severity: "Unknown",
+          notes: "No additional details were returned by the transaction endpoint.",
+          resolved: null, reviewed: null, timeline: [],
         };
       });
       setLiveTransactions(mapped);
@@ -282,36 +252,40 @@ export default function App() {
     }
   }, []);
 
-  const refreshLiveTransactions = useCallback(async () => {
+  const refreshLiveTransactions = useCallback(async (requestedPage = liveTransactionPage, requestedPerPage = liveTransactionPerPage, requestedFilter = liveTransactionFilter) => {
     if (!session) return;
     try {
       let activeSession = session;
       let result: ApiTransactionPage;
       try {
-        result = await fetchTenantTransactions(activeSession.accessToken);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter);
       } catch (error) {
         if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
         activeSession = await refreshApiSession(activeSession);
         setSession(activeSession);
-        result = await fetchTenantTransactions(activeSession.accessToken);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter);
       }
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
+        if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
         const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
           : normalizedStatus === "completed" ? "Completed"
           : normalizedStatus === "failed" ? "Failed"
           : normalizedStatus === "refunded" ? "Refunded"
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
-        return { id: item.id, customerId: "", customer: "Not supplied by transaction endpoint", reference: item.trans_id,
-          method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
-          source: "M-Pesa API", anomalyType: "", discrepancyId: "", severity: "Low", notes: "Read-only transaction record from the authenticated tenant API.",
-          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [] };
+          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
+        return { id: item.id, customerId: "", customer: "—", reference: item.trans_id,
+          method: "—", amount, currency: item.currency, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
+          source: "—", anomalyType: "—", discrepancyId: "—", severity: "Unknown", notes: "No additional details were returned by the transaction endpoint.",
+          resolved: null, reviewed: null, timeline: [] };
       });
       setLiveTransactions(mapped);
       setLiveTransactionTotal(result.total);
+      setLiveTransactionPage(result.page);
+      setLiveTransactionPerPage(result.per_page);
+      setLiveTransactionFilter(requestedFilter);
       setTransactionError("");
     } catch (error) {
       if (error instanceof PesaguardApiError && error.status === 401) {
@@ -322,7 +296,7 @@ export default function App() {
       }
       setTransactionError(error instanceof Error ? error.message : "Unable to refresh tenant transactions.");
     }
-  }, [session]);
+  }, [session, liveTransactionPage, liveTransactionPerPage, liveTransactionFilter]);
 
   useEffect(() => {
     if (!session) return;
@@ -340,12 +314,37 @@ export default function App() {
       setSession(null);
       setLiveTransactions(null);
       setLiveTransactionTotal(0);
+      setLiveTransactionPage(1);
+      setLiveTransactionPerPage(25);
+      setLiveTransactionFilter("");
       setTransactionError("");
       setAuthRoute("signed-out");
       setPage("home");
       window.history.pushState({}, "", "/signed-out");
     }
   }, [session]);
+
+  const handleTransactionPageChange = useCallback((nextPage: number, nextPerPage: number, nextFilter = liveTransactionFilter) => {
+    setLiveTransactionPage(nextPage);
+    setLiveTransactionPerPage(nextPerPage);
+    setLiveTransactionFilter(nextFilter);
+    setLiveTransactions(null);
+    setTransactionError("");
+    void refreshLiveTransactions(nextPage, nextPerPage, nextFilter);
+  }, [refreshLiveTransactions, liveTransactionFilter]);
+
+  const handleSessionRefresh = useCallback((nextSession: LoginResult) => {
+    setSession(nextSession);
+  }, []);
+
+  const handleSessionExpired = useCallback(() => {
+    setSession(null);
+    setLiveTransactions(null);
+    setLiveTransactionTotal(0);
+    setTransactionError("");
+    setAuthRoute("session-expired");
+    window.history.pushState({}, "", "/session-expired");
+  }, []);
 
   const navigate = useCallback((nextPage: DashboardPage) => {
     setAuthRoute(null);
@@ -390,55 +389,36 @@ export default function App() {
 
   function search(query: string) {
     if (!query) return;
-    const normalized = query.toLowerCase();
-    const matchedCustomer = customers.some((customer) =>
-      `${customer.name} ${customer.email} ${customer.phone}`.toLowerCase().includes(normalized),
-    );
-    const nextPage: DashboardPage = matchedCustomer ? "customers" : "transactions";
     setAuthRoute(null);
     setSearchQuery(query);
-    setPage(nextPage);
-    window.history.pushState({}, "", `${pathForPage(nextPage)}?q=${encodeURIComponent(query)}`);
+    setPage("transactions");
+    handleTransactionPageChange(1, liveTransactionPerPage, query.trim());
+    window.history.pushState({}, "", `${pathForPage("transactions")}?q=${encodeURIComponent(query)}`);
   }
 
-  function addCustomer(customer: Customer) {
-    setCustomersByWorkspace((current) => ({
-      ...current,
-      [workspace.id]: [customer, ...(current[workspace.id] ?? [])],
-    }));
+  function updateTransactions(_nextTransactions: Transaction[]) {
+    // Authenticated transaction records are read-only until a Core API mutation route exists.
   }
 
-  function updateTransactions(nextTransactions: typeof transactions) {
-    setTransactionsByWorkspace((current) => ({ ...current, [workspace.id]: nextTransactions }));
-  }
-
-  if (authRoute) return <AuthPages route={authRoute} onNavigate={navigateAuth} onSignIn={handleSignIn} />;
+  if (authRoute || !session) return <AuthPages route={authRoute ?? "sign-in"} onNavigate={navigateAuth} onSignIn={handleSignIn} />;
 
   return (
     <DashboardLayout
       activePage={page}
-      workspace={workspace}
-      workspaces={session ? [workspace] : workspaces}
+      workspace={workspace!}
+      workspaces={[workspace!]}
       isLiveData={Boolean(session)}
       onSignOut={handleSignOut}
-      onWorkspaceChange={(nextWorkspace) => {
-        if (!session) setWorkspaceId(nextWorkspace.id);
+      onWorkspaceChange={() => {
+        // Tenant switching is disabled until the Core API exposes an authorized tenant selector.
         setSearchQuery("");
       }}
       onNavigate={navigate}
       onSearch={search}
     >
-      {page === "home" && <HomePage key={workspace.id} workspace={workspace} customers={customers} transactions={transactions} onNavigate={navigate} />}
-      {(page === "executive-overview" || page === "operational-activity") && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
-      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData={Boolean(session)} liveTotal={liveTransactionTotal} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
-      {page === "reconciliation" && <ReconciliationPage key={workspace.id} transactions={transactions} onTransactionsChange={updateTransactions} isLiveData={Boolean(session)} />}
-      {page === "customers" && <CustomersPage key={workspace.id} customers={customers} workspace={workspace} initialQuery={searchQuery} onCreateCustomer={addCustomer} />}
-      {page === "tenant-profile" && <OrganizationPage workspace={workspace} />}
-      {page === "settings" && <OrganizationPage workspace={workspace} title="General settings" />}
-      {page === "transaction-lifecycle" && <TransactionLifecyclePage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
-      {page === "transaction-detail" && <TransactionDetailPage workspace={workspace} transactions={transactions} onNavigate={navigate} />}
-      {page !== "transaction-detail" && page !== "transaction-lifecycle" && isExtendedPage(page) && <OperationalPages page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
-      {!implementedPages.includes(page) && !isExtendedPage(page) && <ModulePage page={page} workspace={workspace} transactions={transactions} customers={customers} onNavigate={navigate} />}
+      {page !== "transactions" && <ApiResourcePage page={page} session={session} onSessionRefresh={handleSessionRefresh} onSessionExpired={handleSessionExpired} />}
+      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} livePage={liveTransactionPage} livePageSize={liveTransactionPerPage} onLivePageChange={handleTransactionPageChange} liveFilter={liveTransactionFilter} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
+      {/* Preview-only page implementations are intentionally not rendered in an authenticated tenant session. */}
     </DashboardLayout>
   );
 }
