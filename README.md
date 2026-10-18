@@ -59,15 +59,15 @@ These screens use clearly labelled synthetic sample rows where appropriate. They
 
 ## Preview-only behavior and limitations
 
-This repository is a frontend preview. Authentication and onboarding screens are design and interaction shells: they do not authenticate users, create accounts, send verification or recovery emails, verify MFA codes, accept invitations, validate SSO responses, create sessions, provision tenants, or persist workspace settings. Recovery-code and authenticator screens intentionally do not display fake secrets or QR codes. Form notices explicitly state when a backend action is not connected.
+The sign-in page now calls the existing PesaGuard identity API, keeps access and refresh tokens in memory only, and supports session refresh and sign-out. A successful sign-in loads tenant-scoped transactions from the API. Other authentication and onboarding routes remain incomplete shells: account registration, email verification/recovery, MFA challenge completion, invitations, SSO, and tenant provisioning are not fully wired. No fake secrets or QR codes are shown.
 
-The dashboard uses in-memory sample data and does not connect to a backend, enforce tenant permissions, or read or write real customer/payment data. Preview interactions do not initiate, refund, or settle payments. Live connection and system-health states must not be inferred from sample content.
-
-Before production use, connect and verify the identity/session layer, tenant authorization, API contracts, server-side validation and audit enforcement, email delivery, MFA enrollment and recovery, SSO callback validation, tenant provisioning, and end-to-end/accessibility tests. Confirm every displayed metric maps to a documented API contract and carries an accurate freshness timestamp. Do not use this preview with production records or payment credentials.
+The dashboard only uses live transaction records after authenticated sign-in. Customer records and several operational modules remain preview or empty, and the current transaction/reconciliation views are read-only because matching/review write APIs have not been connected. Preview interactions never initiate, refund, or settle payments. Do not treat the current integration as a complete production dashboard.
 
 
 ## Live API connectivity
 
 The dashboard now checks the deployed API's public status endpoint (`GET /public/status`) on initial load and every 60 seconds, and displays the HTTP result, latest check time, and a manual refresh control. Configure `VITE_PESAGUARD_API_BASE_URL` in the dashboard hosting environment if the API base URL differs from `https://api.pesaguard.co.ke`.
 
-This connection indicator verifies service status only. Transaction lists, customer records, and workspace metrics remain clearly marked sample data until the dashboard's authentication/session flow and tenant-scoped API data adapters are connected and tested end to end. Do not add API secrets or bearer tokens to `VITE_*` build variables; Vite exposes them to browsers.
+This connection indicator verifies service status only. After sign-in, transaction rows are fetched from `GET /api/v1/transactions/search` with the short-lived bearer access token and the server-derived tenant context. The API contract currently returns up to 100 records per request; client-side filters operate on those loaded records. The dashboard refreshes the transaction list every 60 seconds and attempts refresh-token rotation after an HTTP 401. Access and refresh tokens are held in memory only, so a page reload requires signing in again. Do not add API secrets or bearer tokens to `VITE_*` build variables; Vite exposes them to browsers.
+
+For browser requests, ensure the API runtime `PESAGUARD_CORS_ALLOWED_ORIGINS` includes `https://app.pesaguard.co.ke` if the variable is explicitly set. Run `npm run typecheck` and `npm run build` before deployment, then verify sign-in, tenant isolation, refresh, sign-out revocation, empty states, and CORS in the deployed environment.
