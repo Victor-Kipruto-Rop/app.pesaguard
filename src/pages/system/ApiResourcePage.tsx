@@ -126,6 +126,13 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [error, setError] = useState<{ message: string; status: number; code: string } | null>(null);
   const [loading, setLoading] = useState(Boolean(definition));
   const [reloadVersion, setReloadVersion] = useState(0);
+  const [resourcePage, setResourcePage] = useState(1);
+  const [resourceStatus, setResourceStatus] = useState("");
+
+  useEffect(() => {
+    setResourcePage(1);
+    setResourceStatus("");
+  }, [page]);
 
   const load = useCallback((signal: AbortSignal) => {
     setResult(null);
@@ -138,7 +145,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setLoading(true);
     void (async () => {
       try {
-        const response = await fetchDashboardResource(page, session, signal);
+        const response = await fetchDashboardResource(page, session, signal, { page: resourcePage, perPage: 25, status: resourceStatus });
         if (!signal.aborted) setResult(response);
       } catch (cause: unknown) {
         if (signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
@@ -147,7 +154,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
             const renewed = await refreshApiSession(session);
             if (signal.aborted) return;
             onSessionRefresh(renewed);
-            const response = await fetchDashboardResource(page, renewed, signal);
+            const response = await fetchDashboardResource(page, renewed, signal, { page: resourcePage, perPage: 25, status: resourceStatus });
             if (!signal.aborted) setResult(response);
             return;
           } catch (refreshCause: unknown) {
@@ -171,7 +178,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       }
     })();
     return () => undefined;
-  }, [definition, page, session, onSessionRefresh, onSessionExpired]);
+  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -192,6 +199,34 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
           {definition && <button type="button" className="button button-secondary" onClick={() => setReloadVersion((version) => version + 1)} disabled={loading} aria-label="Refresh Core API data"><RefreshCw size={16} /> Refresh</button>}
         </div>
       </section>
+
+
+      {definition && (definition.paginated || definition.statusFilter) && (
+        <section className="panel" style={{ padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {definition.statusFilter && (
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
+                Import status
+                <select value={resourceStatus} onChange={(event) => { setResourceStatus(event.target.value); setResourcePage(1); }} disabled={loading} aria-label="Filter imports by status">
+                  <option value="">All statuses</option>
+                  <option value="queued">Queued</option>
+                  <option value="running">Running</option>
+                  <option value="completed">Completed</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </label>
+            )}
+            {definition.paginated && <span style={{ fontSize: 12, opacity: 0.7 }}>Server-side pagination · 25 records per page</span>}
+          </div>
+          {definition.paginated && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button type="button" className="button button-secondary" onClick={() => setResourcePage((value) => Math.max(1, value - 1))} disabled={loading || resourcePage <= 1}>Previous</button>
+              <span style={{ fontSize: 13 }}>Page {resourcePage}</span>
+              <button type="button" className="button button-secondary" onClick={() => setResourcePage((value) => value + 1)} disabled={loading || (result !== null && isRecord(result.payload) && typeof result.payload.total === "number" && resourcePage * 25 >= result.payload.total)}>Next</button>
+            </div>
+          )}
+        </section>
+      )}
 
       {loading && <section className="panel" style={{ padding: 24 }} role="status"><RefreshCw size={18} className="spin" /> Loading data from the Core API…</section>}
 
