@@ -163,3 +163,15 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 5. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
 6. Verify server-side transaction pagination/text search/status filters against the deployed API; promote date/amount filters and sorting to server-side parameters if required for large datasets.
 7. Verify staging with a real tenant. Do not label any mapped page production-ready before these checks pass.
+
+
+## Expanded record-level integrations
+
+The dashboard resource layer now supports identifier-driven loading for existing Core API routes:
+
+- Transaction detail: `GET /api/v1/customers/{tenant_id}/transactions/{trans_id}`
+- Import job detail: `GET /api/v1/imports/{import_id}`
+- Transaction lineage: `GET /api/v1/lineage/transactions/{transaction_id}`
+- Webhook delivery history: `GET /webhooks/{webhook_id}/deliveries`
+
+These views require an identifier before making a request. They remain read-only, use the authenticated bearer token, avoid sample-data fallback, and show API errors directly. Tenant access, permissions, deployed response shapes, and staging behavior still require verification before production readiness can be claimed. A Daraja transaction reference and an internal transaction ID may not be interchangeable.
