@@ -18,7 +18,7 @@ export interface Customer {
   lifetimeValue: number;
 }
 
-export type TransactionStatus = "Matched" | "Pending" | "Unmatched" | "Disputed" | "Completed" | "Failed" | "Refunded" | "Unknown";
+export type TransactionStatus = "Matched" | "Pending" | "Unmatched" | "Disputed" | "Completed" | "Failed" | "Refunded" | "Received" | "Validated" | "Processing" | "Reconciling" | "Reconciled" | "Rejected" | "Unknown";
 
 export interface TransactionTimelineEntry {
   id: string;
