@@ -15,8 +15,8 @@ type ResourceDefinition = { path: string; note: string; auth?: boolean };
 // mapped route still needs tenant-isolation, permission and response-contract
 // verification. Pages needing record IDs or unsupported APIs remain unavailable.
 const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
-  home: { path: "/analytics/reconciliation-report", note: "Reconciliation report returned by the Core API; not synthetic executive KPIs." },
-  "executive-overview": { path: "/analytics/reconciliation-report", note: "Reconciliation report only; this route does not supply unrelated executive metrics." },
+  home: { path: "/api/v1/dashboard/overview", note: "Tenant-scoped persisted transaction and discrepancy metrics from the Core API." },
+  "executive-overview": { path: "/api/v1/dashboard/overview", note: "Tenant-scoped persisted transaction and discrepancy metrics; no fabricated risk or revenue KPIs." },
   "risk-overview": { path: "/analytics/incident-trends", note: "Incident trends; not a fraud probability model or financial loss forecast." },
   alerts: { path: "/incidents/search", note: "Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts." },
   "operational-activity": { path: "/activity-feed", note: "Activity feed returned by the Core API." },
