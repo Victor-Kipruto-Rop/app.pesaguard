@@ -208,7 +208,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
               <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13 }}>
                 {definition.statusLabel ?? "Status"}
                 <select value={resourceStatus} onChange={(event) => { setResourceStatus(event.target.value); setResourcePage(1); }} disabled={loading} aria-label={`Filter by ${definition.statusLabel ?? "status"}`}>
-                  <option value="">All statuses</option>
+                  {!definition.defaultStatus && <option value="">All statuses</option>}
                   {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
