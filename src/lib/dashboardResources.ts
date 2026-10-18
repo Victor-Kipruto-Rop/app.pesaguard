@@ -17,6 +17,8 @@ type ResourceDefinition = { path: string; note: string; auth?: boolean };
 const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   home: { path: "/analytics/reconciliation-report", note: "Reconciliation report returned by the Core API; not synthetic executive KPIs." },
   "executive-overview": { path: "/analytics/reconciliation-report", note: "Reconciliation report only; this route does not supply unrelated executive metrics." },
+  "risk-overview": { path: "/analytics/incident-trends", note: "Incident trends; not a fraud probability model or financial loss forecast." },
+  alerts: { path: "/incidents/search", note: "Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts." },
   "operational-activity": { path: "/activity-feed", note: "Activity feed returned by the Core API." },
   "activity-log": { path: "/activity-feed", note: "Activity feed; not a compliance-complete immutable audit log." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
@@ -27,7 +29,9 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "data-sources": { path: "/providers", note: "Provider registry only; this is not a data-quality result." },
   webhooks: { path: "/webhooks", note: "Webhook destination records; signing secrets are never rendered." },
   "import-sync-activity": { path: "/api/v1/operations/outbox", note: "Operational outbox records; not a complete import-job history." },
+  reports: { path: "/v1/customers/{tenant}/reports", note: "Tenant report listing; verify tenant authorization and deployed response contract before release." },
   "report-builder": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; report execution is not implemented by this route." },
+  "access-history": { path: "/v1/customers/{tenant}/audit", note: "Tenant audit events; verify tenant authorization and audit coverage before relying on it." },
   "tenant-profile": { path: "/tenant/current", note: "Authenticated tenant profile." },
   "organization-profile": { path: "/tenant/current", note: "Authenticated tenant context; not organization CRUD." },
   settings: { path: "/v1/settings", note: "Settings response; unsupported settings mutations remain unavailable." },
