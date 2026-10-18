@@ -123,6 +123,21 @@ export async function refreshApiSession(session: LoginResult): Promise<LoginResu
   };
 }
 
+export async function logoutFromApi(session: LoginResult): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: `Bearer ${session.accessToken}` },
+      cache: "no-store",
+      body: JSON.stringify({ session_id: session.sessionId }),
+    });
+  } catch {
+    throw new PesaguardApiError("The API could not confirm remote sign-out. The dashboard will still clear this local session.", 0, "network_error");
+  }
+  if (!response.ok) throw apiError(await readPayload(response), response.status);
+}
+
 export interface ApiTransactionPage {
   items: Array<{
     id: string;
