@@ -51,10 +51,12 @@ function OverviewPayloadView({ payload }: { payload: Record<string, unknown> }) 
   const transactions = isRecord(payload.transactions) ? payload.transactions : {};
   const discrepancies = isRecord(payload.discrepancies) ? payload.discrepancies : {};
   const statuses = isRecord(transactions.by_status) ? transactions.by_status : {};
+  const amountsByCurrency = isRecord(transactions.amount_by_currency) ? transactions.amount_by_currency : {};
+  const amountLabel = Object.entries(amountsByCurrency).map(([currency, amount]) => currency + " " + displayValue(amount)).join(" · ") || "—";
   const severities = isRecord(discrepancies.by_severity) ? discrepancies.by_severity : {};
   const metrics = [
     ["Total transactions", displayValue(transactions.total), displayValue(transactions.recent_30_days) + " in the last 30 days"],
-    ["Recorded transaction amount by currency", displayValue(transactions.amount_by_currency), "Persisted amounts grouped by currency; no currency conversion is applied"],
+    ["Recorded transaction amount by currency", amountLabel, "Persisted amounts grouped by currency; no currency conversion is applied"],
     ["Total discrepancies", displayValue(discrepancies.total), displayValue(discrepancies.recent_30_days) + " detected in the last 30 days"],
     ["Open discrepancies", displayValue(discrepancies.open), displayValue(discrepancies.resolved) + " resolved"],
   ];
