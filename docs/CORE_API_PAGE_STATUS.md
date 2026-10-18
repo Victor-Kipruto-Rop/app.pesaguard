@@ -119,7 +119,7 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `transaction-lifecycle` | Route mapped — verification required | `/api/v1/transactions/{transaction_id}/status` | Requires internal transaction ID; route uses tenant-filtered lookup. Staging verification required. |
 | `provider-callback-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `create-reconciliation-run` | Workflow mapped — verification required | `/api/v1/reconciliation-runs` | Creates a persisted run request; does not start settlement or ledger posting. Apply migration and pass CI/staging tenant-isolation checks before production use. |
-| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcome collection; API PR #95 must merge and staging verification is required. |
+| `reconciliation-results` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation outcomes with match-status filters and exact transaction-ID search; staging verification is required. |
 | `rematch-confirmation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-resolution` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `import-wizard` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -139,9 +139,9 @@ Recent wiring adds provider detail and governed dataset metadata lookup. The gen
 | `webhook-signing-secret` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-retry` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-create` | Workflow mapped — verification required | `/api/v1/report-definitions` | Persists a supported report definition. Apply migration and pass CI/staging tenant-isolation checks before production use. |
-| `report-schedule-config` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `report-schedule-config` | Workflow mapped — verification required | `/api/v1/report-definitions` | Saves schedule metadata with guarded updates; recurring execution and delivery require a deployed scheduler/worker. |
 | `report-recipients` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `export-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `export-history` | Workflow mapped — verification required | `/api/v1/report-runs` | Displays persisted report-run summaries, not downloadable CSV/PDF artifacts. |
 | `branch-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `validation-rule-editor` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `pipeline-failure-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
