@@ -7,7 +7,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - Authenticated dashboard pages render only the live transactions view or the shared Core API resource view.
 - No authenticated page falls back to preview fixtures.
 - Failed API calls and permission denials are displayed rather than replaced with demo records.
-- Pages requiring record IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
+- Pages requiring record IDs use explicit user-entered identifiers and do not fetch until an identifier is supplied. Pages requiring unsupported mutations or domain-specific contracts remain unavailable until the required API exists.
 - The generic resource view is read-only. It does not implement financial writes, reconciliation runs, settlements, refunds, or payment initiation.
 
 ## Status legend
@@ -17,6 +17,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
 ## Page inventory
+
+Recent wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes and preserves that identifier when retrying after session renewal. These additions are still route-mapped, not staging-verified.
 
 | Dashboard page ID | Status | Route | Limitations |
 |---|---|---|---|
