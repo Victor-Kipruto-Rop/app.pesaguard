@@ -8,7 +8,7 @@ export interface DashboardResourceResult {
   fetchedAt: string;
 }
 
-type ResourceDefinition = { path: string; note: string; workflow?: boolean; evidence?: boolean; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; recordIdParam?: { label: string; help: string }; queryParams?: Record<string, string> };
+type ResourceDefinition = { path: string; note: string; workflow?: boolean; evidence?: boolean; auth?: boolean; paginated?: boolean; statusFilter?: boolean; filterParam?: string; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; recordIdParam?: { label: string; help: string }; queryParams?: Record<string, string> };
 
 // This registry deliberately includes only GET routes found in the Core API
 // route audit. It does not claim that a legacy route is production-safe; every
@@ -60,11 +60,13 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "data-export-request": { path: "/api/v1/privacy-requests", note: "Create a privacy access/export request; this records the request and does not claim that an export has been generated.", workflow: true },
   "support-requests": { path: "/api/v1/support-cases", note: "Persisted tenant-scoped support cases with status tracking.", workflow: true, searchParam: "q", searchLabel: "Search title", paginated: true, statusFilter: true, statusLabel: "Case status", statusOptions: [{ value: "open", label: "Open" }, { value: "triage", label: "Triage" }, { value: "in_progress", label: "In progress" }, { value: "needs_information", label: "Needs information" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }] },
   "support-case-detail": { path: "/api/v1/support-cases/{record}", note: "Tenant-scoped support case details.", recordIdParam: { label: "Support case ID", help: "Enter a case ID from Support Requests." } },
+  "duplicate-detection": { path: "/api/v1/reconciliation/results", note: "Persisted reconciliation outcomes marked DUPLICATE for review. This does not delete or suppress transactions.", paginated: true, statusFilter: true, defaultStatus: "DUPLICATE", statusLabel: "Result status", statusOptions: [{ value: "DUPLICATE", label: "Duplicate" }] },
   "matching-history": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped persisted reconciliation outcomes. These are results already recorded by the engine, not a live matching preview.", paginated: true, statusFilter: true, statusLabel: "Result status", statusOptions: [{ value: "MATCHED", label: "Matched" }, { value: "UNMATCHED", label: "Unmatched" }, { value: "PARTIAL", label: "Partial" }, { value: "MISMATCH", label: "Mismatch" }, { value: "DUPLICATE", label: "Duplicate" }, { value: "PENDING", label: "Pending" }, { value: "EXCEPTION", label: "Exception" }] },
   "reconciliation-results": { path: "/api/v1/reconciliation/results", note: "Tenant-scoped persisted reconciliation outcomes. This view does not trigger reconciliation or post ledger entries.", paginated: true, statusFilter: true, statusLabel: "Result status", statusOptions: [{ value: "MATCHED", label: "Matched" }, { value: "UNMATCHED", label: "Unmatched" }, { value: "PARTIAL", label: "Partial" }, { value: "MISMATCH", label: "Mismatch" }, { value: "DUPLICATE", label: "Duplicate" }, { value: "PENDING", label: "Pending" }, { value: "EXCEPTION", label: "Exception" }] },
   "matched-transactions": { path: "/api/v1/reconciliation/results", note: "Persisted reconciliation outcomes filtered to MATCHED. Matching results do not authorize settlement or ledger posting.", paginated: true, statusFilter: true, defaultStatus: "MATCHED", statusLabel: "Result status", statusOptions: [{ value: "MATCHED", label: "Matched" }] },
   "unmatched-transactions": { path: "/api/v1/reconciliation/results", note: "Persisted reconciliation outcomes filtered to UNMATCHED. No automatic rematch is started from this view.", paginated: true, statusFilter: true, defaultStatus: "UNMATCHED", statusLabel: "Result status", statusOptions: [{ value: "UNMATCHED", label: "Unmatched" }] },
   "partial-matches": { path: "/api/v1/reconciliation/results", note: "Persisted partial reconciliation outcomes for review; this view does not authorize automatic posting.", paginated: true, statusFilter: true, defaultStatus: "PARTIAL", statusLabel: "Result status", statusOptions: [{ value: "PARTIAL", label: "Partial" }] },
+  "flagged-transactions": { path: "/api/v1/fraud/assessments", note: "Persisted tenant-scoped risk assessment summaries filtered by risk level; risk flags are screening signals, not proof of fraud.", paginated: true, statusFilter: true, filterParam: "risk_level", defaultStatus: "HIGH,CRITICAL", statusLabel: "Risk level", statusOptions: [{ value: "LOW", label: "Low" }, { value: "MEDIUM", label: "Medium" }, { value: "HIGH", label: "High" }, { value: "CRITICAL", label: "Critical" }] },
   "fraud-detection": { path: "/api/v1/fraud/assessments", note: "Tenant-scoped persisted risk assessment summaries. Risk flags are screening signals, not proof of fraud or a probability of loss.", paginated: true },
   "risk-events": { path: "/api/v1/fraud/assessments", note: "Tenant-scoped persisted risk assessment summaries. This endpoint is not a case-management or payment-blocking workflow.", paginated: true },
   "report-schedule-config": { path: "/api/v1/report-definitions", note: "Create or review a persisted report definition with scheduling metadata. Recurring execution requires the separate scheduler/worker deployment.", workflow: true, searchParam: "q", searchLabel: "Search report definition", paginated: true, statusFilter: true, statusLabel: "Definition status", statusOptions: [{ value: "draft", label: "Draft" }, { value: "open", label: "Active" }, { value: "scheduled", label: "Scheduled" }, { value: "disabled", label: "Disabled" }] },
@@ -130,8 +132,9 @@ export async function fetchDashboardResource(
     }
     if (definition.statusFilter) {
       const status = options.status === undefined ? definition.defaultStatus : options.status;
-      if (status) url.searchParams.set("status", status);
-      else url.searchParams.delete("status");
+      const filterParam = definition.filterParam ?? "status";
+      if (status) url.searchParams.set(filterParam, status);
+      else url.searchParams.delete(filterParam);
     }
     response = await fetch(url.toString(), {
       method: "GET",
