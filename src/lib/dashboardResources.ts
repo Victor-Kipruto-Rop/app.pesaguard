@@ -21,13 +21,12 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "activity-log": { path: "/activity-feed", note: "Activity feed; not a compliance-complete immutable audit log." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
-  "system-health": { path: "/health", note: "Service dependency health, not tenant business data.", auth: false },
-  "service-status": { path: "/health", note: "Service dependency health, not a public uptime history.", auth: false },
+  "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
+  "service-status": { path: "/public/status", note: "Current API status only; not a historical uptime report.", auth: false },
   integrations: { path: "/providers", note: "Provider registry. Only backend-configured, supported provider types should be shown." },
   "data-sources": { path: "/providers", note: "Provider registry only; this is not a data-quality result." },
   webhooks: { path: "/webhooks", note: "Webhook destination records; signing secrets are never rendered." },
   "import-sync-activity": { path: "/api/v1/operations/outbox", note: "Operational outbox records; not a complete import-job history." },
-  reports: { path: "/api/v1/customers/{tenant}/reports", note: "Tenant reports; the legacy route's tenant enforcement must be verified before release." },
   "report-builder": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; report execution is not implemented by this route." },
   "tenant-profile": { path: "/tenant/current", note: "Authenticated tenant profile." },
   "organization-profile": { path: "/tenant/current", note: "Authenticated tenant context; not organization CRUD." },
@@ -35,7 +34,6 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   preferences: { path: "/tenant/current/locale", note: "Locale preference only; not a full preference service." },
   notifications: { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
   "notification-center": { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
-  "access-history": { path: "/api/v1/customers/{tenant}/audit", note: "Tenant audit route; verify tenant authorization and audit coverage before relying on it." },
 };
 
 export function dashboardResourceDefinition(page: DashboardPage, tenantId?: string): ResourceDefinition | null {
