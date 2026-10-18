@@ -69,6 +69,7 @@ export async function fetchDashboardResource(
   try {
     const url = new URL(`${API_BASE_URL}${definition.path}`);
     for (const [key, value] of Object.entries(definition.queryParams ?? {})) url.searchParams.set(key, value);
+    if (definition.searchParam && options.search) url.searchParams.set(definition.searchParam, options.search.slice(0, 200));
     if (definition.paginated) {
       url.searchParams.set("page", String(Math.max(1, Math.floor(options.page ?? 1))));
       url.searchParams.set("per_page", String(Math.min(100, Math.max(1, Math.floor(options.perPage ?? 25)))));
