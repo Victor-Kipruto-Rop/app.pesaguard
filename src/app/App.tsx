@@ -221,15 +221,24 @@ export default function App() {
   const transactions = session ? (liveTransactions ?? []) : (transactionsByWorkspace[previewWorkspace.id] ?? previewDataFor(previewWorkspace).transactions);
 
   useEffect(() => {
+    if (!session && authRoute === "sign-in" && authRouteFromPath(window.location.pathname) === null) {
+      window.history.replaceState({}, "", "/login");
+    }
     function handlePopState() {
       const path = window.location.pathname;
-      setAuthRoute(authRouteFromPath(path));
+      const route = authRouteFromPath(path);
+      if (!session && route === null) {
+        setAuthRoute("sign-in");
+        window.history.replaceState({}, "", "/login");
+        return;
+      }
+      setAuthRoute(route);
       setPage(pageFromPath(path));
       setSearchQuery(new URLSearchParams(window.location.search).get("q") ?? "");
     }
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [session, authRoute]);
 
   const handleSignIn = useCallback(async (email: string, password: string, requestedTenantId: string) => {
     const nextSession = await loginToApi(email, password, requestedTenantId);
@@ -302,6 +311,11 @@ export default function App() {
   }, []);
 
   const navigateAuth = useCallback((nextRoute: AuthRoute | "dashboard") => {
+    if (nextRoute === "dashboard" && !session) {
+      setAuthRoute("sign-in");
+      window.history.replaceState({}, "", "/login");
+      return;
+    }
     if (nextRoute === "dashboard") {
       setAuthRoute(null);
       setPage("home");
@@ -327,7 +341,7 @@ export default function App() {
       } as Record<AuthRoute, string>)[nextRoute]);
     }
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  }, [session]);
 
   function search(query: string) {
     if (!query) return;
@@ -359,9 +373,10 @@ export default function App() {
     <DashboardLayout
       activePage={page}
       workspace={workspace}
-      workspaces={workspaces}
+      workspaces={session ? [workspace] : workspaces}
+      isLiveData={Boolean(session)}
       onWorkspaceChange={(nextWorkspace) => {
-        setWorkspaceId(nextWorkspace.id);
+        if (!session) setWorkspaceId(nextWorkspace.id);
         setSearchQuery("");
       }}
       onNavigate={navigate}
