@@ -44,7 +44,7 @@ export interface Transaction {
   discrepancyId: string;
   severity: "Low" | "Medium" | "High" | "Unknown";
   notes: string;
-  resolved: boolean;
-  reviewed: boolean;
+  resolved: boolean | null;
+  reviewed: boolean | null;
   timeline: TransactionTimelineEntry[];
 }
