@@ -324,6 +324,12 @@ export default function App() {
     }
   }, [session]);
 
+  useEffect(() => {
+    if (!session) return;
+    const timer = window.setInterval(() => { void refreshLiveTransactions(); }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [session, refreshLiveTransactions]);
+
   const handleSignOut = useCallback(async () => {
     const activeSession = session;
     try {
