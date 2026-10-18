@@ -64,3 +64,10 @@ This repository is a frontend preview. Authentication and onboarding screens are
 The dashboard uses in-memory sample data and does not connect to a backend, enforce tenant permissions, or read or write real customer/payment data. Preview interactions do not initiate, refund, or settle payments. Live connection and system-health states must not be inferred from sample content.
 
 Before production use, connect and verify the identity/session layer, tenant authorization, API contracts, server-side validation and audit enforcement, email delivery, MFA enrollment and recovery, SSO callback validation, tenant provisioning, and end-to-end/accessibility tests. Confirm every displayed metric maps to a documented API contract and carries an accurate freshness timestamp. Do not use this preview with production records or payment credentials.
+
+
+## Live API connectivity
+
+The dashboard now checks the deployed API's public status endpoint (`GET /public/status`) on initial load and every 60 seconds, and displays the HTTP result, latest check time, and a manual refresh control. Configure `VITE_PESAGUARD_API_BASE_URL` in the dashboard hosting environment if the API base URL differs from `https://api.pesaguard.co.ke`.
+
+This connection indicator verifies service status only. Transaction lists, customer records, and workspace metrics remain clearly marked sample data until the dashboard's authentication/session flow and tenant-scoped API data adapters are connected and tested end to end. Do not add API secrets or bearer tokens to `VITE_*` build variables; Vite exposes them to browsers.
