@@ -47,6 +47,43 @@ function extractRows(payload: unknown): Record<string, unknown>[] | null {
   return null;
 }
 
+function OverviewPayloadView({ payload }: { payload: Record<string, unknown> }) {
+  const transactions = isRecord(payload.transactions) ? payload.transactions : {};
+  const discrepancies = isRecord(payload.discrepancies) ? payload.discrepancies : {};
+  const statuses = isRecord(transactions.by_status) ? transactions.by_status : {};
+  const severities = isRecord(discrepancies.by_severity) ? discrepancies.by_severity : {};
+  const metrics = [
+    ["Total transactions", displayValue(transactions.total), displayValue(transactions.recent_30_days) + " in the last 30 days"],
+    ["Recorded transaction amount", displayValue(transactions.total_amount), "Persisted amount; currency totals are not converted"],
+    ["Total discrepancies", displayValue(discrepancies.total), displayValue(discrepancies.recent_30_days) + " detected in the last 30 days"],
+    ["Open discrepancies", displayValue(discrepancies.open), displayValue(discrepancies.resolved) + " resolved"],
+  ];
+  const generatedAt = typeof payload.generated_at === "string" ? new Date(payload.generated_at) : null;
+  const updated = generatedAt && !Number.isNaN(generatedAt.getTime()) ? generatedAt.toLocaleString() : "timestamp unavailable";
+  return (
+    <div className="page-stack">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
+        {metrics.map(([label, value, detail]) => <article className="panel" key={label} style={{ padding: 20, minWidth: 0 }}>
+          <p style={{ margin: 0, opacity: 0.7, fontSize: 13 }}>{label}</p>
+          <p style={{ margin: "12px 0", fontSize: 28, fontWeight: 700, overflowWrap: "anywhere" }}>{value}</p>
+          <p style={{ margin: 0, opacity: 0.7, fontSize: 12 }}>{detail}</p>
+        </article>)}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+        <section className="panel" style={{ padding: 20 }}>
+          <h2 style={{ marginTop: 0 }}>Transaction lifecycle</h2>
+          {Object.keys(statuses).length ? <dl style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>{Object.entries(statuses).map(([key, value]) => <div key={key} style={{ display: "contents" }}><dt>{humanize(key)}</dt><dd style={{ margin: 0 }}>{displayValue(value)}</dd></div>)}</dl> : <p>No transaction status counts were returned.</p>}
+        </section>
+        <section className="panel" style={{ padding: 20 }}>
+          <h2 style={{ marginTop: 0 }}>Discrepancy severity</h2>
+          {Object.keys(severities).length ? <dl style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>{Object.entries(severities).map(([key, value]) => <div key={key} style={{ display: "contents" }}><dt>{humanize(key)}</dt><dd style={{ margin: 0 }}>{displayValue(value)}</dd></div>)}</dl> : <p>No discrepancy severity counts were returned.</p>}
+        </section>
+      </div>
+      <p style={{ fontSize: 12, opacity: 0.7 }}>Updated {updated}. Figures come from persisted tenant records; no sample KPIs or inferred risk scores are shown.</p>
+    </div>
+  );
+}
+
 function PayloadView({ payload }: { payload: unknown }) {
   const rows = extractRows(payload);
   const columns = useMemo(() => {
@@ -69,6 +106,8 @@ function PayloadView({ payload }: { payload: unknown }) {
       </div>
     );
   }
+
+  if (isRecord(payload) && payload.data_source === "persisted_tenant_records") return <OverviewPayloadView payload={payload} />;
 
   if (isRecord(payload)) {
     const entries = Object.entries(payload);
