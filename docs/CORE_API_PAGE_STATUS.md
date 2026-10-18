@@ -17,6 +17,18 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - **Workflow mapped — verification required**: a dedicated persisted workflow API exists, but migration, CI, permission, tenant-isolation and staging verification remain release gates.
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
+## Follow-up reconciliation, risk and report views
+
+The additional views below use existing tenant-scoped Core API collections. They are read-only unless the page is explicitly configured as a workflow page.
+
+| Dashboard page IDs | Route | Contract boundary |
+|---|---|---|
+| `matching-history`, `reconciliation-results`, `matched-transactions`, `unmatched-transactions`, `partial-matches` | `GET /api/v1/reconciliation/results` | Persisted reconciliation outcomes filtered by supported uppercase states; no ledger posting or automatic rematching. |
+| `fraud-detection`, `risk-events` | `GET /api/v1/fraud/assessments` | Persisted risk assessment summaries only; not proof of fraud, a probability of loss, or an investigation case. |
+| `report-schedule-config` | `/api/v1/report-definitions` | Stores report definitions and scheduling metadata; recurring execution requires a configured scheduler/worker. |
+| `export-history` | `/api/v1/report-runs` | Bounded JSON summaries and run state; not downloadable CSV/PDF artifacts or email delivery. |
+| `investigation-notes` | `GET /api/v1/fraud-investigations/{record_id}` | Read-only case and evidence metadata; evidence additions use the dedicated evidence endpoint. |
+
 ## Page inventory
 
 Recent wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes and preserves that identifier when retrying after session renewal. These additions are still route-mapped, not staging-verified.
