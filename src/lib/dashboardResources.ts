@@ -29,15 +29,12 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "import-sync-activity": { path: "/api/v1/operations/outbox", note: "Operational outbox records; not a complete import-job history." },
   reports: { path: "/api/v1/customers/{tenant}/reports", note: "Tenant reports; the legacy route's tenant enforcement must be verified before release." },
   "report-builder": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; report execution is not implemented by this route." },
-  "api-developer-resources": { path: "/api/v1/iam/api-clients", note: "API client metadata. Secret material must never be exposed." },
   "tenant-profile": { path: "/tenant/current", note: "Authenticated tenant profile." },
   "organization-profile": { path: "/tenant/current", note: "Authenticated tenant context; not organization CRUD." },
   settings: { path: "/v1/settings", note: "Settings response; unsupported settings mutations remain unavailable." },
   preferences: { path: "/tenant/current/locale", note: "Locale preference only; not a full preference service." },
   notifications: { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
   "notification-center": { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
-  "notification-delivery-history": { path: "/api/v1/communications/messages", note: "Communication message history; delivery detail requires a message ID." },
-  alerts: { path: "/incidents/search", note: "Operational incident search only; not a dedicated financial-alert service." },
   "access-history": { path: "/api/v1/customers/{tenant}/audit", note: "Tenant audit route; verify tenant authorization and audit coverage before relying on it." },
 };
 
