@@ -138,6 +138,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [workflowPayload, setWorkflowPayload] = useState("{}");
   const [workflowRecordId, setWorkflowRecordId] = useState("");
   const [workflowStatus, setWorkflowStatus] = useState("");
+  const [workflowUpdatePayload, setWorkflowUpdatePayload] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState(false);
   const [workflowMessage, setWorkflowMessage] = useState("");
   const [evidenceType, setEvidenceType] = useState("transaction_reference");
@@ -310,6 +311,17 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!definition?.workflow || !workflowRecordId.trim() || !workflowStatus) return;
+    let updatePayload: Record<string, unknown> | undefined;
+    if (workflowUpdatePayload.trim()) {
+      try {
+        const parsed = JSON.parse(workflowUpdatePayload);
+        if (!isRecord(parsed)) throw new Error("Update payload must be a JSON object.");
+        updatePayload = parsed;
+      } catch (cause) {
+        setError({ message: cause instanceof Error ? cause.message : "Update payload must be valid JSON.", status: 400, code: "invalid_payload_json" });
+        return;
+      }
+    }
     const basePath = definition.path.includes("/{record}") ? definition.path.split("/{record}")[0] : definition.path;
     setWorkflowBusy(true);
     setWorkflowMessage("");
@@ -320,7 +332,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       const requestOptions = (token: string): RequestInit => ({
         method: "PATCH",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ status: workflowStatus }),
+        body: JSON.stringify({ status: workflowStatus, ...(updatePayload ? { payload: updatePayload } : {}) }),
         cache: "no-store",
       });
       let response = await fetch(url, requestOptions(activeSession.accessToken));
@@ -392,7 +404,10 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                   {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
-              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || !workflowStatus}>Update status</button>
+              <label style={{ display: "grid", gap: 6, flex: "1 1 100%", fontSize: 13 }}>Replacement payload JSON (optional)
+                <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to change status only" />
+              </label>
+              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())}>Update record</button>
             </form>
           </details>
           {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
