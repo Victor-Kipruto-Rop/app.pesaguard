@@ -242,37 +242,44 @@ export default function App() {
 
   const handleSignIn = useCallback(async (email: string, password: string, requestedTenantId: string) => {
     const nextSession = await loginToApi(email, password, requestedTenantId);
-    // Access tokens stay in memory only; refresh tokens are deliberately not persisted in browser storage.
-    const result = await fetchTenantTransactions(nextSession.accessToken);
-    const mapped: Transaction[] = result.items.map((item) => {
-      const amount = Number(item.trans_amount);
-      const date = new Date(item.created_at);
-      const normalizedStatus = String(item.status ?? "").toLowerCase();
-      const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
-        : normalizedStatus === "completed" ? "Completed"
-        : normalizedStatus === "failed" ? "Failed"
-        : normalizedStatus === "refunded" ? "Refunded"
-        : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-        : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
-      return {
-        id: item.id,
-        customerId: "", customer: "Not supplied by transaction endpoint",
-        reference: item.trans_id,
-        method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
-        status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
-        anomalyType: "", discrepancyId: "", severity: "Low",
-        notes: "Read-only transaction record from the authenticated tenant API.",
-        resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
-      };
-    });
+    // Access and refresh tokens stay in memory only; they are never written to browser storage.
     setSession(nextSession);
-    setLiveTransactions(mapped);
-    setLiveTransactionTotal(result.total);
+    setLiveTransactions([]);
+    setLiveTransactionTotal(0);
     setTransactionError("");
     setAuthRoute(null);
     setPage("home");
     setSearchQuery("");
     window.history.pushState({}, "", "/");
+
+    // Authentication can succeed even when this account lacks transaction-read permission.
+    // Keep the verified session, report the data error, and never substitute sample rows.
+    try {
+      const result = await fetchTenantTransactions(nextSession.accessToken);
+      const mapped: Transaction[] = result.items.map((item) => {
+        const amount = Number(item.trans_amount);
+        const date = new Date(item.created_at);
+        const normalizedStatus = String(item.status ?? "").toLowerCase();
+        const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
+          : normalizedStatus === "completed" ? "Completed"
+          : normalizedStatus === "failed" ? "Failed"
+          : normalizedStatus === "refunded" ? "Refunded"
+          : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
+          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Pending";
+        return {
+          id: item.id, customerId: "", customer: "Not supplied by transaction endpoint",
+          reference: item.trans_id, method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
+          status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
+          anomalyType: "", discrepancyId: "", severity: "Low",
+          notes: "Read-only transaction record from the authenticated tenant API.",
+          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
+        };
+      });
+      setLiveTransactions(mapped);
+      setLiveTransactionTotal(result.total);
+    } catch (error) {
+      setTransactionError(error instanceof Error ? error.message : "Unable to load tenant transactions.");
+    }
   }, []);
 
   const refreshLiveTransactions = useCallback(async () => {
