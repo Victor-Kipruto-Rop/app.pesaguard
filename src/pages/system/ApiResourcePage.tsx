@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { LoginResult } from "../../lib/api";
-import { PesaguardApiError } from "../../lib/api";
+import { PesaguardApiError, refreshApiSession } from "../../lib/api";
 import { dashboardResourceDefinition, dashboardResourceNote, fetchDashboardResource, type DashboardResourceResult } from "../../lib/dashboardResources";
 
 interface ApiResourcePageProps {
   page: DashboardPage;
   session: LoginResult;
+  onSessionRefresh: (session: LoginResult) => void;
+  onSessionExpired: () => void;
 }
 
 function humanize(value: string): string {
@@ -77,7 +79,7 @@ function PayloadView({ payload }: { payload: unknown }) {
   return <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{displayValue(payload)}</pre>;
 }
 
-export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
+export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpired }: ApiResourcePageProps) {
   const definition = useMemo(() => dashboardResourceDefinition(page, session.tenantId), [page, session.tenantId]);
   const [result, setResult] = useState<DashboardResourceResult | null>(null);
   const [error, setError] = useState<{ message: string; status: number; code: string } | null>(null);
@@ -93,16 +95,42 @@ export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
       return () => undefined;
     }
     setLoading(true);
-    void fetchDashboardResource(page, session, signal)
-      .then(setResult)
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError") return;
+    void (async () => {
+      try {
+        const response = await fetchDashboardResource(page, session, signal);
+        if (!signal.aborted) setResult(response);
+      } catch (cause: unknown) {
+        if (signal.aborted || (cause instanceof DOMException && cause.name === "AbortError")) return;
+        if (cause instanceof PesaguardApiError && cause.status === 401 && session.refreshToken) {
+          try {
+            const renewed = await refreshApiSession(session);
+            if (signal.aborted) return;
+            onSessionRefresh(renewed);
+            const response = await fetchDashboardResource(page, renewed, signal);
+            if (!signal.aborted) setResult(response);
+            return;
+          } catch (refreshCause: unknown) {
+            if (signal.aborted) return;
+            if (refreshCause instanceof PesaguardApiError && refreshCause.status === 401) {
+              onSessionExpired();
+              return;
+            }
+            if (refreshCause instanceof PesaguardApiError) {
+              setError({ message: refreshCause.message, status: refreshCause.status, code: refreshCause.code });
+              return;
+            }
+            setError({ message: "Session renewal failed. No sample data was substituted.", status: 0, code: "session_refresh_failed" });
+            return;
+          }
+        }
         if (cause instanceof PesaguardApiError) setError({ message: cause.message, status: cause.status, code: cause.code });
         else setError({ message: "The Core API request failed. No sample data was substituted.", status: 0, code: "unknown_error" });
-      })
-      .finally(() => { if (!signal.aborted) setLoading(false); });
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    })();
     return () => undefined;
-  }, [definition, page, session]);
+  }, [definition, page, session, onSessionRefresh, onSessionExpired]);
 
   useEffect(() => {
     const controller = new AbortController();
