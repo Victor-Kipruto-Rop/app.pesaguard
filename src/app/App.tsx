@@ -12,7 +12,7 @@ import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
 import { ModulePage } from "../pages/system/ModulePage";
 import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
-import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type LoginResult } from "../lib/api";
+import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type ApiTransactionPage, type LoginResult } from "../lib/api";
 import type { Customer, Transaction } from "../types/dashboard";
 
 const implementedPages: DashboardPage[] = [
@@ -286,7 +286,7 @@ export default function App() {
     if (!session) return;
     try {
       let activeSession = session;
-      let result;
+      let result: ApiTransactionPage;
       try {
         result = await fetchTenantTransactions(activeSession.accessToken);
       } catch (error) {
