@@ -53,7 +53,7 @@ function exportTransactions(transactions: Transaction[], filename: string) {
       transaction.anomalyType,
       transaction.discrepancyId,
       transaction.severity,
-      transaction.reviewed ? "Yes" : "No",
+      transaction.reviewed === null ? "Unknown" : transaction.reviewed ? "Yes" : "No",
     ]),
   );
 }
@@ -372,7 +372,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div><dt>Anomaly Type</dt><dd>{activeTransaction.anomalyType}</dd></div>
             <div><dt>Discrepancy ID</dt><dd className="transaction-detail__mono">{activeTransaction.discrepancyId}</dd></div>
             <div><dt>Created At</dt><dd>{activeTransaction.timestamp}</dd></div>
-            <div><dt>Resolved</dt><dd>{activeTransaction.resolved ? "Yes" : "No"}</dd></div>
+            <div><dt>Resolved</dt><dd>{activeTransaction.resolved === null ? "Unknown" : activeTransaction.resolved ? "Yes" : "No"}</dd></div>
             <div><dt>Severity</dt><dd><span className={`transaction-severity transaction-severity--${activeTransaction.severity.toLowerCase()}`}><i />{activeTransaction.severity}</span></dd></div>
             <div className="transaction-detail__notes"><dt>Notes</dt><dd>{activeTransaction.notes}</dd></div>
           </dl>
