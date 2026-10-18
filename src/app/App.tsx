@@ -222,6 +222,7 @@ export default function App() {
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
+        if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
         const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
           : normalizedStatus === "completed" ? "Completed"
@@ -231,7 +232,7 @@ export default function App() {
           : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
         return {
           id: item.id, customerId: "", customer: "—",
-          reference: item.trans_id, method: "—", amount: Number.isFinite(amount) ? amount : 0,
+          reference: item.trans_id, method: "—", amount, currency: item.currency,
           status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "—",
           anomalyType: "—", discrepancyId: "—", severity: "Unknown",
           notes: "No additional details were returned by the transaction endpoint.",
@@ -261,6 +262,7 @@ export default function App() {
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
+        if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
         const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
           : normalizedStatus === "completed" ? "Completed"
@@ -269,7 +271,7 @@ export default function App() {
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
           : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
         return { id: item.id, customerId: "", customer: "—", reference: item.trans_id,
-          method: "—", amount: Number.isFinite(amount) ? amount : 0, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
+          method: "—", amount, currency: item.currency, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
           source: "—", anomalyType: "—", discrepancyId: "—", severity: "Unknown", notes: "No additional details were returned by the transaction endpoint.",
           resolved: null, reviewed: null, timeline: [] };
       });
