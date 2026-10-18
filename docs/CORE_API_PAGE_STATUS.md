@@ -66,7 +66,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `matching-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlement-batches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `scheduled-reconciliation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `report-builder` | Route mapped — verification required | `/api/v1/catalog/datasets` | Dataset catalog only; report execution is not implemented by this route. |
+| `report-builder` | Unavailable — no suitable route mapped | — | A dataset catalog is not a report builder; report definition and execution APIs are required. |
 | `scheduled-reports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `export-center` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
