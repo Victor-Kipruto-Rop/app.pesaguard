@@ -200,7 +200,7 @@ These views require an identifier before making a request. They remain read-only
 - Reconciliation result collections: `GET /api/v1/reconciliation/results` supports tenant-scoped pagination, validated outcome filters, and exact transaction ID filtering. The response deliberately omits raw matched-record payloads.
 
 - Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.
-\n## Additional wiring in this branch\n\nThe resource registry now maps transaction detail/status, import job detail, transaction lineage, dataset metadata, webhook deliveries, reconciliation outcome collections (matched/unmatched/partial/duplicate), persisted risk-assessment collections (including high/critical flags), and provider detail to read-only Core API routes. Record-specific pages require an identifier before making a request. These routes remain **verification required** until contract tests and staging smoke tests pass. Unsupported reconciliation-run CRUD, data-quality findings, fraud investigation workflows, settlements, refund/reversal operations, report execution, privacy requests, and support cases remain unavailable rather than being backed by unrelated endpoints.\n
+\n## Additional wiring in this branch\n\nThe resource registry now maps transaction detail/status, import job detail, transaction lineage, dataset metadata, webhook deliveries, reconciliation outcome collections (matched/unmatched/partial/duplicate), persisted risk-assessment collections (including high/critical flags), and provider detail to read-only Core API routes. Record-specific pages require an identifier before making a request. These routes remain **verification required** until contract tests and staging smoke tests pass. Dedicated persisted workflow APIs now exist and are mapped for reconciliation-run requests, matching-rule definitions, data-quality findings, schedules, settlement/refund review, report definitions and JSON report runs, fraud investigations/evidence, privacy requests, and support cases. Treat these pages as workflow-mapped—not production-verified—until migration, CI, PostgreSQL tenant-isolation tests, permission checks, and staging smoke tests pass.\n
 
 ## Additional catalog and analytics page mappings
 
@@ -214,7 +214,7 @@ The following sidebar pages now use existing Core API read routes. These mapping
 | `operator-performance` | `GET /analytics/operator-stats` | API-provided operator statistics; not a complete productivity or HR evaluation. |
 | `sla-metrics` | `GET /analytics/sla-metrics` | API-provided SLA metrics; definitions and tenant scope require staging verification. |
 
-All remain read-only. No reconciliation-run, data-quality-finding, settlement, refund, investigation-case, report-execution, privacy-request, or support-case API is implied by these mappings.
+Pages use read-only views unless explicitly configured for persisted workflow creation/update/evidence actions. Settlement and refund/reversal APIs are review-only; privacy APIs register and review requests without claiming that data has been exported or deleted.
 
 
 ## Tenant workflow API integration
@@ -236,3 +236,10 @@ The workflow detail editor now reads the latest record before PATCH and includes
 - `export-history` reads paginated report-run summaries from `GET /api/v1/report-runs`. This is execution-summary history, not downloadable CSV/PDF artifact history.
 - The following pages remain intentionally unavailable until suitable domain APIs exist: manual matching actions, settlement statement comparison/variance detail, persisted data-quality trend analytics, report-recipient management, investigation-note append operations, and downloadable export artifact history. They must not be mapped to unrelated endpoints or populated with fixtures.
 - Settlement/reversal pages are review workflows only; they do not execute payment, settlement, refund, reversal, or ledger-posting actions. Privacy pages register requests but do not claim data has been exported or deleted.
+
+
+## Workflow wiring update
+
+The dashboard resource registry now includes a dedicated refund/reversal review detail route (`/refund-reversal-detail`) backed by `GET/PATCH /api/v1/refund-reversal-requests/{record}`. It uses the shared workflow editor's optimistic version guard and only supports the API's review lifecycle. This does not execute a refund, reversal, provider command, or ledger posting.
+
+The workflow endpoints and pages remain verification-required until repository CI passes and the approved workflow-record migration is applied in staging. Scheduled reconciliation/report definitions require the scheduler worker to be deployed and monitored. Report runs are persisted JSON summaries, not downloadable CSV/PDF artifacts.
