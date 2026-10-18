@@ -175,6 +175,7 @@ export default function App() {
   const [liveTransactionTotal, setLiveTransactionTotal] = useState(0);
   const [liveTransactionPage, setLiveTransactionPage] = useState(1);
   const [liveTransactionPerPage, setLiveTransactionPerPage] = useState(25);
+  const [liveTransactionFilter, setLiveTransactionFilter] = useState("");
   const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
   const workspace: Workspace | null = session ? {
@@ -213,6 +214,7 @@ export default function App() {
     setLiveTransactionTotal(0);
     setLiveTransactionPage(1);
     setLiveTransactionPerPage(25);
+    setLiveTransactionFilter("");
     setTransactionError("");
     setAuthRoute(null);
     setPage("home");
@@ -222,7 +224,7 @@ export default function App() {
     // Authentication can succeed even when this account lacks transaction-read permission.
     // Keep the verified session, report the data error, and never substitute sample rows.
     try {
-      const result = await fetchTenantTransactions(nextSession.accessToken, 1, 25);
+      const result = await fetchTenantTransactions(nextSession.accessToken, 1, 25, "");
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
@@ -250,13 +252,13 @@ export default function App() {
     }
   }, []);
 
-  const refreshLiveTransactions = useCallback(async (requestedPage = liveTransactionPage, requestedPerPage = liveTransactionPerPage) => {
+  const refreshLiveTransactions = useCallback(async (requestedPage = liveTransactionPage, requestedPerPage = liveTransactionPerPage, requestedFilter = liveTransactionFilter) => {
     if (!session) return;
     try {
       let activeSession = session;
       let result: ApiTransactionPage;
       try {
-        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter);
       } catch (error) {
         if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
         activeSession = await refreshApiSession(activeSession);
@@ -283,6 +285,7 @@ export default function App() {
       setLiveTransactionTotal(result.total);
       setLiveTransactionPage(result.page);
       setLiveTransactionPerPage(result.per_page);
+      setLiveTransactionFilter(requestedFilter);
       setTransactionError("");
     } catch (error) {
       if (error instanceof PesaguardApiError && error.status === 401) {
@@ -293,7 +296,7 @@ export default function App() {
       }
       setTransactionError(error instanceof Error ? error.message : "Unable to refresh tenant transactions.");
     }
-  }, [session, liveTransactionPage, liveTransactionPerPage]);
+  }, [session, liveTransactionPage, liveTransactionPerPage, liveTransactionFilter]);
 
   useEffect(() => {
     if (!session) return;
@@ -311,6 +314,9 @@ export default function App() {
       setSession(null);
       setLiveTransactions(null);
       setLiveTransactionTotal(0);
+      setLiveTransactionPage(1);
+      setLiveTransactionPerPage(25);
+      setLiveTransactionFilter("");
       setTransactionError("");
       setAuthRoute("signed-out");
       setPage("home");
@@ -318,11 +324,12 @@ export default function App() {
     }
   }, [session]);
 
-  const handleTransactionPageChange = useCallback((nextPage: number, nextPerPage: number) => {
+  const handleTransactionPageChange = useCallback((nextPage: number, nextPerPage: number, nextFilter = liveTransactionFilter) => {
     setLiveTransactionPage(nextPage);
     setLiveTransactionPerPage(nextPerPage);
-    void refreshLiveTransactions(nextPage, nextPerPage);
-  }, [refreshLiveTransactions]);
+    setLiveTransactionFilter(nextFilter);
+    void refreshLiveTransactions(nextPage, nextPerPage, nextFilter);
+  }, [refreshLiveTransactions, liveTransactionFilter]);
 
   const handleSessionRefresh = useCallback((nextSession: LoginResult) => {
     setSession(nextSession);
@@ -407,7 +414,7 @@ export default function App() {
       onSearch={search}
     >
       {page !== "transactions" && <ApiResourcePage page={page} session={session} onSessionRefresh={handleSessionRefresh} onSessionExpired={handleSessionExpired} />}
-      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} livePage={liveTransactionPage} livePageSize={liveTransactionPerPage} onLivePageChange={handleTransactionPageChange} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
+      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} livePage={liveTransactionPage} livePageSize={liveTransactionPerPage} onLivePageChange={handleTransactionPageChange} liveFilter={liveTransactionFilter} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
       {/* Preview-only page implementations are intentionally not rendered in an authenticated tenant session. */}
     </DashboardLayout>
   );
