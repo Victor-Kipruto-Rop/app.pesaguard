@@ -63,7 +63,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `risk-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-runs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `matching-rules` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matching-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `matching-history` | Route mapped — verification required | `/api/v1/reconciliation/results` | Tenant-scoped paginated reconciliation match history; API PR #95 must merge and staging verification is required. |
 | `settlement-batches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `scheduled-reconciliation` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `report-builder` | Unavailable — no suitable route mapped | — | A dataset catalog is not a report builder; report definition and execution APIs are required. |
@@ -82,9 +82,9 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `refunds-reversals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `transaction-import-results` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `reconciliation-run-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `matched-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `unmatched-transactions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `partial-matches` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `matched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=MATCHED` | Tenant-scoped reconciliation outcomes; API PR #95 must merge and staging verification is required. |
+| `unmatched-transactions` | Route mapped — verification required | `/api/v1/reconciliation/results?status=UNMATCHED,MISMATCH,DUPLICATE` | Tenant-scoped unmatched/mismatch/duplicate outcomes; API PR #95 must merge and staging verification is required. |
+| `partial-matches` | Route mapped — verification required | `/api/v1/reconciliation/results?status=PARTIAL` | Tenant-scoped partial-match outcomes; API PR #95 must merge and staging verification is required. |
 | `manual-matching` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `match-approvals` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `exception-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -179,3 +179,5 @@ These views require an identifier before making a request. They remain read-only
 - Transaction lifecycle: `GET /api/v1/transactions/{transaction_id}/status`.
 - Transaction reconciliation result/history: `GET /api/v1/reconciliation/{transaction_id}`.
 - Per-transaction risk assessment: `GET /api/v1/fraud/{transaction_id}`.
+
+- Reconciliation result collections: `GET /api/v1/reconciliation/results` supports tenant-scoped pagination, validated outcome filters, and exact transaction ID filtering. The response deliberately omits raw matched-record payloads.
