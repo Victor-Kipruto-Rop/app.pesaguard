@@ -343,10 +343,33 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     try {
       let activeSession = session;
       const url = API_BASE_URL + basePath + "/" + encodeURIComponent(workflowRecordId.trim());
+      const readRecord = (token: string) => fetch(url, {
+        method: "GET",
+        headers: { Accept: "application/json", Authorization: "Bearer " + token },
+        cache: "no-store",
+      });
+      let currentResponse = await readRecord(activeSession.accessToken);
+      if (currentResponse.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        currentResponse = await readRecord(activeSession.accessToken);
+      }
+      const currentPayload = await currentResponse.json().catch(() => null);
+      if (!currentResponse.ok) {
+        if (currentResponse.status === 401) onSessionExpired();
+        const message = isRecord(currentPayload) && typeof currentPayload.message === "string" ? currentPayload.message : "The current workflow record could not be loaded before updating.";
+        setError({ message, status: currentResponse.status, code: isRecord(currentPayload) && typeof currentPayload.error === "string" ? currentPayload.error : "workflow_version_read_failed" });
+        return;
+      }
+      const currentItem = isRecord(currentPayload) && isRecord(currentPayload.item) ? currentPayload.item : null;
+      if (!currentItem || typeof currentItem.version !== "number" || !Number.isInteger(currentItem.version)) {
+        setError({ message: "The Core API did not return a record version. Update was stopped to avoid overwriting concurrent changes.", status: 502, code: "workflow_version_unavailable" });
+        return;
+      }
       const requestOptions = (token: string): RequestInit => ({
         method: "PATCH",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}), ...(workflowUpdateTitle.trim() ? { title: workflowUpdateTitle.trim() } : {}), ...(workflowUpdateDescription.trim() ? { description: workflowUpdateDescription.trim() } : {}) }),
+        body: JSON.stringify({ version: currentItem.version, ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}), ...(workflowUpdateTitle.trim() ? { title: workflowUpdateTitle.trim() } : {}), ...(workflowUpdateDescription.trim() ? { description: workflowUpdateDescription.trim() } : {}) }),
         cache: "no-store",
       });
       let response = await fetch(url, requestOptions(activeSession.accessToken));

@@ -208,3 +208,8 @@ All remain read-only. No reconciliation-run, data-quality-finding, settlement, r
 The workflow API implementation and Alembic migration are present in the Core API repository; see [Core API PR #96](https://github.com/Victor-Kipruto-Rop/api.pesaguard/pull/96) and `docs/dashboard/WORKFLOW_API_CONTRACT.md`. The dashboard maps these pages to tenant-scoped workflow endpoints and exposes authenticated create/update/evidence controls where applicable. This is implementation-level wiring, not proof of production deployment: apply the Alembic migration, run backend and frontend CI, and complete tenant-isolation, permission and staging smoke tests.
 
 Explicitly out of scope: scheduler execution without a deployed worker, automatic matching-engine consumption of saved rules, downloadable report artifacts or scheduled delivery, settlement/refund execution, and actual privacy deletion/export. These APIs persist requests, configurations and review records only.
+
+
+## Workflow mutation safety follow-up
+
+The workflow detail editor now reads the latest record before PATCH and includes the returned integer `version` in the update request. This activates the Core API optimistic-concurrency guard and avoids sending a mutation if the record version is absent or the pre-update read fails. Privacy request detail controls no longer offer the unsupported `completed` transition; actual privacy export/deletion execution remains a separate workflow. These changes reduce accidental overwrites but still require CI and staging verification.
