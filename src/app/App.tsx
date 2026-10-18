@@ -230,12 +230,13 @@ export default function App() {
         const date = new Date(item.created_at);
         if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
-        const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
-          : normalizedStatus === "completed" ? "Completed"
+        const status: Transaction["status"] = normalizedStatus === "received" ? "Received"
+          : normalizedStatus === "validated" ? "Validated"
+          : normalizedStatus === "processing" ? "Processing"
+          : normalizedStatus === "reconciling" ? "Reconciling"
+          : normalizedStatus === "reconciled" ? "Reconciled"
           : normalizedStatus === "failed" ? "Failed"
-          : normalizedStatus === "refunded" ? "Refunded"
-          : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
+          : normalizedStatus === "rejected" ? "Rejected" : "Unknown";
         return {
           id: item.id, customerId: "", customer: "—",
           reference: item.trans_id, method: "—", amount, currency: item.currency,
@@ -270,12 +271,13 @@ export default function App() {
         const date = new Date(item.created_at);
         if (!Number.isFinite(amount) || Number.isNaN(date.getTime())) throw new PesaguardApiError("The transaction API returned an invalid amount or timestamp. Records were not rendered.", 502, "invalid_transaction_record");
         const normalizedStatus = String(item.status ?? "").toLowerCase();
-        const status: Transaction["status"] = normalizedStatus === "matched" ? "Matched"
-          : normalizedStatus === "completed" ? "Completed"
+        const status: Transaction["status"] = normalizedStatus === "received" ? "Received"
+          : normalizedStatus === "validated" ? "Validated"
+          : normalizedStatus === "processing" ? "Processing"
+          : normalizedStatus === "reconciling" ? "Reconciling"
+          : normalizedStatus === "reconciled" ? "Reconciled"
           : normalizedStatus === "failed" ? "Failed"
-          : normalizedStatus === "refunded" ? "Refunded"
-          : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
-          : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
+          : normalizedStatus === "rejected" ? "Rejected" : "Unknown";
         return { id: item.id, customerId: "", customer: "—", reference: item.trans_id,
           method: "—", amount, currency: item.currency, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
           source: "—", anomalyType: "—", discrepancyId: "—", severity: "Unknown", notes: "No additional details were returned by the transaction endpoint.",
