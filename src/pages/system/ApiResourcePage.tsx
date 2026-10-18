@@ -16,7 +16,7 @@ function readable(value: unknown): string {
 }
 
 export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
-  const definition = dashboardResourceDefinition(page);
+  const definition = dashboardResourceDefinition(page, session.tenantId);
   const [result, setResult] = useState<DashboardResourceResult | null>(null);
   const [error, setError] = useState<{ message: string; status: number; code: string } | null>(null);
   const [loading, setLoading] = useState(Boolean(definition));
@@ -31,7 +31,7 @@ export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
       return () => controller.abort();
     }
     setLoading(true);
-    void fetchDashboardResource(page, session.accessToken, session.tenantId, controller.signal)
+    void fetchDashboardResource(page, session, controller.signal)
       .then((value) => setResult(value))
       .catch((cause: unknown) => {
         if (cause instanceof DOMException && cause.name === "AbortError") return;
@@ -49,7 +49,7 @@ export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
           <div>
             <p className="eyebrow">CORE API · READ-ONLY</p>
             <h1 style={{ margin: "8px 0" }}>{page.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())}</h1>
-            <p>{dashboardResourceNote(page)}</p>
+            <p>{dashboardResourceNote(page, session.tenantId)}</p>
           </div>
           <span className="mw-status mw-status--neutral"><Database size={14} /> Tenant API data</span>
         </div>
