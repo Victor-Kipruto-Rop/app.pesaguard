@@ -225,8 +225,3 @@ Explicitly out of scope: scheduler execution without a deployed worker, automati
 ## Workflow mutation safety follow-up
 
 The workflow detail editor now reads the latest record before PATCH and includes the returned integer `version` in the update request. This activates the Core API optimistic-concurrency guard and avoids sending a mutation if the record version is absent or the pre-update read fails. Privacy request detail controls no longer offer the unsupported `completed` transition; actual privacy export/deletion execution remains a separate workflow. These changes reduce accidental overwrites but still require CI and staging verification.
-
-
-## Risk filter contract
-
-The flagged-transactions page filters persisted risk assessments with the API's risk-level query parameter. Risk flags are screening signals only and do not establish fraud or block payments.
