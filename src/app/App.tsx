@@ -197,7 +197,7 @@ export default function App() {
   const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
   const [workspaceId, setWorkspaceId] = useState(workspaces[0].id);
-  const [customersByWorkspace, setCustomersByWorkspace] = useState(
+  const [customersByWorkspace] = useState(
     () => Object.fromEntries(workspaces.map((workspace) => [workspace.id, previewDataFor(workspace).customers])),
   );
   const [transactionsByWorkspace, setTransactionsByWorkspace] = useState(
