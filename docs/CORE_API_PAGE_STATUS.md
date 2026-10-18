@@ -9,11 +9,12 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 - Failed API calls and permission denials are displayed rather than replaced with demo records.
 - Pages requiring record IDs, filters, mutations, or domain-specific contracts remain unavailable until the required API exists.
 - The generic resource view is read-only. It does not implement financial writes, reconciliation runs, settlements, refunds, or payment initiation.
+- Candidate mappings for the reports and audit-history pages were removed because the matching tenant-scoped routes could not be verified in the route audit.
 
 ## Status legend
 
 - **Connected — existing**: transaction API integration exists; tenant-isolation and staging verification remain release gates.
-- **Route mapped — verification required**: an existing route is called, but tenant isolation, permissions, and response contracts must be verified.
+- **Route mapped — verification required**: a route appears in the route audit, but tenant isolation, permissions, response contracts and deployed availability must be verified.
 - **Unavailable**: no suitable route is mapped; the UI intentionally displays an unavailable state.
 
 ## Page inventory
@@ -23,19 +24,19 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `home` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report returned by the Core API; not synthetic executive KPIs. |
 | `executive-overview` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; this route does not supply unrelated executive metrics. |
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
-| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; tenant isolation and staging verification remain release gates. Current client loads the first API page only. |
+| `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; current client fetches the first 100 records; server-side pagination/filtering remains unfinished. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
 | `exceptions` | Route mapped — verification required | `/discrepancies` | Discrepancy records returned by the Core API. |
 | `payments` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `settlements` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `reports` | Route mapped — verification required | `/api/v1/customers/{tenant}/reports` | Tenant reports; the legacy route's tenant enforcement must be verified before release. |
+| `reports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-imports` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `integrations` | Route mapped — verification required | `/providers` | Provider registry. Only backend-configured, supported provider types should be shown. |
 | `webhooks` | Route mapped — verification required | `/webhooks` | Webhook destination records; signing secrets are never rendered. |
 | `import-sync-activity` | Route mapped — verification required | `/api/v1/operations/outbox` | Operational outbox records; not a complete import-job history. |
 | `activity-log` | Route mapped — verification required | `/activity-feed` | Activity feed; not a compliance-complete immutable audit log. |
 | `security` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `system-health` | Route mapped — verification required | `/health` | Service dependency health, not tenant business data. |
+| `system-health` | Route mapped — verification required | `/public/status` | Public API status only; not a full dependency-health dashboard. |
 | `customers` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `team-members` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `roles-permissions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -105,10 +106,10 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `integration-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `webhook-delivery-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `alert-detail` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `service-status` | Route mapped — verification required | `/health` | Service dependency health, not a public uptime history. |
+| `service-status` | Route mapped — verification required | `/public/status` | Current API status only; not a historical uptime report. |
 | `security-settings` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `active-sessions` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
-| `access-history` | Route mapped — verification required | `/api/v1/customers/{tenant}/audit` | Tenant audit route; verify tenant authorization and audit coverage before relying on it. |
+| `access-history` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `account-closure` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `onboarding-resume` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `first-login-checklist` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
@@ -156,10 +157,10 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 
 ## Release gates
 
-1. Add a contract test for every mapped route and response shape.
-2. Prove tenant A cannot read or mutate tenant B's records.
-3. Verify route-level permissions and safe error responses.
-4. Implement missing endpoints with persistence, validation, audit logging, and idempotency for mutations.
-5. Fix the currently failing GitHub Actions CI run, then pass frontend typecheck/build and backend CI.
-6. Verify staging with a real tenant and confirm pagination/filter semantics against the deployed API.
-7. Do not label any mapped page production-ready before these checks pass.
+1. Diagnose and fix the failing GitHub Actions typecheck/build jobs.
+2. Add a contract test for every mapped route and response shape.
+3. Prove tenant A cannot read or mutate tenant B's records.
+4. Verify route-level permissions and safe error responses.
+5. Implement missing endpoints with persistence, validation, audit logging and idempotency for mutations.
+6. Implement transaction server-side pagination/filtering and test against the deployed API.
+7. Verify staging with a real tenant. Do not label any mapped page production-ready before these checks pass.
