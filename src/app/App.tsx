@@ -6,7 +6,7 @@ import { TransactionsPage } from "../pages/transactions/TransactionsPage";
 import { ApiResourcePage } from "../pages/system/ApiResourcePage";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type ApiTransactionPage, type LoginResult } from "../lib/api";
-import type { Customer, Transaction } from "../types/dashboard";
+import type { Transaction } from "../types/dashboard";
 
 const knownDashboardPaths = new Set([
   "/",
@@ -387,13 +387,6 @@ export default function App() {
     setSearchQuery(query);
     setPage(nextPage);
     window.history.pushState({}, "", `${pathForPage(nextPage)}?q=${encodeURIComponent(query)}`);
-  }
-
-  function addCustomer(customer: Customer) {
-    setCustomersByWorkspace((current) => ({
-      ...current,
-      [workspace.id]: [customer, ...(current[workspace.id] ?? [])],
-    }));
   }
 
   function updateTransactions(nextTransactions: typeof transactions) {
