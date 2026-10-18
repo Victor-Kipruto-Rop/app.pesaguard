@@ -175,3 +175,7 @@ The dashboard resource layer now supports identifier-driven loading for existing
 - Webhook delivery history: `GET /webhooks/{webhook_id}/deliveries`
 
 These views require an identifier before making a request. They remain read-only, use the authenticated bearer token, avoid sample-data fallback, and show API errors directly. Tenant access, permissions, deployed response shapes, and staging behavior still require verification before production readiness can be claimed. A Daraja transaction reference and an internal transaction ID may not be interchangeable.
+- Transaction detail: `GET /api/v1/transactions/{transaction_id}` (internal transaction ID).
+- Transaction lifecycle: `GET /api/v1/transactions/{transaction_id}/status`.
+- Transaction reconciliation result/history: `GET /api/v1/reconciliation/{transaction_id}`.
+- Per-transaction risk assessment: `GET /api/v1/fraud/{transaction_id}`.
