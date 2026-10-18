@@ -54,14 +54,14 @@ export interface LoginResult {
   sessionId: string;
 }
 
-export async function loginToApi(email: string, password: string, tenantId = "default"): Promise<LoginResult> {
+export async function loginToApi(email: string, password: string, tenantId = "default", mfaCode = ""): Promise<LoginResult> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { Accept: "application/json", "Content-Type": "application/json" },
       cache: "no-store",
-      body: JSON.stringify({ username: email.trim(), password, tenant_id: tenantId.trim() || "default" }),
+      body: JSON.stringify({ username: email.trim(), password, tenant_id: tenantId.trim() || "default", ...(mfaCode.trim() ? { mfa_code: mfaCode.trim() } : {}) }),
     });
   } catch {
     throw new PesaguardApiError("Could not reach PesaGuard authentication. Check API availability and CORS configuration.", 0, "network_error");
