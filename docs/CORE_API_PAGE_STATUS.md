@@ -18,6 +18,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 
 ## Page inventory
 
+This branch adds dedicated routes for dataset catalog and dataset metadata, plus resolution-time, operator-statistics, and SLA analytics. It also maps Flagged Transactions to persisted high/critical risk assessments. These remain route-mapped until tenant scope, response contracts, and staging behavior are verified.
+
 Latest wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes. These additions are route-mapped, not staging-verified.
 
 | Dashboard page ID | Status | Route | Limitations |
