@@ -139,6 +139,8 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [workflowRecordId, setWorkflowRecordId] = useState("");
   const [workflowStatus, setWorkflowStatus] = useState("");
   const [workflowUpdatePayload, setWorkflowUpdatePayload] = useState("");
+  const [workflowUpdateTitle, setWorkflowUpdateTitle] = useState("");
+  const [workflowUpdateDescription, setWorkflowUpdateDescription] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState(false);
   const [workflowMessage, setWorkflowMessage] = useState("");
   const [evidenceType, setEvidenceType] = useState("transaction_reference");
@@ -158,6 +160,8 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setWorkflowRecordId("");
     setWorkflowStatus("");
     setWorkflowUpdatePayload("");
+    setWorkflowUpdateTitle("");
+    setWorkflowUpdateDescription("");
     setWorkflowMessage("");
     setEvidenceType("transaction_reference");
     setEvidenceReference("");
@@ -320,7 +324,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
 
   const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!definition?.workflow || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())) return;
+    if (!(definition?.workflow || definition?.workflowUpdate) || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim() && !workflowUpdateTitle.trim() && !workflowUpdateDescription.trim())) return;
     let updatePayload: Record<string, unknown> | undefined;
     if (workflowUpdatePayload.trim()) {
       try {
@@ -342,7 +346,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       const requestOptions = (token: string): RequestInit => ({
         method: "PATCH",
         headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}) }),
+        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}), ...(workflowUpdateTitle.trim() ? { title: workflowUpdateTitle.trim() } : {}), ...(workflowUpdateDescription.trim() ? { description: workflowUpdateDescription.trim() } : {}) }),
         cache: "no-store",
       });
       let response = await fetch(url, requestOptions(activeSession.accessToken));
@@ -372,7 +376,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       <section className="panel" style={{ padding: 24 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
-            <p className="eyebrow">{definition?.workflow ? "CORE API · LIVE WORKFLOW" : "CORE API · LIVE RESOURCE"}</p>
+            <p className="eyebrow">{(definition?.workflow || definition?.workflowUpdate) ? "CORE API · LIVE WORKFLOW" : "CORE API · LIVE RESOURCE"}</p>
             <h1 style={{ margin: "8px 0" }}>{humanize(page)}</h1>
             <p>{dashboardResourceNote(page, session.tenantId)}</p>
             <p style={{ fontSize: 12, opacity: 0.7 }}>Tenant: {session.tenantId}</p>
@@ -382,9 +386,9 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       </section>
 
 
-      {definition?.workflow && (
+      {(definition?.workflow || definition?.workflowUpdate) && (
         <section className="panel" style={{ padding: 18 }}>
-          <details>
+          {definition.workflow && (<details>
             <summary style={{ cursor: "pointer", fontWeight: 650 }}>Create workflow record</summary>
             <form onSubmit={submitWorkflowCreate} style={{ display: "grid", gap: 12, marginTop: 16 }}>
               <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Title
@@ -401,9 +405,9 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                 <small style={{ opacity: 0.7 }}>The Core API validates and persists the record. Creating a request does not execute payments or destructive actions.</small>
               </div>
             </form>
-          </details>
-          <details style={{ marginTop: 14 }}>
-            <summary style={{ cursor: "pointer", fontWeight: 650 }}>Update workflow status</summary>
+          </details>)}
+          {(definition.workflow || definition.workflowUpdate) && (<details style={{ marginTop: 14 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 650 }}>Update workflow record</summary>
             <form onSubmit={submitWorkflowUpdate} style={{ display: "flex", alignItems: "end", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
               <label style={{ display: "grid", gap: 6, flex: "1 1 240px", fontSize: 13 }}>Record ID
                 <input value={workflowRecordId} onChange={(event) => setWorkflowRecordId(event.target.value)} maxLength={200} required disabled={workflowBusy} placeholder="wf_…" />
@@ -414,12 +418,18 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                   {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </select>
               </label>
-              <label style={{ display: "grid", gap: 6, flex: "1 1 100%", fontSize: 13 }}>Replacement payload JSON (optional)
-                <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to change status only" />
+              <label style={{ display: "grid", gap: 6, flex: "1 1 240px", fontSize: 13 }}>New title (optional)
+                <input value={workflowUpdateTitle} onChange={(event) => setWorkflowUpdateTitle(event.target.value)} maxLength={200} disabled={workflowBusy} placeholder="Leave blank to keep the current title" />
               </label>
-              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())}>Update record</button>
+              <label style={{ display: "grid", gap: 6, flex: "1 1 240px", fontSize: 13 }}>New description (optional)
+                <input value={workflowUpdateDescription} onChange={(event) => setWorkflowUpdateDescription(event.target.value)} maxLength={4000} disabled={workflowBusy} placeholder="Leave blank to keep the current description" />
+              </label>
+              <label style={{ display: "grid", gap: 6, flex: "1 1 100%", fontSize: 13 }}>Replacement payload JSON (optional)
+                <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to keep the current payload" />
+              </label>
+              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim() && !workflowUpdateTitle.trim() && !workflowUpdateDescription.trim())}>Update record</button>
             </form>
-          </details>
+          </details>)}
           {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
         </section>
       )}
