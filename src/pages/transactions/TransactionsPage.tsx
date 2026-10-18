@@ -322,7 +322,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                     <td>{transaction.source}</td>
                   </tr>
                 ))}
-                {pageTransactions.length === 0 && <tr><td className="transaction-empty" colSpan={6}>No sample transactions match these filters.</td></tr>}
+                {pageTransactions.length === 0 && <tr><td className="transaction-empty" colSpan={6}>{isLiveData ? "No tenant transactions match these filters." : "No sample transactions match these filters."}</td></tr>}
               </tbody>
             </table>
           </div>
@@ -333,7 +333,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                 {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </label>
-            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {filtered.length} sample transactions</span>
+            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {isLiveData ? (liveTotal ?? filtered.length) : filtered.length} {isLiveData ? "tenant transactions" : "sample transactions"}</span>
             <div className="transaction-pagination__controls">
               <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPageNumber((page) => Math.max(0, page - 1))}><ChevronLeft size={14} /></button>
               <span>Page {currentPage + 1} of {pageCount}</span>
