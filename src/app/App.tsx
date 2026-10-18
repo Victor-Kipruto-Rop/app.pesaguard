@@ -173,6 +173,8 @@ export default function App() {
   const [session, setSession] = useState<LoginResult | null>(null);
   const [liveTransactions, setLiveTransactions] = useState<Transaction[] | null>(null);
   const [liveTransactionTotal, setLiveTransactionTotal] = useState(0);
+  const [liveTransactionPage, setLiveTransactionPage] = useState(1);
+  const [liveTransactionPerPage, setLiveTransactionPerPage] = useState(25);
   const [transactionError, setTransactionError] = useState("");
   const [searchQuery, setSearchQuery] = useState(() => new URLSearchParams(window.location.search).get("q") ?? "");
   const workspace: Workspace | null = session ? {
@@ -209,6 +211,8 @@ export default function App() {
     setSession(nextSession);
     setLiveTransactions([]);
     setLiveTransactionTotal(0);
+    setLiveTransactionPage(1);
+    setLiveTransactionPerPage(25);
     setTransactionError("");
     setAuthRoute(null);
     setPage("home");
@@ -218,7 +222,7 @@ export default function App() {
     // Authentication can succeed even when this account lacks transaction-read permission.
     // Keep the verified session, report the data error, and never substitute sample rows.
     try {
-      const result = await fetchTenantTransactions(nextSession.accessToken);
+      const result = await fetchTenantTransactions(nextSession.accessToken, 1, 25);
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
         const date = new Date(item.created_at);
@@ -246,18 +250,18 @@ export default function App() {
     }
   }, []);
 
-  const refreshLiveTransactions = useCallback(async () => {
+  const refreshLiveTransactions = useCallback(async (requestedPage = liveTransactionPage, requestedPerPage = liveTransactionPerPage) => {
     if (!session) return;
     try {
       let activeSession = session;
       let result: ApiTransactionPage;
       try {
-        result = await fetchTenantTransactions(activeSession.accessToken);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage);
       } catch (error) {
         if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
         activeSession = await refreshApiSession(activeSession);
         setSession(activeSession);
-        result = await fetchTenantTransactions(activeSession.accessToken);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage);
       }
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
@@ -277,6 +281,8 @@ export default function App() {
       });
       setLiveTransactions(mapped);
       setLiveTransactionTotal(result.total);
+      setLiveTransactionPage(result.page);
+      setLiveTransactionPerPage(result.per_page);
       setTransactionError("");
     } catch (error) {
       if (error instanceof PesaguardApiError && error.status === 401) {
@@ -287,7 +293,7 @@ export default function App() {
       }
       setTransactionError(error instanceof Error ? error.message : "Unable to refresh tenant transactions.");
     }
-  }, [session]);
+  }, [session, liveTransactionPage, liveTransactionPerPage]);
 
   useEffect(() => {
     if (!session) return;
@@ -311,6 +317,12 @@ export default function App() {
       window.history.pushState({}, "", "/signed-out");
     }
   }, [session]);
+
+  const handleTransactionPageChange = useCallback((nextPage: number, nextPerPage: number) => {
+    setLiveTransactionPage(nextPage);
+    setLiveTransactionPerPage(nextPerPage);
+    void refreshLiveTransactions(nextPage, nextPerPage);
+  }, [refreshLiveTransactions]);
 
   const handleSessionRefresh = useCallback((nextSession: LoginResult) => {
     setSession(nextSession);
@@ -395,7 +407,7 @@ export default function App() {
       onSearch={search}
     >
       {page !== "transactions" && <ApiResourcePage page={page} session={session} onSessionRefresh={handleSessionRefresh} onSessionExpired={handleSessionExpired} />}
-      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
+      {page === "transactions" && <TransactionsPage key={workspace.id} transactions={transactions} initialQuery={searchQuery} onTransactionsChange={updateTransactions} isLiveData liveTotal={liveTransactionTotal} livePage={liveTransactionPage} livePageSize={liveTransactionPerPage} onLivePageChange={handleTransactionPageChange} onRefresh={refreshLiveTransactions} loadError={transactionError} />}
       {/* Preview-only page implementations are intentionally not rendered in an authenticated tenant session. */}
     </DashboardLayout>
   );
