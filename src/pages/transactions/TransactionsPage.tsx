@@ -41,7 +41,7 @@ const statusFilters: StatusFilter[] = ["All", "Matched", "Pending", "Unmatched",
 const pageSizes = [25, 50, 100];
 
 function formatTransactionAmount(transaction: Transaction): string {
-  if (!transaction.currency) return formatTransactionAmount(transaction);
+  if (!transaction.currency) return formatKes(transaction.amount);
   try {
     return new Intl.NumberFormat("en-KE", { style: "currency", currency: transaction.currency }).format(transaction.amount);
   } catch {
