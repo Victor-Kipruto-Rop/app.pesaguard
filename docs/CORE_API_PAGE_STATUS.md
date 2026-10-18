@@ -31,6 +31,8 @@ The additional views below use existing tenant-scoped Core API collections. They
 
 ## Page inventory
 
+Routing merge repair restores explicit URL registrations and sidebar links for the existing dataset catalog, dataset metadata, resolution-time analytics, operator performance, and SLA metrics resources. The resource registry already contains their API definitions; this change makes those pages reachable without duplicating or replacing the newer workflow wiring.
+
 Recent wiring adds provider detail and governed dataset metadata lookup. The generic resource loader now reloads when a record identifier changes and preserves that identifier when retrying after session renewal. These additions are still route-mapped, not staging-verified.
 
 | Dashboard page ID | Status | Route | Limitations |
