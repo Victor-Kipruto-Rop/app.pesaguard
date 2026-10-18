@@ -20,7 +20,7 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "risk-overview": { path: "/analytics/incident-trends", note: "Incident trends; not a fraud probability model or financial loss forecast." },
   alerts: { path: "/incidents/search", note: "Operational incident search; verify its tenant scoping before treating results as tenant-specific alerts." },
   "operational-activity": { path: "/activity-feed", note: "Activity feed returned by the Core API." },
-  "activity-log": { path: "/activity-feed", note: "Activity feed; not a compliance-complete immutable audit log." },
+  "activity-log": { path: "/v1/customers/{tenant}/audit", note: "Tenant audit events; verify tenant authorization, event coverage and pagination before relying on it." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
   "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
