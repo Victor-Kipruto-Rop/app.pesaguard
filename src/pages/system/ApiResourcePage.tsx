@@ -168,7 +168,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
             const renewed = await refreshApiSession(session);
             if (signal.aborted) return;
             onSessionRefresh(renewed);
-            const response = await fetchDashboardResource(page, renewed, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch });
+            const response = await fetchDashboardResource(page, renewed, signal, { page: resourcePage, perPage: 25, status: resourceStatus, search: appliedSearch, recordId: appliedRecordId });
             if (!signal.aborted) setResult(response);
             return;
           } catch (refreshCause: unknown) {
@@ -192,7 +192,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       }
     })();
     return () => undefined;
-  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch]);
+  }, [definition, page, session, onSessionRefresh, onSessionExpired, resourcePage, resourceStatus, appliedSearch, appliedRecordId]);
 
   useEffect(() => {
     const controller = new AbortController();
