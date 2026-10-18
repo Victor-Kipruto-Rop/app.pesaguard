@@ -277,8 +277,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
             <div className="transaction-toolbar__row transaction-toolbar__row--search">
               <form className="transaction-search" role="search" onSubmit={submitSearch}>
                 <Search size={15} aria-hidden="true" />
-                <label className="visually-hidden" htmlFor="transaction-search">Search transaction ID or amount</label>
-                <input id="transaction-search" type="search" placeholder="Search by Transaction ID or amount..." value={query} onChange={(event) => { setQuery(event.target.value); setPageNumber(0); }} />
+                <label className="visually-hidden" htmlFor="transaction-search">Search transaction ID or reference</label>
+                <input id="transaction-search" type="search" placeholder="Search by transaction ID or reference..." value={query} onChange={(event) => { setQuery(event.target.value); setPageNumber(0); }} />
               </form>
               <div className="density-toggle" role="group" aria-label="Table density">
                 <button type="button" aria-pressed={dense} className={dense ? "is-active" : ""} onClick={() => setDense(true)}>Dense</button>
