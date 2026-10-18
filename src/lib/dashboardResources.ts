@@ -8,7 +8,7 @@ export interface DashboardResourceResult {
   fetchedAt: string;
 }
 
-type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; queryParams?: Record<string, string> };
+type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean; statusLabel?: string; defaultStatus?: string; statusOptions?: Array<{ value: string; label: string }>; searchParam?: string; searchLabel?: string; recordIdParam?: { label: string; help: string }; queryParams?: Record<string, string> };
 
 // This registry deliberately includes only GET routes found in the Core API
 // route audit. It does not claim that a legacy route is production-safe; every
@@ -24,6 +24,11 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   exceptions: { path: "/discrepancies", note: "Tenant-scoped discrepancy records with server-side pagination and supported status filtering.", paginated: true, statusFilter: true, statusLabel: "Discrepancy status", searchParam: "q", searchLabel: "Search discrepancy reference or type", statusOptions: [{ value: "open", label: "Open" }, { value: "pending", label: "Pending" }, { value: "needs_review", label: "Needs review" }, { value: "assigned", label: "Assigned" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }, { value: "missing_payment", label: "Missing payment" }, { value: "missing_transaction", label: "Missing transaction" }, { value: "amount_mismatch", label: "Amount mismatch" }, { value: "duplicate", label: "Duplicate" }] },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Tenant-scoped discrepancy operations summary for the last 30 days; not reconciliation-run history or a settlement report.", queryParams: { days: "30" } },
   "data-imports": { path: "/api/v1/imports", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions.", paginated: true, statusFilter: true, statusLabel: "Import status", statusOptions: [{ value: "queued", label: "Queued" }, { value: "running", label: "Running" }, { value: "completed", label: "Completed" }, { value: "failed", label: "Failed" }] },
+  "transaction-detail": { path: "/api/v1/customers/{tenant}/transactions/{record}", note: "Tenant-scoped M-Pesa transaction detail. Enter the provider transaction reference; sensitive fields are not exposed by this view.", recordIdParam: { label: "M-Pesa transaction reference", help: "Enter the transaction reference (TransID) expected by the Core API." } },
+  "transaction-import-results": { path: "/api/v1/imports/{record}", note: "Tenant-scoped import job details. Enter an import job ID from Data Imports.", recordIdParam: { label: "Import job ID", help: "Use an import ID returned by Data Imports." } },
+  "data-lineage": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage for one persisted transaction, not a dataset-wide lineage graph.", recordIdParam: { label: "Transaction identifier", help: "Enter the transaction identifier expected by the Core API lineage endpoint." } },
+  "lineage-record-detail": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage record for one transaction.", recordIdParam: { label: "Transaction identifier", help: "Enter a transaction identifier." } },
+  "webhook-deliveries": { path: "/webhooks/{record}/deliveries", note: "Delivery history for one configured webhook. Signing secrets are never displayed.", recordIdParam: { label: "Webhook ID", help: "Enter a configured webhook ID from the Webhooks page." } },
   "failed-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped failed/rejected transaction lifecycle records; not refunds or settlement failures.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "FAILED,REJECTED", statusOptions: [{ value: "FAILED,REJECTED", label: "Failed and rejected" }, { value: "FAILED", label: "Failed" }, { value: "REJECTED", label: "Rejected" }] },
   "pending-transactions": { path: "/api/v1/transactions/search", note: "Tenant-scoped in-progress transaction lifecycle records; these states are not reconciliation match outcomes.", paginated: true, statusFilter: true, statusLabel: "Transaction status", searchParam: "filter", searchLabel: "Search transactions", defaultStatus: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", statusOptions: [{ value: "RECEIVED,VALIDATED,PROCESSING,RECONCILING", label: "All in-progress states" }, { value: "RECEIVED", label: "Received" }, { value: "VALIDATED", label: "Validated" }, { value: "PROCESSING", label: "Processing" }, { value: "RECONCILING", label: "Reconciling" }] },
   "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
@@ -65,9 +70,16 @@ export async function fetchDashboardResource(
     throw new PesaguardApiError("This page has no dedicated, verified Core API resource. It remains unavailable rather than displaying sample data.", 501, "endpoint_not_implemented");
   }
 
+  const recordId = options.recordId?.trim();
+  if (definition.recordIdParam && !recordId) {
+    throw new PesaguardApiError(`Enter ${definition.recordIdParam.label.toLowerCase()} to load this resource.`, 400, "record_id_required");
+  }
+  const resolvedPath = definition.path.includes("{record}")
+    ? definition.path.replace("{record}", encodeURIComponent(recordId ?? ""))
+    : definition.path;
   let response: Response;
   try {
-    const url = new URL(`${API_BASE_URL}${definition.path}`);
+    const url = new URL(`${API_BASE_URL}${resolvedPath}`);
     for (const [key, value] of Object.entries(definition.queryParams ?? {})) url.searchParams.set(key, value);
     if (definition.searchParam && options.search) url.searchParams.set(definition.searchParam, options.search.slice(0, 200));
     if (definition.paginated) {
@@ -102,7 +114,7 @@ export async function fetchDashboardResource(
       typeof record.error === "string" ? record.error : "api_error",
     );
   }
-  return { path: definition.path, status: response.status, payload, fetchedAt: new Date().toISOString() };
+  return { path: resolvedPath, status: response.status, payload, fetchedAt: new Date().toISOString() };
 }
 
 export function dashboardResourceNote(page: DashboardPage, tenantId?: string): string {
