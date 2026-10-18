@@ -2,24 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { pageFromPath, pathForPage, type DashboardPage } from "./config/routes";
 import { previewDataFor, workspaces } from "../data/preview";
 import { DashboardLayout } from "../layouts/DashboardLayout";
-import { CustomersPage } from "../pages/customers/CustomersPage";
-import { HomePage } from "../pages/home/HomePage";
-import { OrganizationPage } from "../pages/settings/OrganizationPage";
 import { TransactionsPage } from "../pages/transactions/TransactionsPage";
-import { TransactionDetailPage } from "../pages/transactions/TransactionDetailPage";
-import { TransactionLifecyclePage } from "../pages/transactions/TransactionLifecyclePage";
-import { ReconciliationPage } from "../pages/reconciliation/ReconciliationPage";
-import { ModulePage } from "../pages/system/ModulePage";
 import { ApiResourcePage } from "../pages/system/ApiResourcePage";
-import { isExtendedPage, OperationalPages } from "../pages/system/OperationalPages";
 import { AuthPages, type AuthRoute } from "../pages/auth/AuthPages";
 import { fetchTenantTransactions, loginToApi, logoutFromApi, refreshApiSession, PesaguardApiError, type ApiTransactionPage, type LoginResult } from "../lib/api";
 import type { Customer, Transaction } from "../types/dashboard";
-
-const implementedPages: DashboardPage[] = [
-  "home", "executive-overview", "operational-activity", "transactions",
-  "reconciliation", "customers", "tenant-profile", "settings",
-];
 
 const knownDashboardPaths = new Set([
   "/",
