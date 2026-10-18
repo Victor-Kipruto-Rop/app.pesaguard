@@ -24,7 +24,7 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   exceptions: { path: "/discrepancies", note: "Tenant-scoped discrepancy records with server-side pagination and supported status filtering.", paginated: true, statusFilter: true, statusLabel: "Discrepancy status", searchParam: "q", searchLabel: "Search discrepancy reference or type", statusOptions: [{ value: "open", label: "Open" }, { value: "pending", label: "Pending" }, { value: "needs_review", label: "Needs review" }, { value: "assigned", label: "Assigned" }, { value: "resolved", label: "Resolved" }, { value: "closed", label: "Closed" }, { value: "missing_payment", label: "Missing payment" }, { value: "missing_transaction", label: "Missing transaction" }, { value: "amount_mismatch", label: "Amount mismatch" }, { value: "duplicate", label: "Duplicate" }] },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Tenant-scoped discrepancy operations summary for the last 30 days; not reconciliation-run history or a settlement report.", queryParams: { days: "30" } },
   "data-imports": { path: "/api/v1/imports", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions.", paginated: true, statusFilter: true, statusLabel: "Import status", statusOptions: [{ value: "queued", label: "Queued" }, { value: "running", label: "Running" }, { value: "completed", label: "Completed" }, { value: "failed", label: "Failed" }] },
-  "transaction-detail": { path: "/api/v1/customers/{tenant}/transactions/{record}", note: "Tenant-scoped M-Pesa transaction detail. Enter the provider transaction reference; sensitive fields are not exposed by this view.", recordIdParam: { label: "M-Pesa transaction reference", help: "Enter the transaction reference (TransID) expected by the Core API." } },
+  "transaction-detail": { path: "/api/v1/customers/{tenant}/transactions/{record}", note: "Tenant-scoped M-Pesa transaction detail. Enter the provider transaction reference; the dashboard redacts phone numbers and raw payloads.", recordIdParam: { label: "M-Pesa transaction reference", help: "Enter the transaction reference (TransID) expected by the Core API." } },
   "transaction-import-results": { path: "/api/v1/imports/{record}", note: "Tenant-scoped import job details. Enter an import job ID from Data Imports.", recordIdParam: { label: "Import job ID", help: "Use an import ID returned by Data Imports." } },
   "data-lineage": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage for one persisted transaction, not a dataset-wide lineage graph.", recordIdParam: { label: "Transaction identifier", help: "Enter the transaction identifier expected by the Core API lineage endpoint." } },
   "lineage-record-detail": { path: "/api/v1/lineage/transactions/{record}", note: "Tenant-scoped lineage record for one transaction.", recordIdParam: { label: "Transaction identifier", help: "Enter a transaction identifier." } },
@@ -57,7 +57,7 @@ export function dashboardResourceDefinition(page: DashboardPage, tenantId?: stri
   return definition;
 }
 
-export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; search?: string; }
+export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; search?: string; recordId?: string; }
 
 export async function fetchDashboardResource(
   page: DashboardPage,
