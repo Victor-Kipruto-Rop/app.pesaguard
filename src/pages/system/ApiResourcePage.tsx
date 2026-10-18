@@ -25,6 +25,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function redactSensitive(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(redactSensitive);
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+    key,
+    /(secret|token|password|credential|private.?key|signing.?key|authorization|api.?key)/i.test(key)
+      ? "[REDACTED]"
+      : redactSensitive(item),
+  ]));
+}
+
 function extractRows(payload: unknown): Record<string, unknown>[] | null {
   if (Array.isArray(payload)) return payload.filter(isRecord);
   if (!isRecord(payload)) return null;
@@ -124,7 +135,7 @@ export function ApiResourcePage({ page, session }: ApiResourcePageProps) {
             <span style={{ opacity: 0.7 }}>Updated {new Date(result.fetchedAt).toLocaleString()}</span>
             <code>{result.path}</code>
           </div>
-          <PayloadView payload={result.payload} />
+          <PayloadView payload={redactSensitive(result.payload)} />
         </section>
       )}
 
