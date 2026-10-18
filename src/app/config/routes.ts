@@ -25,7 +25,7 @@ export type DashboardPage =
   | "preferences"
   | "help-support"
   | "api-developer-resources"
-  | "data-quality" | "data-sources" | "validation-results" | "duplicate-detection" | "schema-mapping" | "data-lineage" | "processing-jobs" | "freshness-monitoring"
+  | "data-quality" | "data-sources" | "dataset-catalog" | "dataset-catalog-detail" | "resolution-time-analytics" | "operator-performance" | "sla-metrics" | "validation-results" | "duplicate-detection" | "schema-mapping" | "data-lineage" | "processing-jobs" | "freshness-monitoring"
   | "risk-overview" | "fraud-detection" | "risk-events" | "suspicious-transactions" | "alerts" | "investigations" | "risk-rules"
   | "reconciliation-runs" | "matching-rules" | "matching-history" | "settlement-batches" | "scheduled-reconciliation"
   | "report-builder" | "scheduled-reports" | "export-center" | "approvals" | "webhook-deliveries" | "support-requests" | "retention-privacy"
@@ -68,7 +68,7 @@ const routeByPath: Record<string, DashboardPage> = {
   "/preferences": "preferences",
   "/help-support": "help-support",
   "/api-developer-resources": "api-developer-resources",
-  "/data-quality": "data-quality", "/data-sources": "data-sources", "/validation-results": "validation-results",
+  "/data-quality": "data-quality", "/data-sources": "data-sources", "/dataset-catalog": "dataset-catalog", "/dataset-catalog-detail": "dataset-catalog-detail", "/resolution-time-analytics": "resolution-time-analytics", "/operator-performance": "operator-performance", "/sla-metrics": "sla-metrics", "/validation-results": "validation-results",
   "/duplicate-detection": "duplicate-detection", "/schema-mapping": "schema-mapping", "/data-lineage": "data-lineage",
   "/processing-jobs": "processing-jobs", "/freshness-monitoring": "freshness-monitoring",
   "/risk-overview": "risk-overview", "/fraud-detection": "fraud-detection", "/risk-events": "risk-events",
