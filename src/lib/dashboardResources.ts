@@ -21,14 +21,12 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "activity-log": { path: "/activity-feed", note: "Activity feed; not a compliance-complete immutable audit log." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
-  "financial-summaries": { path: "/analytics/reconciliation-report", note: "Reconciliation report only; not a settlement or accounting ledger." },
   "system-health": { path: "/health", note: "Service dependency health, not tenant business data.", auth: false },
   "service-status": { path: "/health", note: "Service dependency health, not a public uptime history.", auth: false },
   integrations: { path: "/providers", note: "Provider registry. Only backend-configured, supported provider types should be shown." },
   "data-sources": { path: "/providers", note: "Provider registry only; this is not a data-quality result." },
   webhooks: { path: "/webhooks", note: "Webhook destination records; signing secrets are never rendered." },
   "import-sync-activity": { path: "/api/v1/operations/outbox", note: "Operational outbox records; not a complete import-job history." },
-  "processing-jobs": { path: "/api/v1/operations/outbox", note: "Operational outbox records only; not a general job queue." },
   reports: { path: "/api/v1/customers/{tenant}/reports", note: "Tenant reports; the legacy route's tenant enforcement must be verified before release." },
   "report-builder": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; report execution is not implemented by this route." },
   "api-developer-resources": { path: "/api/v1/iam/api-clients", note: "API client metadata. Secret material must never be exposed." },
@@ -41,7 +39,6 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "notification-delivery-history": { path: "/api/v1/communications/messages", note: "Communication message history; delivery detail requires a message ID." },
   alerts: { path: "/incidents/search", note: "Operational incident search only; not a dedicated financial-alert service." },
   "access-history": { path: "/api/v1/customers/{tenant}/audit", note: "Tenant audit route; verify tenant authorization and audit coverage before relying on it." },
-  "export-center": { path: "/api/v1/export/csv", note: "CSV export route; its response/download contract must be verified before use." },
 };
 
 export function dashboardResourceDefinition(page: DashboardPage, tenantId?: string): ResourceDefinition | null {
