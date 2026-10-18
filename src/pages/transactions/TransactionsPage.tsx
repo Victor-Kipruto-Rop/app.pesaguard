@@ -290,7 +290,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           </div>
 
           <div className="transaction-result-meta">
-            <span>{isLiveData ? `Showing ${liveTotal ?? filtered.length} tenant transactions · ${filtered.length} loaded on this page` : `Showing ${filtered.length} sample transactions`}</span>
+            <span>{isLiveData ? `${liveTotal ?? filtered.length} tenant records in the API · ${transactions.length} loaded locally; filters apply only to loaded records` : `Showing ${filtered.length} sample transactions`}</span>
             <button type="button" onClick={clearFilters}>Clear filters <ListFilter size={14} aria-hidden="true" /></button>
           </div>
           {loadError && <p className="transaction-copy-feedback" role="alert">{loadError}</p>}
@@ -332,7 +332,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                 {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </label>
-            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {isLiveData ? (liveTotal ?? filtered.length) : filtered.length} {isLiveData ? "tenant transactions" : "sample transactions"}</span>
+            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {filtered.length} {isLiveData ? "loaded API records" : "sample transactions"}{isLiveData && liveTotal !== undefined ? ` · ${liveTotal} total in API` : ""}</span>
             <div className="transaction-pagination__controls">
               <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPageNumber((page) => Math.max(0, page - 1))}><ChevronLeft size={14} /></button>
               <span>Page {currentPage + 1} of {pageCount}</span>
