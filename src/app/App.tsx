@@ -167,26 +167,6 @@ function authRouteFromPath(pathname: string): AuthRoute | null {
   return authPaths[path] ?? (knownDashboardPaths.has(path) ? null : "not-found");
 }
 
-function authPathForRoute(route: AuthRoute): string {
-  const paths: Record<AuthRoute, string> = {
-    "sign-in": "/login", "create-account": "/signup", "verify-email": "/verify-email",
-    "verify-email-expired": "/verify-email/expired", "forgot-password": "/forgot-password",
-    "reset-password": "/reset-password", "password-updated": "/password-updated",
-    "mfa-challenge": "/mfa-challenge", "mfa-setup": "/mfa/setup", "mfa-verify-setup": "/mfa/verify-setup",
-    "mfa-recovery-codes": "/mfa/recovery-codes", "mfa-recovery": "/mfa/recovery",
-    "security-verify": "/security/verify", "accept-invite": "/accept-invite",
-    "invite-expired": "/invite-expired", "invite-accepted": "/invite/accepted",
-    "invite-invalid": "/invite/invalid", "account-pending": "/account/pending",
-    "onboarding-organization": "/onboarding/organization", "onboarding-setup": "/onboarding/setup",
-    "onboarding-status": "/onboarding/status", "onboarding-complete": "/onboarding/complete",
-    "onboarding-problem": "/onboarding/problem", "session-expired": "/session-expired",
-    "account-locked": "/account-locked", "access-denied": "/access-denied", "signed-out": "/signed-out",
-    "not-found": "/404", "server-error": "/500", "sso": "/sso", "sso-callback": "/sso/callback",
-    "sso-settings": "/settings/security/sso", "reauthenticate": "/reauthenticate",
-  };
-  return paths[route];
-}
-
 export default function App() {
   const [page, setPage] = useState<DashboardPage>(() => pageFromPath(window.location.pathname));
   const [authRoute, setAuthRoute] = useState<AuthRoute | null>(() => authRouteFromPath(window.location.pathname) ?? "sign-in");
