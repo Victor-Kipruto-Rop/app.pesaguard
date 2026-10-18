@@ -230,12 +230,12 @@ export default function App() {
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
           : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
         return {
-          id: item.id, customerId: "", customer: "Not supplied by transaction endpoint",
-          reference: item.trans_id, method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0,
-          status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "M-Pesa API",
-          anomalyType: "", discrepancyId: "", severity: "Unknown",
-          notes: "Read-only transaction record from the authenticated tenant API.",
-          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [],
+          id: item.id, customerId: "", customer: "—",
+          reference: item.trans_id, method: "—", amount: Number.isFinite(amount) ? amount : 0,
+          status, createdAt: date.toISOString(), timestamp: date.toISOString(), source: "—",
+          anomalyType: "—", discrepancyId: "—", severity: "Unknown",
+          notes: "No additional details were returned by the transaction endpoint.",
+          resolved: null, reviewed: null, timeline: [],
         };
       });
       setLiveTransactions(mapped);
@@ -268,10 +268,10 @@ export default function App() {
           : normalizedStatus === "refunded" ? "Refunded"
           : normalizedStatus === "disputed" || normalizedStatus === "mismatch" ? "Disputed"
           : normalizedStatus === "unmatched" || normalizedStatus === "duplicate" ? "Unmatched" : "Unknown";
-        return { id: item.id, customerId: "", customer: "Not supplied by transaction endpoint", reference: item.trans_id,
-          method: "M-Pesa", amount: Number.isFinite(amount) ? amount : 0, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
-          source: "M-Pesa API", anomalyType: "", discrepancyId: "", severity: "Unknown", notes: "Read-only transaction record from the authenticated tenant API.",
-          resolved: status === "Matched" || status === "Completed", reviewed: false, timeline: [] };
+        return { id: item.id, customerId: "", customer: "—", reference: item.trans_id,
+          method: "—", amount: Number.isFinite(amount) ? amount : 0, status, createdAt: date.toISOString(), timestamp: date.toISOString(),
+          source: "—", anomalyType: "—", discrepancyId: "—", severity: "Unknown", notes: "No additional details were returned by the transaction endpoint.",
+          resolved: null, reviewed: null, timeline: [] };
       });
       setLiveTransactions(mapped);
       setLiveTransactionTotal(result.total);
