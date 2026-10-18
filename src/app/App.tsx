@@ -263,7 +263,7 @@ export default function App() {
         if (!(error instanceof PesaguardApiError) || error.status !== 401) throw error;
         activeSession = await refreshApiSession(activeSession);
         setSession(activeSession);
-        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage);
+        result = await fetchTenantTransactions(activeSession.accessToken, requestedPage, requestedPerPage, requestedFilter);
       }
       const mapped: Transaction[] = result.items.map((item) => {
         const amount = Number(item.trans_amount);
@@ -390,6 +390,7 @@ export default function App() {
     setAuthRoute(null);
     setSearchQuery(query);
     setPage("transactions");
+    handleTransactionPageChange(1, liveTransactionPerPage, query.trim());
     window.history.pushState({}, "", `${pathForPage("transactions")}?q=${encodeURIComponent(query)}`);
   }
 
