@@ -52,7 +52,7 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 | `duplicate-detection` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `schema-mapping` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `data-lineage` | Route mapped — verification required | `/api/v1/lineage/transactions/{transaction_id}` | Transaction-level lineage only; requires an identifier and staging verification. |
-| `processing-jobs` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
+| `processing-jobs` | Route mapped — verification required | `/api/v1/imports` | Import jobs only, not all background processing tasks. |
 | `freshness-monitoring` | Unavailable — no suitable route mapped | — | No sample data or local-only mutations are displayed. Implement a dedicated tenant-scoped API contract first. |
 | `risk-overview` | Route mapped — verification required | `/analytics/incident-trends` | Tenant-scoped weekly/monthly discrepancy trends; not a fraud probability model or financial loss forecast. |
 | `fraud-detection` | Route mapped — verification required | `/api/v1/fraud/assessments` | Existing persisted risk assessments only; not model execution or an investigation workflow. API PR #95 and staging verification required. |
