@@ -20,8 +20,8 @@ Generated from the current `DashboardPage` union and resource registry. Route ma
 
 | Dashboard page ID | Status | Route | Limitations |
 |---|---|---|---|
-| `home` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report returned by the Core API; not synthetic executive KPIs. |
-| `executive-overview` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; this route does not supply unrelated executive metrics. |
+| `home` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; endpoint test and staging verification remain required. |
+| `executive-overview` | Route mapped — verification required | `/api/v1/dashboard/overview` | Tenant-scoped persisted transaction and discrepancy KPIs; no fabricated risk or revenue KPIs. |
 | `operational-activity` | Route mapped — verification required | `/activity-feed` | Activity feed returned by the Core API. |
 | `transactions` | Connected — existing tenant transaction API | `GET /api/v1/transactions/search` | Read-only; server-side pagination and text search are wired. Live statuses reflect transaction processing lifecycle, not reconciliation outcomes. Date/amount filters and column sorting remain page-local. |
 | `reconciliation` | Route mapped — verification required | `/analytics/reconciliation-report` | Reconciliation report only; run execution/history requires a dedicated API. |
