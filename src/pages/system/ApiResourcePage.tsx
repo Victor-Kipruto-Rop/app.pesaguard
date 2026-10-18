@@ -156,7 +156,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setAppliedRecordId("");
     setWorkflowTitle("");
     setWorkflowDescription("");
-    setWorkflowPayload("{}");
+    setWorkflowPayload(definition?.payloadTemplate ?? "{}");
     setWorkflowRecordId("");
     setWorkflowStatus("");
     setWorkflowUpdatePayload("");
@@ -268,7 +268,7 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
       }
       setWorkflowTitle("");
       setWorkflowDescription("");
-      setWorkflowPayload("{}");
+      setWorkflowPayload(definition?.payloadTemplate ?? "{}");
       setWorkflowMessage("Workflow record saved by the Core API.");
       setReloadVersion((version) => version + 1);
     } catch (cause) {
@@ -421,7 +421,8 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
                 <textarea value={workflowDescription} onChange={(event) => setWorkflowDescription(event.target.value)} maxLength={4000} rows={2} disabled={workflowBusy} placeholder="Optional context for reviewers" />
               </label>
               <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Payload (JSON object)
-                <textarea value={workflowPayload} onChange={(event) => setWorkflowPayload(event.target.value)} rows={5} spellCheck={false} disabled={workflowBusy} required />
+                <textarea value={workflowPayload} onChange={(event) => setWorkflowPayload(event.target.value)} rows={5} spellCheck={false} disabled={workflowBusy} required aria-describedby="workflow-payload-help" />
+                <small id="workflow-payload-help" style={{ opacity: 0.7 }}>A valid starter template is prefilled for this workflow. Edit it to match your tenant’s data; the Core API validates the fields and permitted status transitions.</small>
               </label>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                 <button type="submit" className="button button-primary" disabled={workflowBusy || !workflowTitle.trim()}>{workflowBusy ? "Saving…" : "Create record"}</button>
