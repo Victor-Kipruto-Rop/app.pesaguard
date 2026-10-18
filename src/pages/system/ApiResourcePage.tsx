@@ -140,6 +140,9 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [workflowStatus, setWorkflowStatus] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState(false);
   const [workflowMessage, setWorkflowMessage] = useState("");
+  const [evidenceType, setEvidenceType] = useState("transaction_reference");
+  const [evidenceReference, setEvidenceReference] = useState("");
+  const [evidenceNote, setEvidenceNote] = useState("");
 
   useEffect(() => {
     setResourcePage(1);
@@ -260,6 +263,50 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     }
   };
 
+  const submitEvidence = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!definition?.evidence || !appliedRecordId.trim() || !evidenceType.trim()) return;
+    setWorkflowBusy(true);
+    setWorkflowMessage("");
+    setError(null);
+    try {
+      const url = API_BASE_URL + definition.path.replace("/{record}", "/" + encodeURIComponent(appliedRecordId.trim())) + "/evidence";
+      const body = JSON.stringify({ evidence: { type: evidenceType.trim(), reference: evidenceReference.trim() || undefined, note: evidenceNote.trim() || undefined } });
+      let activeSession = session;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+        body,
+        cache: "no-store",
+      });
+      if (response.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        response = await fetch(url, {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+          body,
+          cache: "no-store",
+        });
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) onSessionExpired();
+        const message = isRecord(payload) && typeof payload.message === "string" ? payload.message : "Evidence could not be attached.";
+        setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "evidence_create_failed" });
+        return;
+      }
+      setEvidenceReference("");
+      setEvidenceNote("");
+      setWorkflowMessage("Evidence metadata appended to the investigation.");
+      setReloadVersion((version) => version + 1);
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Evidence could not be attached.", status: 0, code: "evidence_create_failed" });
+    } finally {
+      setWorkflowBusy(false);
+    }
+  };
+
   const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!definition?.workflow || !workflowRecordId.trim() || !workflowStatus) return;
@@ -349,6 +396,31 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
             </form>
           </details>
           {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
+        </section>
+      )}
+
+      {definition?.evidence && appliedRecordId && (
+        <section className="panel" style={{ padding: 18 }}>
+          <h2 style={{ marginTop: 0 }}>Append investigation evidence</h2>
+          <p style={{ opacity: 0.75, fontSize: 13 }}>Attach evidence metadata or a reference. Do not paste raw M-Pesa payloads, phone numbers, tokens, or credentials.</p>
+          <form onSubmit={submitEvidence} style={{ display: "grid", gap: 12 }}>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Evidence type
+              <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value)} disabled={workflowBusy} required>
+                <option value="transaction_reference">Transaction reference</option>
+                <option value="ledger_reference">Ledger reference</option>
+                <option value="statement_reference">Statement reference</option>
+                <option value="operator_note">Operator note</option>
+                <option value="document_reference">Document reference</option>
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Reference (optional)
+              <input value={evidenceReference} onChange={(event) => setEvidenceReference(event.target.value)} maxLength={200} disabled={workflowBusy} />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Reviewer note (optional)
+              <textarea value={evidenceNote} onChange={(event) => setEvidenceNote(event.target.value)} rows={3} maxLength={2000} disabled={workflowBusy} />
+            </label>
+            <div><button type="submit" className="button button-primary" disabled={workflowBusy || !evidenceType.trim()}>{workflowBusy ? "Saving…" : "Append evidence"}</button></div>
+          </form>
         </section>
       )}
 
