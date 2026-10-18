@@ -111,7 +111,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
       const transactionDate = new Date(transaction.timestamp);
       if (dateFilter === "Today" && transactionDate.getTime() < latestLoadedTimestamp - 86_400_000) return false;
       if (dateFilter === "7d" && latestLoadedTimestamp - transactionDate.getTime() > 7 * 86_400_000) return false;
-      if (dateFilter === "30d" && previewAnchor - transactionDate.getTime() > 30 * 86_400_000) return false;
+      if (dateFilter === "30d" && latestLoadedTimestamp - transactionDate.getTime() > 30 * 86_400_000) return false;
       if (fromDate && transactionDate < new Date(`${fromDate}T00:00:00`)) return false;
       if (toDate && transactionDate > new Date(`${toDate}T23:59:59`)) return false;
       return true;
