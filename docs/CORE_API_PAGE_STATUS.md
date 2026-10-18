@@ -186,3 +186,17 @@ These views require an identifier before making a request. They remain read-only
 
 - Risk assessment collection: `GET /api/v1/fraud/assessments` supports tenant-scoped pagination, risk-level filtering, and exact transaction ID filtering. It returns persisted assessments only and does not trigger model inference.
 \n## Additional wiring in this branch\n\nThe resource registry now maps transaction detail/status, import job detail, transaction lineage, dataset metadata, webhook deliveries, reconciliation outcome collections (matched/unmatched/partial/duplicate), persisted risk-assessment collections (including high/critical flags), and provider detail to read-only Core API routes. Record-specific pages require an identifier before making a request. These routes remain **verification required** until contract tests and staging smoke tests pass. Unsupported reconciliation-run CRUD, data-quality findings, fraud investigation workflows, settlements, refund/reversal operations, report execution, privacy requests, and support cases remain unavailable rather than being backed by unrelated endpoints.\n
+
+## Additional catalog and analytics page mappings
+
+The following sidebar pages now use existing Core API read routes. These mappings are **verification required**, not proof of production readiness:
+
+| Dashboard page ID | Route | Scope limitation |
+|---|---|---|
+| `dataset-catalog` | `GET /api/v1/catalog/datasets` | Governed dataset metadata only; not persisted data-quality findings. |
+| `dataset-catalog-detail` | `GET /api/v1/catalog/datasets/{dataset_name}` | Requires a dataset name from the catalog; does not edit mappings. |
+| `resolution-time-analytics` | `GET /analytics/resolution-times` | API-provided resolution-time metrics; definitions and tenant scope require staging verification. |
+| `operator-performance` | `GET /analytics/operator-stats` | API-provided operator statistics; not a complete productivity or HR evaluation. |
+| `sla-metrics` | `GET /analytics/sla-metrics` | API-provided SLA metrics; definitions and tenant scope require staging verification. |
+
+All remain read-only. No reconciliation-run, data-quality-finding, settlement, refund, investigation-case, report-execution, privacy-request, or support-case API is implied by these mappings.
