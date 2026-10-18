@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
+import type { FormEvent } from "react";
+import { AlertCircle, CheckCircle2, Database, RefreshCw } from "lucide-react";
 import type { DashboardPage } from "../../app/config/routes";
 import type { LoginResult } from "../../lib/api";
-import { PesaguardApiError, refreshApiSession } from "../../lib/api";
+import { API_BASE_URL, PesaguardApiError, refreshApiSession } from "../../lib/api";
 import { dashboardResourceDefinition, dashboardResourceNote, fetchDashboardResource, type DashboardResourceResult } from "../../lib/dashboardResources";
 
 interface ApiResourcePageProps {
@@ -132,6 +133,17 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
   const [appliedSearch, setAppliedSearch] = useState("");
   const [recordId, setRecordId] = useState("");
   const [appliedRecordId, setAppliedRecordId] = useState("");
+  const [workflowTitle, setWorkflowTitle] = useState("");
+  const [workflowDescription, setWorkflowDescription] = useState("");
+  const [workflowPayload, setWorkflowPayload] = useState("{}");
+  const [workflowRecordId, setWorkflowRecordId] = useState("");
+  const [workflowStatus, setWorkflowStatus] = useState("");
+  const [workflowUpdatePayload, setWorkflowUpdatePayload] = useState("");
+  const [workflowBusy, setWorkflowBusy] = useState(false);
+  const [workflowMessage, setWorkflowMessage] = useState("");
+  const [evidenceType, setEvidenceType] = useState("transaction_reference");
+  const [evidenceReference, setEvidenceReference] = useState("");
+  const [evidenceNote, setEvidenceNote] = useState("");
 
   useEffect(() => {
     setResourcePage(1);
@@ -140,6 +152,16 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     setAppliedSearch("");
     setRecordId("");
     setAppliedRecordId("");
+    setWorkflowTitle("");
+    setWorkflowDescription("");
+    setWorkflowPayload("{}");
+    setWorkflowRecordId("");
+    setWorkflowStatus("");
+    setWorkflowUpdatePayload("");
+    setWorkflowMessage("");
+    setEvidenceType("transaction_reference");
+    setEvidenceReference("");
+    setEvidenceNote("");
   }, [page, definition?.defaultStatus]);
 
   const load = useCallback((signal: AbortSignal) => {
@@ -200,12 +222,157 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
     return () => { controller.abort(); cancel(); };
   }, [load, reloadVersion]);
 
+  const submitWorkflowCreate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!definition?.workflow || !workflowTitle.trim()) return;
+    let parsedPayload: unknown;
+    try {
+      parsedPayload = JSON.parse(workflowPayload);
+      if (!isRecord(parsedPayload)) throw new Error("Payload must be a JSON object.");
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Payload must be valid JSON.", status: 400, code: "invalid_payload_json" });
+      return;
+    }
+    setWorkflowBusy(true);
+    setWorkflowMessage("");
+    setError(null);
+    try {
+      const body = JSON.stringify({ title: workflowTitle.trim(), description: workflowDescription.trim() || undefined, payload: parsedPayload });
+      let activeSession = session;
+      let response = await fetch(API_BASE_URL + definition.path, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+        body,
+        cache: "no-store",
+      });
+      if (response.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        response = await fetch(API_BASE_URL + definition.path, {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+          body,
+          cache: "no-store",
+        });
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) onSessionExpired();
+        const message = isRecord(payload) && typeof payload.message === "string" ? payload.message : "Core API request failed with HTTP " + response.status + ".";
+        setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "workflow_create_failed" });
+        return;
+      }
+      setWorkflowTitle("");
+      setWorkflowDescription("");
+      setWorkflowPayload("{}");
+      setWorkflowMessage("Workflow record saved by the Core API.");
+      setReloadVersion((version) => version + 1);
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Workflow record could not be saved.", status: 0, code: "workflow_create_failed" });
+    } finally {
+      setWorkflowBusy(false);
+    }
+  };
+
+  const submitEvidence = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!definition?.evidence || !appliedRecordId.trim() || !evidenceType.trim()) return;
+    setWorkflowBusy(true);
+    setWorkflowMessage("");
+    setError(null);
+    try {
+      const url = API_BASE_URL + definition.path.replace("/{record}", "/" + encodeURIComponent(appliedRecordId.trim())) + "/evidence";
+      const body = JSON.stringify({ evidence: { type: evidenceType.trim(), reference: evidenceReference.trim() || undefined, note: evidenceNote.trim() || undefined } });
+      let activeSession = session;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+        body,
+        cache: "no-store",
+      });
+      if (response.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        response = await fetch(url, {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + activeSession.accessToken },
+          body,
+          cache: "no-store",
+        });
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) onSessionExpired();
+        const message = isRecord(payload) && typeof payload.message === "string" ? payload.message : "Evidence could not be attached.";
+        setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "evidence_create_failed" });
+        return;
+      }
+      setEvidenceReference("");
+      setEvidenceNote("");
+      setWorkflowMessage("Evidence metadata appended to the investigation.");
+      setReloadVersion((version) => version + 1);
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Evidence could not be attached.", status: 0, code: "evidence_create_failed" });
+    } finally {
+      setWorkflowBusy(false);
+    }
+  };
+
+  const submitWorkflowUpdate = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!definition?.workflow || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())) return;
+    let updatePayload: Record<string, unknown> | undefined;
+    if (workflowUpdatePayload.trim()) {
+      try {
+        const parsed = JSON.parse(workflowUpdatePayload);
+        if (!isRecord(parsed)) throw new Error("Update payload must be a JSON object.");
+        updatePayload = parsed;
+      } catch (cause) {
+        setError({ message: cause instanceof Error ? cause.message : "Update payload must be valid JSON.", status: 400, code: "invalid_payload_json" });
+        return;
+      }
+    }
+    const basePath = definition.path.includes("/{record}") ? definition.path.split("/{record}")[0] : definition.path;
+    setWorkflowBusy(true);
+    setWorkflowMessage("");
+    setError(null);
+    try {
+      let activeSession = session;
+      const url = API_BASE_URL + basePath + "/" + encodeURIComponent(workflowRecordId.trim());
+      const requestOptions = (token: string): RequestInit => ({
+        method: "PATCH",
+        headers: { Accept: "application/json", "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ ...(workflowStatus ? { status: workflowStatus } : {}), ...(updatePayload ? { payload: updatePayload } : {}) }),
+        cache: "no-store",
+      });
+      let response = await fetch(url, requestOptions(activeSession.accessToken));
+      if (response.status === 401 && activeSession.refreshToken) {
+        activeSession = await refreshApiSession(activeSession);
+        onSessionRefresh(activeSession);
+        response = await fetch(url, requestOptions(activeSession.accessToken));
+      }
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 401) onSessionExpired();
+        const message = isRecord(payload) && typeof payload.message === "string" ? payload.message : "Core API request failed with HTTP " + response.status + ".";
+        setError({ message, status: response.status, code: isRecord(payload) && typeof payload.error === "string" ? payload.error : "workflow_update_failed" });
+        return;
+      }
+      setWorkflowMessage("Workflow status updated by the Core API.");
+      setReloadVersion((version) => version + 1);
+    } catch (cause) {
+      setError({ message: cause instanceof Error ? cause.message : "Workflow status could not be updated.", status: 0, code: "workflow_update_failed" });
+    } finally {
+      setWorkflowBusy(false);
+    }
+  };
+
   return (
     <section className="page-stack">
       <section className="panel" style={{ padding: 24 }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
-            <p className="eyebrow">CORE API · READ-ONLY</p>
+            <p className="eyebrow">{definition?.workflow ? "CORE API · LIVE WORKFLOW" : "CORE API · LIVE RESOURCE"}</p>
             <h1 style={{ margin: "8px 0" }}>{humanize(page)}</h1>
             <p>{dashboardResourceNote(page, session.tenantId)}</p>
             <p style={{ fontSize: 12, opacity: 0.7 }}>Tenant: {session.tenantId}</p>
@@ -214,6 +381,73 @@ export function ApiResourcePage({ page, session, onSessionRefresh, onSessionExpi
         </div>
       </section>
 
+
+      {definition?.workflow && (
+        <section className="panel" style={{ padding: 18 }}>
+          <details>
+            <summary style={{ cursor: "pointer", fontWeight: 650 }}>Create workflow record</summary>
+            <form onSubmit={submitWorkflowCreate} style={{ display: "grid", gap: 12, marginTop: 16 }}>
+              <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Title
+                <input value={workflowTitle} onChange={(event) => setWorkflowTitle(event.target.value)} maxLength={200} required disabled={workflowBusy} placeholder="Describe this request or record" />
+              </label>
+              <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Description
+                <textarea value={workflowDescription} onChange={(event) => setWorkflowDescription(event.target.value)} maxLength={4000} rows={2} disabled={workflowBusy} placeholder="Optional context for reviewers" />
+              </label>
+              <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Payload (JSON object)
+                <textarea value={workflowPayload} onChange={(event) => setWorkflowPayload(event.target.value)} rows={5} spellCheck={false} disabled={workflowBusy} required />
+              </label>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <button type="submit" className="button button-primary" disabled={workflowBusy || !workflowTitle.trim()}>{workflowBusy ? "Saving…" : "Create record"}</button>
+                <small style={{ opacity: 0.7 }}>The Core API validates and persists the record. Creating a request does not execute payments or destructive actions.</small>
+              </div>
+            </form>
+          </details>
+          <details style={{ marginTop: 14 }}>
+            <summary style={{ cursor: "pointer", fontWeight: 650 }}>Update workflow status</summary>
+            <form onSubmit={submitWorkflowUpdate} style={{ display: "flex", alignItems: "end", gap: 12, flexWrap: "wrap", marginTop: 16 }}>
+              <label style={{ display: "grid", gap: 6, flex: "1 1 240px", fontSize: 13 }}>Record ID
+                <input value={workflowRecordId} onChange={(event) => setWorkflowRecordId(event.target.value)} maxLength={200} required disabled={workflowBusy} placeholder="wf_…" />
+              </label>
+              <label style={{ display: "grid", gap: 6, fontSize: 13 }}>New status
+                <select value={workflowStatus} onChange={(event) => setWorkflowStatus(event.target.value)} disabled={workflowBusy}>
+                  <option value="">Select status</option>
+                  {(definition.statusOptions ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </label>
+              <label style={{ display: "grid", gap: 6, flex: "1 1 100%", fontSize: 13 }}>Replacement payload JSON (optional)
+                <textarea value={workflowUpdatePayload} onChange={(event) => setWorkflowUpdatePayload(event.target.value)} rows={3} spellCheck={false} disabled={workflowBusy} placeholder="Leave blank to change status only" />
+              </label>
+              <button type="submit" className="button button-secondary" disabled={workflowBusy || !workflowRecordId.trim() || (!workflowStatus && !workflowUpdatePayload.trim())}>Update record</button>
+            </form>
+          </details>
+          {workflowMessage && <p role="status" style={{ marginBottom: 0 }}>{workflowMessage}</p>}
+        </section>
+      )}
+
+      {definition?.evidence && appliedRecordId && (
+        <section className="panel" style={{ padding: 18 }}>
+          <h2 style={{ marginTop: 0 }}>Append investigation evidence</h2>
+          <p style={{ opacity: 0.75, fontSize: 13 }}>Attach evidence metadata or a reference. Do not paste raw M-Pesa payloads, phone numbers, tokens, or credentials.</p>
+          <form onSubmit={submitEvidence} style={{ display: "grid", gap: 12 }}>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Evidence type
+              <select value={evidenceType} onChange={(event) => setEvidenceType(event.target.value)} disabled={workflowBusy} required>
+                <option value="transaction_reference">Transaction reference</option>
+                <option value="ledger_reference">Ledger reference</option>
+                <option value="statement_reference">Statement reference</option>
+                <option value="operator_note">Operator note</option>
+                <option value="document_reference">Document reference</option>
+              </select>
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Reference (optional)
+              <input value={evidenceReference} onChange={(event) => setEvidenceReference(event.target.value)} maxLength={200} disabled={workflowBusy} />
+            </label>
+            <label style={{ display: "grid", gap: 6, fontSize: 13 }}>Reviewer note (optional)
+              <textarea value={evidenceNote} onChange={(event) => setEvidenceNote(event.target.value)} rows={3} maxLength={2000} disabled={workflowBusy} />
+            </label>
+            <div><button type="submit" className="button button-primary" disabled={workflowBusy || !evidenceType.trim()}>{workflowBusy ? "Saving…" : "Append evidence"}</button></div>
+          </form>
+        </section>
+      )}
 
       {definition?.recordIdParam && (
         <section className="panel" style={{ padding: 16 }}>
