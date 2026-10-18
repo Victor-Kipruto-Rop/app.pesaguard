@@ -8,7 +8,7 @@ export interface DashboardResourceResult {
   fetchedAt: string;
 }
 
-type ResourceDefinition = { path: string; note: string; auth?: boolean };
+type ResourceDefinition = { path: string; note: string; auth?: boolean; paginated?: boolean; statusFilter?: boolean };
 
 // This registry deliberately includes only GET routes found in the Core API
 // route audit. It does not claim that a legacy route is production-safe; every
@@ -23,7 +23,7 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "activity-log": { path: "/v1/customers/{tenant}/audit", note: "Tenant audit events; verify tenant authorization, event coverage and pagination before relying on it." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
   reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
-  "data-imports": { path: "/api/v1/imports?page=1&per_page=100", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions." },
+  "data-imports": { path: "/api/v1/imports", note: "Paginated import job history for the authenticated tenant; upload and import execution are separate actions.", paginated: true, statusFilter: true },
   "failed-transactions": { path: "/api/v1/transactions/search?status=FAILED%2CREJECTED&per_page=100", note: "Tenant-scoped failed/rejected transaction lifecycle records; not refunds or settlement failures." },
   "pending-transactions": { path: "/api/v1/transactions/search?status=RECEIVED%2CVALIDATED%2CPROCESSING%2CRECONCILING&per_page=100", note: "Tenant-scoped in-progress transaction lifecycle records; these states are not reconciliation match outcomes." },
   "system-health": { path: "/public/status", note: "Public API status only; not a full dependency-health dashboard.", auth: false },
@@ -52,10 +52,13 @@ export function dashboardResourceDefinition(page: DashboardPage, tenantId?: stri
   return definition;
 }
 
+export interface DashboardResourceOptions { page?: number; perPage?: number; status?: string; }
+
 export async function fetchDashboardResource(
   page: DashboardPage,
   session: LoginResult,
   signal?: AbortSignal,
+  options: DashboardResourceOptions = {},
 ): Promise<DashboardResourceResult> {
   const definition = dashboardResourceDefinition(page, session.tenantId);
   if (!definition) {
@@ -64,7 +67,13 @@ export async function fetchDashboardResource(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}${definition.path}`, {
+    const url = new URL(`${API_BASE_URL}${definition.path}`);
+    if (definition.paginated) {
+      url.searchParams.set("page", String(Math.max(1, Math.floor(options.page ?? 1))));
+      url.searchParams.set("per_page", String(Math.min(100, Math.max(1, Math.floor(options.perPage ?? 25)))));
+    }
+    if (definition.statusFilter && options.status) url.searchParams.set("status", options.status);
+    response = await fetch(url.toString(), {
       method: "GET",
       headers: {
         Accept: "application/json",
