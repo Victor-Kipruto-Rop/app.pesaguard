@@ -19,6 +19,7 @@ export type AuthRoute =
 interface AuthPagesProps {
   route: AuthRoute;
   onNavigate: (route: AuthRoute | "dashboard") => void;
+  onSignIn?: (email: string, password: string, tenantId: string, mfaCode: string) => Promise<void>;
 }
 
 const routeContent: Record<AuthRoute, { eyebrow: string; title: string; description: string; action?: string }> = {
@@ -48,7 +49,7 @@ const routeContent: Record<AuthRoute, { eyebrow: string; title: string; descript
   "session-expired": { eyebrow: "SESSION ENDED", title: "Your session has expired.", description: "Sign in again to continue. Unsaved work may not be available.", action: "Sign in again" },
   "account-locked": { eyebrow: "ACCOUNT PROTECTION", title: "Sign-in is temporarily restricted.", description: "Repeated unsuccessful attempts can trigger protective controls. Follow your organization’s recovery process.", action: "Recover account" },
   "access-denied": { eyebrow: "ACCESS RESTRICTED", title: "You don’t have access to this page.", description: "Your current account or role may not have permission to open this resource.", action: "Return to sign in" },
-  "signed-out": { eyebrow: "SIGNED OUT", title: "You’ve left your workspace.", description: "The preview does not maintain a real session. When connected, the identity service should revoke or end the active session.", action: "Sign in again" },
+  "signed-out": { eyebrow: "SIGNED OUT", title: "You’ve left your workspace.", description: "This browser session has been cleared and PesaGuard has been asked to revoke the server session. Sign in again to continue.", action: "Sign in again" },
   "not-found": { eyebrow: "404 · PAGE NOT FOUND", title: "This page isn’t here.", description: "The address may be outdated or the page may have moved.", action: "Return to sign in" },
   "server-error": { eyebrow: "TEMPORARY PROBLEM", title: "Something didn’t load correctly.", description: "Try again in a moment. If the problem continues, contact support with the page you were opening.", action: "Try again" },
   "sso": { eyebrow: "ENTERPRISE IDENTITY", title: "Continue with your organization.", description: "Enter your organization domain to discover its configured identity provider.", action: "Continue with SSO" },
@@ -72,7 +73,7 @@ function Field({ label, id, type = "text", placeholder, value, onChange, require
   return <label className="auth-field" htmlFor={id}><span>{label}</span><input id={id} name={id} type={type} placeholder={placeholder} value={value} onChange={(event) => onChange(event.target.value)} required={required} autoComplete={autoComplete} />{hint && <small>{hint}</small>}</label>;
 }
 
-export function AuthPages({ route, onNavigate }: AuthPagesProps) {
+export function AuthPages({ route, onNavigate, onSignIn }: AuthPagesProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -83,6 +84,9 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
   const [inviteCode, setInviteCode] = useState("");
   const [otp, setOtp] = useState("");
   const [domain, setDomain] = useState("");
+  const [tenantId, setTenantId] = useState("default");
+  const [mfaCode, setMfaCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [recordSource, setRecordSource] = useState("Spreadsheet / CSV");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [notice, setNotice] = useState("");
@@ -102,9 +106,20 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
     "account-locked", "access-denied", "signed-out", "not-found", "server-error", "sso-callback", "sso-settings",
   ];
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setNotice("");
+    if (route === "sign-in" && onSignIn) {
+      setIsSubmitting(true);
+      try {
+        await onSignIn(email, password, tenantId, mfaCode);
+      } catch (error) {
+        setNotice(error instanceof Error ? error.message : "Sign-in failed. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+      return;
+    }
     if ((route === "reset-password" || route === "create-account") && password.length < 12) {
       setNotice("Use at least 12 characters for this password.");
       return;
@@ -118,24 +133,24 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
       return;
     }
     const messages: Partial<Record<AuthRoute, string>> = {
-      "sign-in": "Preview only: authentication is not connected, so no sign-in session was created.",
-      "create-account": "Preview only: no account was created. Connect the verified identity service to enable registration.",
-      "verify-email": "Preview only: verification email delivery is not connected.",
-      "verify-email-expired": "Preview only: a new verification email was not sent.",
-      "forgot-password": "Preview only: recovery instructions were not sent.",
-      "reset-password": "Preview only: the password was not changed; a valid server-verified reset token is required.",
-      "mfa-challenge": "Preview only: the code was not validated and no authentication challenge was completed.",
-      "mfa-setup": "Preview only: authenticator enrollment is not connected to an identity service.",
-      "mfa-verify-setup": "Preview only: the authenticator code was not checked.",
-      "mfa-recovery": "Preview only: recovery has not been verified by the identity service.",
-      "security-verify": "Preview only: the identity verification challenge is not connected.",
-      "accept-invite": "Preview only: the invitation was not accepted or validated.",
-      "onboarding-organization": "Preview only: workspace details have not been submitted or saved.",
-      "onboarding-setup": "Preview only: reconciliation preferences have not been saved.",
-      "sso": "Preview only: no identity provider discovery or redirect was performed.",
-      "reauthenticate": "Preview only: credentials were not checked and no sensitive action was authorized.",
+      "sign-in": "Authentication is not configured for this page. No session was created.",
+      "create-account": "Account registration is not yet connected to the live identity flow. No account was created.",
+      "verify-email": "Email verification is not connected to this screen.",
+      "verify-email-expired": "A new verification email was not sent.",
+      "forgot-password": "Password recovery is not connected to this screen.",
+      "reset-password": "The password was not changed; a valid server-verified reset token is required.",
+      "mfa-challenge": "The MFA challenge is not connected to this screen.",
+      "mfa-setup": "Authenticator enrollment is not connected to this screen.",
+      "mfa-verify-setup": "The authenticator code was not checked.",
+      "mfa-recovery": "Recovery has not been verified by the identity service.",
+      "security-verify": "Identity verification is not connected to this screen.",
+      "accept-invite": "The invitation was not accepted or validated.",
+      "onboarding-organization": "Workspace details have not been submitted or saved.",
+      "onboarding-setup": "Reconciliation preferences have not been saved.",
+      "sso": "No identity provider discovery or redirect was performed.",
+      "reauthenticate": "Credentials were not checked and no sensitive action was authorized.",
     };
-    setNotice(messages[route] ?? "Preview only: this action is not connected to a backend service.");
+    setNotice(messages[route] ?? "This action is not connected to a backend service.");
   }
 
   function primaryAction() {
@@ -183,6 +198,8 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
           {showForm && <form className="auth-form" onSubmit={submit}>
             {route === "create-account" && <Field label="Full name" id="full-name" placeholder="Your full name" value={fullName} onChange={setFullName} autoComplete="name" />}
             {showEmail && <Field label={route === "onboarding-organization" ? "Work email" : "Email address"} id="email" type="email" placeholder="you@organization.co.ke" value={email} onChange={setEmail} autoComplete="email" />}
+            {route === "sign-in" && <Field label="Workspace / tenant ID" id="tenant-id" placeholder="default or your assigned tenant ID" value={tenantId} onChange={setTenantId} hint="Use the tenant ID supplied by your PesaGuard administrator. It is not a password." />}
+            {route === "sign-in" && <Field label="Authenticator / recovery code (if enabled)" id="mfa-code" placeholder="Enter code if your account requires MFA" value={mfaCode} onChange={setMfaCode} required={false} autoComplete="one-time-code" hint="Optional. Use a current TOTP code or one-time recovery code if your account requires it." />}
             {route === "accept-invite" && <Field label="Invitation token" id="invite-code" placeholder="Paste invitation token" value={inviteCode} onChange={setInviteCode} hint="Invitation tokens are validated by the server, never trusted from the browser." />}
             {codeRoutes.includes(route) && <Field label="Verification code" id="verification-code" placeholder="Enter your one-time code" value={otp} onChange={setOtp} autoComplete="one-time-code" hint="Codes are checked and rate-limited by the identity service when connected." />}
             {route === "sso" && <Field label="Organization domain" id="organization-domain" placeholder="organization.co.ke" value={domain} onChange={setDomain} hint="Enter the domain your organization uses for sign-in." />}
@@ -201,8 +218,8 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
             {route === "sign-in" && <div className="auth-form-row"><label className="auth-checkbox"><input type="checkbox" /> <span>Remember this device</span></label><AuthLink onClick={() => onNavigate("forgot-password")}>Forgot password?</AuthLink></div>}
             {route === "create-account" && <label className="auth-checkbox auth-checkbox--legal"><input type="checkbox" required /> <span>I agree to the <a href="https://pesaguard.co.ke/terms" target="_blank" rel="noreferrer">Terms</a> and <a href="https://pesaguard.co.ke/privacy" target="_blank" rel="noreferrer">Privacy Notice</a>.</span></label>}
             {notice && <div className="auth-notice" role="status"><AlertTriangle size={16} /><span>{notice}</span></div>}
-            <button className="auth-submit" type="submit">{route === "onboarding-organization" && step === 1 ? "Continue to setup" : content.action ?? "Continue"} <ArrowRight size={16} /></button>
-            <p className="auth-preview-note"><ShieldCheck size={14} /> Frontend preview only. No credentials are sent or saved.</p>
+            <button className="auth-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? "Signing in securely…" : route === "onboarding-organization" && step === 1 ? "Continue to setup" : content.action ?? "Continue"} <ArrowRight size={16} /></button>
+            {route === "sign-in" ? <p className="auth-preview-note"><ShieldCheck size={14} /> Authentication uses the PesaGuard API. Access tokens stay in memory and are not written to browser storage.</p> : <p className="auth-preview-note"><ShieldCheck size={14} /> This workflow is not fully connected. No credentials are saved by this preview.</p>}
           </form>}
 
           {infoRoutes.includes(route) && <div className="auth-recovery">
@@ -215,7 +232,7 @@ export function AuthPages({ route, onNavigate }: AuthPagesProps) {
             {route.startsWith("invite-") && <p>Invitation status and membership must be validated server-side before access is granted.</p>}
             {route === "account-pending" && <p>Current review status is illustrative only. A live status must come from the onboarding service.</p>}
             {route === "onboarding-problem" && <p>Your submitted credentials are not stored here. You can return to setup or contact support for help.</p>}
-            {route === "signed-out" && <p>When backend authentication is connected, this route should be reached only after the session is ended or revoked.</p>}
+            {route === "signed-out" && <p>The access token is short-lived. If the API was unreachable during sign-out, server-side revocation may not have been confirmed, but this browser no longer holds the session tokens.</p>}
             {route === "sso-callback" && <p>Never accept identity claims from URL parameters alone. Validate issuer, audience, signature, state, nonce, and callback transaction server-side.</p>}
             {route === "password-updated" && <p>This preview cannot verify whether a password was changed. The live page should appear only after server confirmation.</p>}
             {route === "mfa-recovery-codes" && null}

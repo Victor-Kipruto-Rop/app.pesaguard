@@ -1,4 +1,4 @@
-import { Bell, ChevronDown, Menu, Moon, Search, Sun } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Menu, Moon, Search, Sun } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { Workspace } from "../../types/dashboard";
 
@@ -10,9 +10,11 @@ interface TopbarProps {
   onToggleTheme: () => void;
   onSearch: (query: string) => void;
   onOpenMenu: () => void;
+  isLiveData?: boolean;
+  onSignOut?: () => void;
 }
 
-export function Topbar({ workspace, workspaces, onWorkspaceChange, isDark, onToggleTheme, onSearch, onOpenMenu }: TopbarProps) {
+export function Topbar({ workspace, workspaces, onWorkspaceChange, isDark, onToggleTheme, onSearch, onOpenMenu, isLiveData = false, onSignOut }: TopbarProps) {
   const [query, setQuery] = useState("");
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
@@ -57,7 +59,7 @@ export function Topbar({ workspace, workspaces, onWorkspaceChange, isDark, onTog
         <kbd aria-hidden="true">⌘ K</kbd>
       </form>
       <div className="topbar__right">
-        <span className="topbar__environment"><i aria-hidden="true" /> Sandbox</span>
+        <span className="topbar__environment"><i aria-hidden="true" /> {isLiveData ? "Live tenant" : "Sandbox"}</span>
         <button
           className="icon-button theme-toggle"
           type="button"
@@ -91,17 +93,17 @@ export function Topbar({ workspace, workspaces, onWorkspaceChange, isDark, onTog
           <button
             className="topbar__profile"
             type="button"
-            title="Switch preview workspace"
-            aria-label={`Workspace: ${workspace.name}. Switch workspace`}
+            title={isLiveData ? "Authenticated tenant workspace" : "Switch preview workspace"}
+            aria-label={isLiveData ? `Authenticated tenant: ${workspace.name}` : `Workspace: ${workspace.name}. Switch workspace`}
             aria-haspopup="listbox"
             aria-expanded={workspaceMenuOpen}
             onClick={() => setWorkspaceMenuOpen((open) => !open)}
           >
             <span className="avatar avatar--profile">{workspace.initials}</span>
-            <span className="topbar__profile-copy"><strong>{workspace.name}</strong><small>Preview workspace</small></span>
-            <ChevronDown size={15} aria-hidden="true" />
+            <span className="topbar__profile-copy"><strong>{workspace.name}</strong><small>{isLiveData ? "Authenticated tenant" : "Preview workspace"}</small></span>
+            {!isLiveData && <ChevronDown size={15} aria-hidden="true" />}
           </button>
-          {workspaceMenuOpen && (
+          {workspaceMenuOpen && !isLiveData && (
             <div className="workspace-switcher__menu" role="listbox" aria-label="Preview workspaces">
               <span className="workspace-switcher__label">SWITCH WORKSPACE</span>
               {workspaces.map((option) => (
@@ -124,6 +126,7 @@ export function Topbar({ workspace, workspaces, onWorkspaceChange, isDark, onTog
             </div>
           )}
         </div>
+        {isLiveData && onSignOut && <button className="icon-button" type="button" aria-label="Sign out of PesaGuard" title="Sign out" onClick={onSignOut}><LogOut size={17} aria-hidden="true" /></button>}
       </div>
     </header>
   );

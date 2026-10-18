@@ -29,6 +29,7 @@ import "./reconciliation.css";
 interface ReconciliationPageProps {
   transactions: Transaction[];
   onTransactionsChange: (transactions: Transaction[]) => void;
+  isLiveData?: boolean;
 }
 
 type StatusFilter = "All Transactions" | "Matched" | "Pending" | "Unmatched";
@@ -79,7 +80,7 @@ function displayDateRange(transactions: Transaction[]): string {
   return `${format.format(first)} – ${format.format(last)}`;
 }
 
-export function ReconciliationPage({ transactions, onTransactionsChange }: ReconciliationPageProps) {
+export function ReconciliationPage({ transactions, onTransactionsChange, isLiveData = false }: ReconciliationPageProps) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("All Transactions");
   const [source, setSource] = useState("All sources");
@@ -254,7 +255,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
             <p>Match M-Pesa transactions with your records in real time.</p>
           </div>
           <div className="reconciliation-heading__actions">
-            <span className="reconciliation-sample-tag"><Circle size={7} aria-hidden="true" /> Sample data</span>
+            <span className="reconciliation-sample-tag"><Circle size={7} aria-hidden="true" /> {isLiveData ? "Live API · read-only" : "Sample data"}</span>
             <div className="reconciliation-export">
               <button type="button" className="reconciliation-button reconciliation-button--outline" onClick={() => exportTransactions(filtered, "pesaguard-preview-reconciliation.csv")}>
                 <Download size={14} aria-hidden="true" /> Export
@@ -279,27 +280,27 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
         <section className="reconciliation-stats" aria-label="Reconciliation summary">
           <article className="reconciliation-stat reconciliation-stat--total">
             <span className="reconciliation-stat__icon"><WalletCards size={16} aria-hidden="true" /></span>
-            <div className="reconciliation-stat__label">Total Transactions <small>In sample</small></div>
+            <div className="reconciliation-stat__label">Total Transactions <small>{isLiveData ? "Loaded from tenant API" : "In sample"}</small></div>
             <strong>{counts.total.toLocaleString("en-KE")}</strong>
-            <span className="reconciliation-stat__foot">{displayDateRange(transactions)}</span>
+            <span className="reconciliation-stat__foot">{transactions.length ? displayDateRange(transactions) : isLiveData ? "No tenant dates" : "No sample dates"}</span>
           </article>
           <article className="reconciliation-stat reconciliation-stat--matched">
             <span className="reconciliation-stat__icon"><CheckCircle2 size={16} aria-hidden="true" /></span>
             <div className="reconciliation-stat__label">Matched Transactions</div>
             <strong>{counts.matched.toLocaleString("en-KE")}</strong>
-            <span className="reconciliation-stat__foot">{matchedPercent}% of sample records</span>
+            <span className="reconciliation-stat__foot">{matchedPercent}% of {isLiveData ? "loaded tenant records" : "sample records"}</span>
           </article>
           <article className="reconciliation-stat reconciliation-stat--pending">
             <span className="reconciliation-stat__icon"><CircleAlert size={16} aria-hidden="true" /></span>
             <div className="reconciliation-stat__label">Pending Review</div>
             <strong>{counts.pending.toLocaleString("en-KE")}</strong>
-            <span className="reconciliation-stat__foot">{counts.total ? ((counts.pending / counts.total) * 100).toFixed(1) : "0.0"}% of sample records</span>
+            <span className="reconciliation-stat__foot">{counts.total ? ((counts.pending / counts.total) * 100).toFixed(1) : "0.0"}% of {isLiveData ? "loaded tenant records" : "sample records"}</span>
           </article>
           <article className="reconciliation-stat reconciliation-stat--unmatched">
             <span className="reconciliation-stat__icon"><AlertTriangle size={16} aria-hidden="true" /></span>
             <div className="reconciliation-stat__label">Unmatched Transactions</div>
             <strong>{counts.open.toLocaleString("en-KE")}</strong>
-            <span className="reconciliation-stat__foot">{counts.total ? ((counts.open / counts.total) * 100).toFixed(1) : "0.0"}% of sample records</span>
+            <span className="reconciliation-stat__foot">{counts.total ? ((counts.open / counts.total) * 100).toFixed(1) : "0.0"}% of {isLiveData ? "loaded tenant records" : "sample records"}</span>
           </article>
         </section>
 
@@ -344,7 +345,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
             <div className="reconciliation-advanced-filters">
               <label>Minimum amount <input type="number" min="0" placeholder="Any" value={minAmount} onChange={(event) => { setMinAmount(event.target.value); setPageNumber(0); }} /></label>
               <label>Maximum amount <input type="number" min="0" placeholder="Any" value={maxAmount} onChange={(event) => { setMaxAmount(event.target.value); setPageNumber(0); }} /></label>
-              <span>Filters apply to the local sample only.</span>
+              <span>{isLiveData ? "Filters apply to the loaded read-only tenant records." : "Filters apply to the local sample only."}</span>
             </div>
           )}
 
@@ -370,8 +371,8 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
                     <td>{transaction.source}</td>
                     <td className="reconciliation-row-actions">
                       <button type="button" aria-label={`View ${transaction.reference}`} title="View details" onClick={(event) => { event.stopPropagation(); setActiveId(transaction.id); }}><Eye size={14} aria-hidden="true" /></button>
-                      <button type="button" aria-label={`More actions for ${transaction.reference}`} title="More actions" aria-expanded={rowMenuId === transaction.id} onClick={(event) => { event.stopPropagation(); setActiveId(transaction.id); setRowMenuId((id) => id === transaction.id ? null : transaction.id); }}><MoreHorizontal size={15} aria-hidden="true" /></button>
-                      {rowMenuId === transaction.id && (
+                      {!isLiveData && <button type="button" aria-label={`More actions for ${transaction.reference}`} title="More actions" aria-expanded={rowMenuId === transaction.id} onClick={(event) => { event.stopPropagation(); setActiveId(transaction.id); setRowMenuId((id) => id === transaction.id ? null : transaction.id); }}><MoreHorizontal size={15} aria-hidden="true" /></button>}
+                      {!isLiveData && rowMenuId === transaction.id && (
                         <div className="reconciliation-menu reconciliation-menu--row">
                           <button type="button" disabled={transaction.status === "Matched" || transaction.status === "Completed"} onClick={() => { createMatch(transaction); setRowMenuId(null); }}>Create match</button>
                           <button type="button" onClick={() => { addToIgnoreList(transaction); setRowMenuId(null); }}>Add to ignore list</button>
@@ -380,12 +381,12 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
                     </td>
                   </tr>
                 ))}
-                {pageTransactions.length === 0 && <tr><td className="reconciliation-empty" colSpan={8}>No sample transactions match these filters.</td></tr>}
+                {pageTransactions.length === 0 && <tr><td className="reconciliation-empty" colSpan={8}>{isLiveData ? "No tenant transactions match these filters." : "No sample transactions match these filters."}</td></tr>}
               </tbody>
             </table>
           </div>
 
-          {selectedIds.size > 0 && (
+          {!isLiveData && selectedIds.size > 0 && (
             <div className="reconciliation-bulkbar" aria-label="Selected transaction actions">
               <strong>{selectedIds.size} selected</strong>
               <span>Apply an action to selected sample records.</span>
@@ -410,7 +411,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
           )}
 
           <footer className="reconciliation-pagination">
-            <span>Showing {startIndex} to {endIndex} of {totalPagesShown.toLocaleString("en-KE")} sample transactions</span>
+            <span>Showing {startIndex} to {endIndex} of {totalPagesShown.toLocaleString("en-KE")} {isLiveData ? "loaded tenant transactions" : "sample transactions"}</span>
             <div className="reconciliation-pagination__controls" aria-label="Pagination">
               <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPageNumber((page) => Math.max(0, page - 1))}><ChevronLeft size={15} aria-hidden="true" /></button>
               {Array.from({ length: Math.min(3, pageCount) }, (_, index) => (
@@ -455,7 +456,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
               <div><dt>Expected reference</dt><dd>{activeTransaction.accountReference ?? "Not provided in preview"}</dd></div>
             </dl>
             <div className="reconciliation-suggested-action"><span>Suggested Action</span>
-              <button type="button" className="reconciliation-button reconciliation-button--outline" disabled={activeTransaction.status === "Matched" || activeTransaction.status === "Completed"} onClick={() => createMatch(activeTransaction)}><Check size={13} aria-hidden="true" /> {activeTransaction.status === "Matched" ? "Already Matched" : "Create Match"}</button>
+              {!isLiveData && <button type="button" className="reconciliation-button reconciliation-button--outline" disabled={activeTransaction.status === "Matched" || activeTransaction.status === "Completed"} onClick={() => createMatch(activeTransaction)}><Check size={13} aria-hidden="true" /> {activeTransaction.status === "Matched" ? "Already Matched" : "Create Match"}</button>}
             </div>
           </section>
 
@@ -470,7 +471,7 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
             ))}
           </section>
 
-          <footer className="reconciliation-detail__actions">
+          {!isLiveData && <footer className="reconciliation-detail__actions">
             <button type="button" className="reconciliation-button reconciliation-button--outline" disabled={activeTransaction.status === "Matched" || activeTransaction.status === "Completed"} onClick={() => createMatch(activeTransaction)}><Check size={14} aria-hidden="true" /> Create Match</button>
             <button type="button" className="reconciliation-button reconciliation-button--quiet" aria-pressed={ignoredIds.has(activeTransaction.id)} onClick={() => addToIgnoreList(activeTransaction)}><CircleSlash size={14} aria-hidden="true" /> {ignoredIds.has(activeTransaction.id) ? "On Ignore List" : "Add to Ignore List"}</button>
             <button type="button" className="reconciliation-icon-button" aria-label="More transaction actions" title="More transaction actions" onClick={() => setRowMenuId((id) => id === activeTransaction.id ? null : activeTransaction.id)}><ChevronDown size={14} aria-hidden="true" /></button>
@@ -480,8 +481,8 @@ export function ReconciliationPage({ transactions, onTransactionsChange }: Recon
                 <button type="button" onClick={() => { copyReference(activeTransaction.reference); setRowMenuId(null); }}>Copy transaction ID</button>
               </div>
             )}
-          </footer>
-          <p className="reconciliation-detail__disclaimer">Actions change this local preview only. No live payment or ledger records are modified.</p>
+          </footer>}
+          <p className="reconciliation-detail__disclaimer">{isLiveData ? "Live tenant API record. Reconciliation actions are disabled until a tenant-scoped reconciliation write API is connected." : "Actions change this local preview only. No live payment or ledger records are modified."}</p>
         </aside>
       ) : (
         <aside className="reconciliation-detail reconciliation-detail--empty">

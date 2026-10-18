@@ -27,6 +27,10 @@ interface TransactionsPageProps {
   transactions: Transaction[];
   initialQuery: string;
   onTransactionsChange: (transactions: Transaction[]) => void;
+  isLiveData?: boolean;
+  liveTotal?: number;
+  onRefresh?: () => void;
+  loadError?: string;
 }
 
 type StatusFilter = "All" | "Matched" | "Pending" | "Unmatched" | "Disputed";
@@ -66,7 +70,7 @@ function statusClass(status: TransactionStatus): string {
   return "refunded";
 }
 
-export function TransactionsPage({ transactions, initialQuery, onTransactionsChange }: TransactionsPageProps) {
+export function TransactionsPage({ transactions, initialQuery, onTransactionsChange, isLiveData = false, liveTotal, onRefresh, loadError = "" }: TransactionsPageProps) {
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<StatusFilter>("All");
   const [dateFilter, setDateFilter] = useState<DateFilter>("All");
@@ -79,12 +83,12 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
   const [pageNumber, setPageNumber] = useState(0);
   const [sortColumn, setSortColumn] = useState<SortColumn>("timestamp");
   const [sortAscending, setSortAscending] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(["txn-3", "txn-5"]));
-  const [activeId, setActiveId] = useState<string | null>("txn-3");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [disputeMenuOpen, setDisputeMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState("");
-  const [refreshLabel, setRefreshLabel] = useState("Preview · static data");
+  const [refreshLabel, setRefreshLabel] = useState(isLiveData ? "Live API · read-only" : "Preview · static data");
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
@@ -242,7 +246,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           <div className="transaction-refresh" role="status">
             <span className="transaction-refresh__dot" />
             <span>{refreshLabel}</span>
-            <button type="button" aria-label="Refresh preview records" title="Refresh static sample data" onClick={() => setRefreshLabel("Preview · refreshed just now")}>
+            <button type="button" aria-label={isLiveData ? "Refresh live tenant transactions" : "Refresh preview records"} title={isLiveData ? "Refresh from authenticated tenant API" : "Refresh static sample data"} onClick={() => { if (isLiveData) { onRefresh?.(); setRefreshLabel("Live API · refresh requested"); } else setRefreshLabel("Preview · refreshed just now"); }}>
               <RefreshCw size={13} aria-hidden="true" />
             </button>
           </div>
@@ -287,9 +291,10 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           </div>
 
           <div className="transaction-result-meta">
-            <span>Showing {filtered.length} sample transactions</span>
+            <span>{isLiveData ? `Showing ${liveTotal ?? filtered.length} tenant transactions · ${filtered.length} loaded on this page` : `Showing ${filtered.length} sample transactions`}</span>
             <button type="button" onClick={clearFilters}>Clear filters <ListFilter size={14} aria-hidden="true" /></button>
           </div>
+          {loadError && <p className="transaction-copy-feedback" role="alert">{loadError}</p>}
           {copyFeedback && <p className="transaction-copy-feedback" role="status">{copyFeedback}</p>}
 
           <div className="transaction-table-wrap">
@@ -317,7 +322,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                     <td>{transaction.source}</td>
                   </tr>
                 ))}
-                {pageTransactions.length === 0 && <tr><td className="transaction-empty" colSpan={6}>No sample transactions match these filters.</td></tr>}
+                {pageTransactions.length === 0 && <tr><td className="transaction-empty" colSpan={6}>{isLiveData ? "No tenant transactions match these filters." : "No sample transactions match these filters."}</td></tr>}
               </tbody>
             </table>
           </div>
@@ -328,7 +333,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                 {pageSizes.map((size) => <option key={size} value={size}>{size}</option>)}
               </select>
             </label>
-            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {filtered.length} sample transactions</span>
+            <span>Showing {filtered.length === 0 ? 0 : currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, filtered.length)} of {isLiveData ? (liveTotal ?? filtered.length) : filtered.length} {isLiveData ? "tenant transactions" : "sample transactions"}</span>
             <div className="transaction-pagination__controls">
               <button type="button" aria-label="Previous page" disabled={currentPage === 0} onClick={() => setPageNumber((page) => Math.max(0, page - 1))}><ChevronLeft size={14} /></button>
               <span>Page {currentPage + 1} of {pageCount}</span>
@@ -337,7 +342,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
           </div>
         </section>
 
-        {selectedIds.size > 0 && (
+        {!isLiveData && selectedIds.size > 0 && (
           <section className="transaction-bulkbar" aria-label="Bulk transaction actions">
             <div className="transaction-bulkbar__summary"><strong>{selectedIds.size} selected</strong><span>Select transactions to perform bulk actions.</span></div>
             <div className="transaction-bulkbar__actions">
@@ -385,7 +390,7 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
               ))}
             </ol>
           </section>
-          <footer className="transaction-detail__actions">
+          {!isLiveData && <footer className="transaction-detail__actions">
             <button className="tx-button tx-button--outline" type="button" onClick={() => markReviewed(new Set([activeTransaction.id]))}><Check size={15} />Mark Reviewed</button>
             <div className="transaction-dispute">
               <button className="tx-button tx-button--danger" type="button" onClick={() => markDisputed(activeTransaction)}><Flag size={14} />Flag as Disputed</button>
@@ -398,8 +403,8 @@ export function TransactionsPage({ transactions, initialQuery, onTransactionsCha
                 </div>
               )}
             </div>
-          </footer>
-          <p className="transaction-detail__disclaimer">Preview record only. Actions do not change payment or ledger data.</p>
+          </footer>}
+          <p className="transaction-detail__disclaimer">{isLiveData ? "Live tenant API record. This view is read-only; no payment, ledger, or reconciliation mutations are sent from this screen." : "Preview record only. Actions do not change payment or ledger data."}</p>
         </aside>
       ) : (
         <aside className="transaction-detail transaction-detail--empty"><button type="button" aria-label="Open selected transaction details" onClick={() => setActiveId(pageTransactions[0]?.id ?? null)}><SlidersHorizontal size={17} />Select a transaction to view its details.</button></aside>
