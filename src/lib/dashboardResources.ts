@@ -20,56 +20,33 @@ const resources: Partial<Record<DashboardPage, ResourceDefinition>> = {
   "operational-activity": { path: "/activity-feed", note: "Activity feed returned by the Core API." },
   "activity-log": { path: "/activity-feed", note: "Activity feed; not a compliance-complete immutable audit log." },
   exceptions: { path: "/discrepancies", note: "Discrepancy records returned by the Core API." },
-  "exception-detail": { path: "/discrepancies", note: "Discrepancy collection only. A record-specific endpoint is required for a detail view." },
-  reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only. Reconciliation-run execution/history is not provided by this endpoint." },
+  reconciliation: { path: "/analytics/reconciliation-report", note: "Reconciliation report only; run execution/history requires a dedicated API." },
   "financial-summaries": { path: "/analytics/reconciliation-report", note: "Reconciliation report only; not a settlement or accounting ledger." },
   "system-health": { path: "/health", note: "Service dependency health, not tenant business data.", auth: false },
   "service-status": { path: "/health", note: "Service dependency health, not a public uptime history.", auth: false },
   integrations: { path: "/providers", note: "Provider registry. Only backend-configured, supported provider types should be shown." },
   "data-sources": { path: "/providers", note: "Provider registry only; this is not a data-quality result." },
-  "data-source-health": { path: "/providers", note: "Provider registry only; connection-health status needs its own verified contract." },
-  webhooks: { path: "/webhooks", note: "Webhook destination records. Signing secrets are never rendered by this page." },
-  "webhook-deliveries": { path: "/webhooks", note: "Webhook endpoints only; delivery history requires a selected endpoint ID." },
+  webhooks: { path: "/webhooks", note: "Webhook destination records; signing secrets are never rendered." },
   "import-sync-activity": { path: "/api/v1/operations/outbox", note: "Operational outbox records; not a complete import-job history." },
   "processing-jobs": { path: "/api/v1/operations/outbox", note: "Operational outbox records only; not a general job queue." },
-  reports: { path: "/api/v1/customers/{tenant}/reports", note: "Reports for the authenticated tenant path; validate the legacy route's tenant enforcement before release." },
+  reports: { path: "/api/v1/customers/{tenant}/reports", note: "Tenant reports; the legacy route's tenant enforcement must be verified before release." },
   "report-builder": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; report execution is not implemented by this route." },
-  "api-developer-resources": { path: "/api/v1/iam/api-clients", note: "API client metadata. Never expose secret material." },
+  "api-developer-resources": { path: "/api/v1/iam/api-clients", note: "API client metadata. Secret material must never be exposed." },
   "tenant-profile": { path: "/tenant/current", note: "Authenticated tenant profile." },
   "organization-profile": { path: "/tenant/current", note: "Authenticated tenant context; not organization CRUD." },
   settings: { path: "/v1/settings", note: "Settings response; unsupported settings mutations remain unavailable." },
-  "preferences": { path: "/tenant/current/locale", note: "Locale preference only; not a full preference service." },
-  "notifications": { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
+  preferences: { path: "/tenant/current/locale", note: "Locale preference only; not a full preference service." },
+  notifications: { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
   "notification-center": { path: "/api/v1/communications/messages", note: "Communication messages; not notification preferences." },
   "notification-delivery-history": { path: "/api/v1/communications/messages", note: "Communication message history; delivery detail requires a message ID." },
-  "data-lineage": { path: "/api/v1/catalog/datasets", note: "Dataset catalog only; transaction lineage requires a transaction ID." },
-  "risk-overview": { path: "/analytics/incident-trends", note: "Incident trend analytics only; not a calibrated fraud-score summary." },
-  "risk-events": { path: "/incidents/search", note: "Operational incident search; not a verified financial-risk event feed." },
-  alerts: { path: "/incidents/search", note: "Operational incidents only; not a dedicated financial alert service." },
-  "suspicious-transactions": { path: "/discrepancies", note: "Discrepancy collection only; not a fraud classification result." },
-  "failed-transactions": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection; status filtering must be verified against the route contract." },
-  "pending-transactions": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection; status filtering must be verified against the route contract." },
-  "matched-transactions": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection; match filtering must be verified against the route contract." },
-  "unmatched-transactions": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection; match filtering must be verified against the route contract." },
-  "partial-matches": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection; partial-match filtering is not implied." },
-  "transaction-detail": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection only; select a record-specific transaction endpoint for detail." },
-  "transaction-lifecycle": { path: "/api/v1/customers/{tenant}/transactions", note: "Tenant transaction collection only; lifecycle events require a transaction-specific endpoint." },
-  "provider-callback-history": { path: "/providers", note: "Provider registry only; callback history is not supplied." },
-  "team-members": { path: "/api/v1/organizations", note: "Organization collection only; this is not a team-member list." },
-  "branches": { path: "/api/v1/organizations", note: "Organization collection only; branch records require a branch API." },
-  "security": { path: "/api/v1/iam/api-clients", note: "API client metadata only; not a complete security-events feed." },
-  "access-history": { path: "/api/v1/customers/{tenant}/audit", note: "Tenant audit route; validate tenant authorization and audit coverage before relying on it." },
-  "export-center": { path: "/api/v1/export/csv", note: "CSV export route; verify its response/download contract before use." },
-  "customers": { path: "/api/v1/organizations", note: "Organization collection is not a customer directory; this page is intentionally not mapped." },
+  alerts: { path: "/incidents/search", note: "Operational incident search only; not a dedicated financial-alert service." },
+  "access-history": { path: "/api/v1/customers/{tenant}/audit", note: "Tenant audit route; verify tenant authorization and audit coverage before relying on it." },
+  "export-center": { path: "/api/v1/export/csv", note: "CSV export route; its response/download contract must be verified before use." },
 };
-
-const unavailablePages = new Set<DashboardPage>(["customers"]);
-void unavailablePages;
 
 export function dashboardResourceDefinition(page: DashboardPage, tenantId?: string): ResourceDefinition | null {
   const definition = resources[page];
   if (!definition) return null;
-  if (page === "customers") return null;
   if (definition.path.includes("{tenant}")) {
     if (!tenantId) return null;
     return { ...definition, path: definition.path.replace("{tenant}", encodeURIComponent(tenantId)) };
